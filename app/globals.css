@@ -1,26 +1,188 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================================
+   FlareLane 콘솔 리뉴얼 — 디자인 토큰
+   브랜드 네이비(강조) + 그레이(배경/텍스트/보더) 중심.
+   네이비는 버튼·활성·링크·선택 행 등 강조 지점에만 절제해서 사용.
+   ============================================================ */
+
+@theme {
+  /* 브랜드 네이비 (액션·강조용) */
+  --color-navy-50: #f4f7fc;
+  --color-navy-100: #dce6f5;
+  --color-navy-200: #9aafd0;
+  --color-navy-400: #4c6699;
+  --color-navy-600: #284782;
+  --color-navy-700: #163966; /* 버튼 hover */
+  --color-navy-800: #002952; /* 기본 버튼·주요 강조 — 메인 브랜드 */
+  --color-navy-900: #001733; /* 사이드바 배경·가장 진한 텍스트 */
+
+  /* 그레이 (텍스트·배경·보더용) */
+  --color-gray-50: #fcfcfd; /* 페이지 배경 */
+  --color-gray-100: #f7f7fa; /* 카드/표면 배경 */
+  --color-gray-200: #e4e4ea; /* 기본 보더 */
+  --color-gray-300: #c8c8d0; /* hover 보더 */
+  --color-gray-400: #a0a0aa; /* 비활성 텍스트/아이콘 */
+  --color-gray-500: #7a7a83; /* 힌트 텍스트 */
+  --color-gray-600: #5e5e65; /* 보조 텍스트 */
+  --color-gray-700: #44444a; /* 본문 텍스트 */
+  --color-gray-800: #2d2d31; /* 강조 텍스트 */
+  --color-gray-900: #1b1b1e; /* 제목 텍스트 */
+  --color-gray-950: #0b0b0c; /* 최진 텍스트 */
+
+  /* 시맨틱 별칭 (브리프 매핑) */
+  --color-brand: var(--color-navy-800);
+  --color-brand-hover: var(--color-navy-700);
+  --color-brand-subtle: var(--color-navy-50);
+  --color-link: var(--color-navy-600);
+  --color-title: var(--color-gray-900);
+  --color-body: var(--color-gray-700);
+  --color-hint: var(--color-gray-500);
+  --color-page: var(--color-gray-50);
+  --color-surface: #ffffff;
+
+  /* 상태색 (배지·알림용, 표준 톤) */
+  --color-success: #16a34a;
+  --color-success-bg: #dcfce7;
+  --color-success-fg: #166534;
+  --color-warning: #d97706;
+  --color-warning-bg: #fef3c7;
+  --color-warning-fg: #92400e;
+  --color-danger: #dc2626;
+  --color-danger-bg: #fee2e2;
+  --color-danger-fg: #991b1b;
+
+  /* 상태 레이어 — 검정 투명 오버레이 (배경색과 무관하게 동일 작동)
+     hover:bg-overlay-hover 로 버튼·테이블 행·드롭다운 등에 재사용.
+     세기 조절은 :root 의 --overlay-hover 값만 변경 (0.06 → 0.08 등). */
+  --color-overlay-hover: var(--overlay-hover);
+
+  /* 한국어 UI 폰트 */
+  --font-sans: "Pretendard Variable", Pretendard, ui-sans-serif, system-ui,
+    -apple-system, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR",
+    sans-serif;
 }
 
+/* shadcn 시맨틱 토큰을 위 팔레트에 매핑 */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  /* 모서리 반경 8px 기준 */
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: calc(var(--radius) - 1px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  --radius: 0.5rem; /* 8px — 모든 컨트롤 모서리 반경 */
+
+  /* 인터랙티브 컨트롤 높이 — input/select/button/날짜필터 공유 */
+  --control-height: 36px; /* 기본 */
+  --control-height-sm: 32px; /* 작은 버튼 등 */
+
+  --overlay-hover: rgba(0, 41, 82, 0.07);
+
+  /* 표면·텍스트 */
+  --background: #fcfcfd; /* gray-50 페이지 배경 */
+  --foreground: #1b1b1e; /* gray-900 제목/기본 텍스트 */
+  --card: #ffffff;
+  --card-foreground: #1b1b1e;
+  --popover: #ffffff;
+  --popover-foreground: #1b1b1e;
+
+  /* 강조(브랜드 네이비) */
+  --primary: #002952; /* navy-800 */
+  --primary-foreground: #ffffff;
+
+  /* 보조 표면 */
+  --secondary: #f7f7fa; /* gray-100 */
+  --secondary-foreground: #2d2d31; /* gray-800 */
+  --muted: #f7f7fa; /* gray-100 */
+  --muted-foreground: #7a7a83; /* gray-500 */
+  --accent: #f4f7fc; /* navy-50 — hover/선택 배경 */
+  --accent-foreground: #002952; /* navy-800 */
+
+  --destructive: #dc2626;
+
+  /* 보더·입력·포커스 */
+  --border: #e4e4ea; /* gray-200 */
+  --input: #e4e4ea;
+  --ring: #9aafd0; /* navy-200 */
+
+  /* 차트 전용 팔레트 — UI 강조색(네이비)과 분리.
+     메인=밝은 블루, 보조=앰버. 모든 차트는 이 토큰을 사용. */
+  --chart-1: #2e6fe0; /* 밝은 블루 — 발송/신규 기기 등 메인 */
+  --chart-2: #f59e0b; /* amber — 클릭 등 보조 */
+  --chart-3: #7aa7ee; /* 블루 라이트 */
+  --chart-4: #16a34a; /* green */
+  --chart-5: #a0a0aa; /* gray-400 */
+
+  /* 사이드바 (밝은 톤: 흰 배경 + navy-50 강조 + navy-800 포인트) */
+  --sidebar: #ffffff; /* surface — 흰 배경 */
+  --sidebar-foreground: #44444a; /* gray-700 — 일반 메뉴 텍스트 */
+  --sidebar-primary: #f4f7fc; /* navy-50 — 활성 메뉴 배경 */
+  --sidebar-primary-foreground: #002952; /* navy-800 — 활성 텍스트/아이콘 */
+  --sidebar-accent: #fcfcfd; /* gray-50 — hover 배경 */
+  --sidebar-accent-foreground: #44444a; /* gray-700 — hover 텍스트 유지 */
+  --sidebar-border: #e4e4ea; /* gray-200 — 메인 영역과 구분선 */
+  --sidebar-ring: #9aafd0; /* navy-200 */
+}
+
+/* 스크롤바 막대만 시각적으로 숨김 (스크롤 기능은 유지).
+   막대가 0폭이므로 나타났다 사라져도 폭 변화(layout shift) 없음.
+   사이드바 등 폭이 고정돼야 하는 스크롤 영역에 재사용. */
+@utility scrollbar-none {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* 구 Edge/IE */
+  &::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
 }

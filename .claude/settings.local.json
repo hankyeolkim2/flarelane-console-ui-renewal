@@ -3,7 +3,22 @@
     "allow": [
       "Bash(npm -v)",
       "Bash(npx create-next-app@latest . --typescript --tailwind --app --eslint --no-src-dir --import-alias \"@/*\" --use-npm --no-turbopack)",
-      "Bash(echo \"---EXIT:$?---\")"
+      "Bash(echo \"---EXIT:$?---\")",
+      "Bash(npx shadcn@latest init --base-color neutral --yes)",
+      "Bash(npx shadcn@latest init --help)",
+      "Bash(npx shadcn@latest init -t next -b radix -y)",
+      "Bash(npx shadcn@latest init -d -y)",
+      "Bash(npx shadcn@latest add card table badge input select dropdown-menu dialog tabs separator label avatar tooltip -y)",
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(npm run *)",
+      "Bash(echo \"dev pid: $!\")",
+      "Read(//private/tmp/**)",
+      "Bash(break)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3001/)",
+      "Bash(curl -s http://localhost:3000/)"
     ]
   }
 }
