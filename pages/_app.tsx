@@ -26,7 +26,7 @@ const globalStyles = css`
   @supports not selector(::-webkit-scrollbar) { * { scrollbar-width: thin; scrollbar-color: rgba(0, 0, 0, 0.15) transparent; } }
 `;
 
-type PageWithLayout = AppProps['Component'] & { layout?: 'default' | 'editor' };
+type PageWithLayout = AppProps['Component'] & { layout?: 'default' | 'editor' | 'full' };
 
 export default function App({ Component, pageProps }: AppProps) {
   const layout = (Component as PageWithLayout).layout ?? 'default';
