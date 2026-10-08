@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { Help, KV } from '@/components/channel/ChannelShell';
 import { BlockHead, Cards, ConversionTable, DetailHeader, FAIL_LABELS, FailureModal, Section, SendStatsPanel, TargetView, usePolling, useReason, withTz, type Series } from './Detail';
 import { SourceBadge } from './SentList';
+import type { DetailVariant } from './PushDetail';
 import { fmt, type AlimtalkMessage, type FriendtalkMessage, type SmsMessage } from '@/lib/sent';
 
 // 알림톡 · 브랜드메시지 · 문자 보낸 메시지 상세 공용 틀 — 정보 / 메시지(채널별) / 유형 & 대상 / 분석(발송 통계 + 전환 이벤트).
@@ -10,7 +11,7 @@ type Msg = AlimtalkMessage | FriendtalkMessage | SmsMessage;
 
 const points = (n: number) => `₩${n.toLocaleString('ko-KR', { maximumFractionDigits: 2 })}`;
 
-export default function KakaoDetail({ channel, m, message, targetExtra }: { channel: 'alimtalk' | 'friendtalk' | 'sms'; m: Msg; message: ReactNode; targetExtra?: ReactNode }) {
+export default function KakaoDetail({ channel, m, message, targetExtra, variant = {} }: { channel: 'alimtalk' | 'friendtalk' | 'sms'; m: Msg; message: ReactNode; targetExtra?: ReactNode; variant?: DetailVariant }) {
   usePolling();
   const [fail, setFail] = useState(false);
   const reason = useReason();
@@ -28,7 +29,7 @@ export default function KakaoDetail({ channel, m, message, targetExtra }: { chan
   const freqChannelOn = true; // 프로젝트 빈도 제한 설정 — 스테이징 프로젝트는 켜져 있음
   return (
     <>
-      <DetailHeader backHref={`/${channel}/sent-history`} copyHref={`/${channel}/new-message?copyMessageId=${m.id}`} />
+      <DetailHeader title={variant.title} backHref={variant.backHref ?? `/${channel}/sent-history`} copyHref={variant.copy === false ? undefined : `/${channel}/new-message?copyMessageId=${m.id}`} />
       <Cards>
         <div data-detail-section="content" style={{ display: 'contents' }}>
           <Section title="정보">
@@ -37,8 +38,8 @@ export default function KakaoDetail({ channel, m, message, targetExtra }: { chan
                 ['ID', m.id],
                 ...(m.campaignName ? [['캠페인 명', m.campaignName] as [ReactNode, ReactNode]] : []),
                 [
-                  '발송 시간',
-                  withTz(m.createdAt),
+                  variant.dateLabel ?? '발송 시간',
+                  withTz(variant.date ?? m.createdAt),
                   <span key="l" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                     발송 환경 <Help>메시지가 발송된 환경입니다.</Help>
                   </span>,
@@ -72,6 +73,7 @@ export default function KakaoDetail({ channel, m, message, targetExtra }: { chan
             )}
           </Section>
         </div>
+        {variant.footer}
       </Cards>
       {fail && <FailureModal labels={channel === 'sms' ? FAIL_LABELS.sms : FAIL_LABELS.kakao} data={m.failure} onClose={() => setFail(false)} />}
       {reason.node}

@@ -25,15 +25,18 @@ const Head = styled.div`
   > h1 { flex: 1; margin: 0; ${text('display-xs', 'semibold')}; color: ${color('text-primary')}; }
 `;
 
-export function DetailHeader({ backHref, copyHref }: { backHref: string; copyHref: string }) {
+export function DetailHeader({ backHref, copyHref, title = '보낸 메시지 상세', actions }: { backHref: string; copyHref?: string; title?: string; actions?: ReactNode }) {
   const router = useRouter();
   return (
     <Head>
       <IconButton icon="arrow_back" label="뒤로" onClick={() => router.push(backHref)} />
-      <h1>보낸 메시지 상세</h1>
-      <Button size="md" iconLeading="content_copy" onClick={() => router.push(copyHref)}>
-        메시지 복제
-      </Button>
+      <h1>{title}</h1>
+      {actions}
+      {copyHref && (
+        <Button size="md" iconLeading="content_copy" onClick={() => router.push(copyHref)}>
+          메시지 복제
+        </Button>
+      )}
     </Head>
   );
 }

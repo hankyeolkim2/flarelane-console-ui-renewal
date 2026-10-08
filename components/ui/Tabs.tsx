@@ -131,3 +131,51 @@ export function ButtonTabs<T extends string>({ items, value, onChange }: { items
     </PaddedWrap>
   );
 }
+
+// Figma `Horizontal tabs` (button border · 전체 폭 · md) — 예약된 메시지 상태 탭: 바탕 bg-secondary_alt · r12 · 안쪽 6, 탭 44 · 아이콘 20 + 이름(md SemiBold) + 건수(md Medium).
+const CountWrap = styled.div`
+  display: flex;
+  gap: 4px;
+  padding: 5px;
+  background: ${color('bg-secondary_alt')};
+  border: 1px solid ${color('border-secondary')};
+  border-radius: ${radius.xl}px;
+`;
+
+const CountTab = styled.button<{ current: boolean }>`
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: ${radius.sm}px;
+  background: ${(p) => (p.current ? color('bg-primary_alt') : 'transparent')};
+  box-shadow: ${(p) => (p.current ? shadow.sm : 'none')};
+  cursor: pointer;
+  > span { display: inline-flex; color: ${(p) => (p.current ? color('fg-secondary') : color('fg-quaternary'))}; }
+  > b { ${text('text-md', 'semibold')}; color: ${(p) => (p.current ? color('text-secondary') : color('text-quaternary'))}; }
+  > em { font-style: normal; ${text('text-md', 'medium')}; color: ${(p) => (p.current ? color('text-secondary') : color('text-tertiary'))}; font-variant-numeric: tabular-nums; }
+  &:hover > b { color: ${color('text-secondary')}; }
+  &:focus-visible { outline: none; box-shadow: ${shadow['focus-ring']}; }
+`;
+
+export function CountTabs<T extends string>({ items, value, onChange }: { items: TabItem<T>[]; value: T; onChange: (v: T) => void }) {
+  return (
+    <CountWrap role="tablist">
+      {items.map((it) => (
+        <CountTab key={it.value} type="button" role="tab" aria-selected={it.value === value} current={it.value === value} onClick={() => it.value !== value && onChange(it.value)}>
+          {it.icon && (
+            <span>
+              <Icon name={it.icon} size={20} />
+            </span>
+          )}
+          <b>{it.label}</b>
+          {it.count !== undefined && <em>{it.count.toLocaleString('ko-KR')}</em>}
+        </CountTab>
+      ))}
+    </CountWrap>
+  );
+}

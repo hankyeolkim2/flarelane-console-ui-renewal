@@ -110,21 +110,30 @@ export function Num({ n }: { n: number }) {
 export type Stat = { label: string; value: ReactNode; raw?: boolean };
 export type RowContent = { eyebrow?: { text: string; tone: 'brand' | 'primary' }; title?: string; sub?: string; body?: string; bodyLines?: 1 | 2; url?: string; image?: boolean };
 
-export function SentRow({ source, content, cols, href, copyHref }: { source: Source; content: RowContent; cols: [number, Stat[]][]; href: string; copyHref: string }) {
+export type RowMenuItem = { label: string; icon?: string; destructive?: boolean; onClick: () => void };
+
+// lead 를 넘기면 왼쪽 표지를 바꾸고 출처 배지는 글 맨 위로(예약된 메시지 A안). menu 를 넘기면 ⋯ 메뉴 항목을 바꿈(기본 = 복제).
+export function SentRow({ source, content, cols, href, copyHref, lead, menu, onOpen }: { source: Source; content: RowContent; cols: [number, Stat[]][]; href?: string; copyHref?: string; lead?: ReactNode; menu?: RowMenuItem[]; onOpen?: () => void }) {
   const router = useRouter();
   const ref = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
   const go = (e: MouseEvent) => {
+    if (onOpen) return onOpen();
+    if (!href) return;
     // 스테이징: Ctrl/⌘ 클릭은 새 탭
     if (e.metaKey || e.ctrlKey) window.open(href, '_blank');
     else router.push(href);
   };
+  const items: RowMenuItem[] = menu ?? (copyHref ? [{ label: '복제', icon: 'content_copy', onClick: () => router.push(copyHref) }] : []);
   return (
     <Row role="link" onClick={go}>
-      <Lead>
-        <SourceBadge source={source} />
-      </Lead>
+      <Lead>{lead ?? <SourceBadge source={source} />}</Lead>
       <Content>
+        {lead && (
+          <span style={{ marginBottom: 0 }}>
+            <SourceBadge source={source} />
+          </span>
+        )}
         {content.eyebrow && <small style={{ color: content.eyebrow.tone === 'brand' ? 'var(--text-brand-secondary)' : 'var(--text-primary)' }}>{content.eyebrow.text}</small>}
         {content.title && <b>{content.title}</b>}
         {content.sub && <em>{content.sub}</em>}
@@ -167,7 +176,9 @@ export function SentRow({ source, content, cols, href, copyHref }: { source: Sou
       </More>
       <Floating anchorRef={ref} open={open} onClose={() => setOpen(false)} width={160} offset={4}>
         <div style={{ padding: '4px 0' }} onClick={(e) => e.stopPropagation()}>
-          <MenuItem label="복제" icon="content_copy" onClick={() => router.push(copyHref)} />
+          {items.map((it) => (
+            <MenuItem key={it.label} label={it.label} icon={it.icon} destructive={it.destructive} onClick={() => { setOpen(false); it.onClick(); }} />
+          ))}
         </div>
       </Floating>
     </Row>
@@ -193,6 +204,27 @@ export function EmptyList() {
       </span>
       <b>데이터가 없습니다</b>
     </EmptyBox>
+  );
+}
+
+// 상태 표지 — 점 8 + 글(sm Medium text-secondary)
+const StatusBox = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  ${text('text-sm', 'medium')};
+  color: ${color('text-secondary')};
+  white-space: nowrap;
+  > i { width: 8px; height: 8px; border-radius: 50%; }
+`;
+
+export function StatusLead({ tone, label }: { tone: 'success' | 'warning' | 'error' | 'gray'; label: string }) {
+  const c = tone === 'success' ? 'var(--fg-success-secondary)' : tone === 'warning' ? 'var(--fg-warning-secondary)' : tone === 'error' ? 'var(--fg-error-secondary)' : 'var(--fg-quaternary)';
+  return (
+    <StatusBox>
+      <i style={{ background: c }} />
+      {label}
+    </StatusBox>
   );
 }
 
