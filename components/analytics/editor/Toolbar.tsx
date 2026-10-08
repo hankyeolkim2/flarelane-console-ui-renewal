@@ -10,10 +10,11 @@ import { text } from '@/styles/typography';
 
 // Figma Toolbar(기간 버튼 · Date presets · 단위 Select) + 스테이징 기간 · 단위 규칙.
 
-// 기간 버튼 폭 고정 — 가장 긴 표기 「yyyy-MM-dd ~ yyyy-MM-dd」(글자 184px) + 달력 아이콘 20 · 간격 4 · 글자 여백 2×2 · 좌우 12 = 236.
+// 기간 버튼 폭 204 고정(사용자) — 같은 해 표기 「yyyy-MM-dd ~ MM-dd」(글자 142px)는 여유 있게 들어가고,
+// 해가 바뀌는 「yyyy-MM-dd ~ yyyy-MM-dd」(184px)는 글자 자리 152px 를 넘어 말줄임 → 마우스를 올리면 전체 기간(title).
 // 날짜가 바뀌어도 버튼과 옆 프리셋 그룹이 움직이지 않게 함. 숫자는 같은 폭(tabular-nums).
 const RangeButton = styled.div`
-  > button { width: 236px; justify-content: flex-start; }
+  > button { width: 204px; justify-content: flex-start; }
   > button > [data-btn-label] { flex: 1; min-width: 0; text-align: left; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 `;
 
@@ -331,7 +332,7 @@ export default function Toolbar({ state, onRange, onGranularity }: { state: Edit
   return (
     <Bar>
       <RangeButton ref={ref}>
-        <Button iconLeading="calendar_today" onClick={() => setOpen((v) => !v)}>
+        <Button iconLeading="calendar_today" title={rangeLabel(state.range)} onClick={() => setOpen((v) => !v)}>
           {rangeLabel(state.range)}
         </Button>
       </RangeButton>
