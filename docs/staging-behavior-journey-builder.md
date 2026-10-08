@@ -289,7 +289,7 @@
 - "확인": 이벤트명·필터 빈 값 → 토스트 `error.emptyEvent`. 출력 "Yes"(조건 만족) / "No".
 
 ### 4.11 Segment Split (wide)
-- "세그먼트"(`common:segments`) + 세그먼트 필터 빌더(진입 대상과 같은 제외 목록; 유저 자동화면 `USER_ID`에 "존재"/"존재하지 않음" 연산자 추가).
+- "세그먼트"(`common:segments`) + 세그먼트 필터 빌더(진입 대상과 같은 제외 목록; 유저 자동화면 `USER_ID` 연산자에 `EXIST`·`NOT_EXIST` 추가).
 - "확인": 시작 조건이 비회원 포함이면 필터 제한 검사(`error.invalidFilter`) → 형식 불량 `error.invalidSegment`. 출력 "Yes" / "No".
 
 ### 4.12 Trigger Event (medium)
@@ -308,7 +308,7 @@
 
 ## 5. AI 개선 패널 (수정 페이지만)
 
-- **열기**: 헤더 AI 아이콘 버튼 → 현재 캔버스로 여정 데이터를 만들어 검증(§1.4와 같은 함수; 실패하면 그 토스트가 뜨고 요청 안 함) → `POST /ai-agents/automation-improvement/sessions {targetType:"automation", targetId}` → `POST /ai-agents/sessions/{sessionId}/executions {actionId:"AUTOMATION_IMPROVEMENT_RECOMMEND", input:{automation}}` → `GET /ai-agents/sessions/{sessionId}/executions/{executionId}` 1초 간격 폴링(최대 300회, `SUCCEEDED`/`FAILED`에서 멈춤).
+- **열기**: 헤더 AI 아이콘 버튼 → 캔버스 좌표 동기화 → `POST /ai-agents/automation-improvement/sessions {targetType:"automation", targetId}` → 현재 캔버스로 여정 데이터를 만들어 검증(§1.4와 같은 함수; 실패하면 그 토스트가 뜨고 실행 요청 안 함, 패널도 안 열림) → `POST /ai-agents/sessions/{sessionId}/executions {actionId:"AUTOMATION_IMPROVEMENT_RECOMMEND", input:{automation(editor 제외)}}` → 패널 열림 → `GET /ai-agents/sessions/{sessionId}/executions/{executionId}` 1초 간격 폴링(최대 300회, `SUCCEEDED`/`FAILED`에서 멈춤).
 - 패널이 열려 있는 동안 캔버스: 편집·드래그 불가, 노드 클릭(읽기 전용 패널)은 가능, 헤더 "저장" disabled.
 - 레이아웃(위→아래):
   - 헤더: "FlareLane AI"(하드코딩) + 로고 · 설정 톱니(→ "AI 설정" 모달; `GET /ai-settings` 결과의 서비스명·설명·목표·지침이 모두 비어 있으면 빨간 점) · X(`aria-label`="닫기", 처리 중 disabled).
