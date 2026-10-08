@@ -15,7 +15,7 @@ export const nav: NavSection[] = [
     heading: '데이터 리포트',
     items: [
       { label: '기기 및 발송 현황', icon: 'dashboard', href: '/dashboard' },
-      { label: '분석 보드', icon: 'bar_chart', href: '/analytics-boards' },
+      { label: '분석 보드', icon: 'insert_chart', href: '/analytics-boards' },
     ],
   },
   {

@@ -34,14 +34,19 @@ const Header = styled.div<{ collapsed: boolean }>`
   display: flex;
   align-items: center;
   justify-content: ${(p) => (p.collapsed ? 'center' : 'space-between')};
-  padding: ${(p) => (p.collapsed ? '17px 0' : '17px 12px 17px 20px')};
+  padding: ${(p) => (p.collapsed ? '17px 0 9px' : '17px 12px 17px 20px')};
 `;
 
+// Figma `Logo wrap` 109×20 — 글자 바닥선이 정수 픽셀(16)에 오도록 로고를 위로 0.374 올림
 const Logo = styled.span`
-  display: flex;
-  align-items: center;
-  gap: 6.67px;
-  img { display: block; }
+  position: relative;
+  display: block;
+  flex-shrink: 0;
+  width: 109px;
+  height: 20px;
+  img { position: absolute; display: block; }
+  img:first-of-type { left: 0; top: -0.374px; }
+  img:last-of-type { left: 20px; top: 2.96px; }
 `;
 
 const UtilityButton = styled.button<{ size?: number }>`
@@ -61,7 +66,9 @@ const UtilityButton = styled.button<{ size?: number }>`
 `;
 
 const ProjectWrap = styled.div<{ collapsed: boolean }>`
-  padding: ${(p) => (p.collapsed ? '0 8px 16px' : '0 8px 16px')};
+  padding: ${(p) => (p.collapsed ? '0 0 9px' : '0 8px 16px')};
+  display: flex;
+  justify-content: center;
 `;
 
 const ProjectCard = styled.button<{ collapsed: boolean }>`
@@ -69,10 +76,10 @@ const ProjectCard = styled.button<{ collapsed: boolean }>`
   display: flex;
   align-items: center;
   gap: 12px;
-  width: 100%;
-  padding: ${(p) => (p.collapsed ? '6px' : '12px 11px')};
+  width: ${(p) => (p.collapsed ? '40px' : '100%')};
+  padding: ${(p) => (p.collapsed ? '4px' : '12px 11px')};
   justify-content: ${(p) => (p.collapsed ? 'center' : 'flex-start')};
-  border: 1px solid ${(p) => (p.collapsed ? 'transparent' : color('border-secondary'))};
+  border: ${(p) => (p.collapsed ? '0' : `1px solid ${color('border-secondary')}`)};
   border-radius: ${radius.xl}px;
   background: ${color('bg-primary_alt')};
   text-align: left;
@@ -148,10 +155,12 @@ const itemBase = (current: boolean) => `
   border: 0;
   border-radius: ${radius.sm}px;
   background: ${current ? color('bg-secondary') : color('bg-primary')};
-  color: ${current ? color('text-secondary_hover') : color('text-secondary')};
+  color: ${current ? color('text-secondary_hover') : color('text-tertiary')};
   text-align: left;
   text-decoration: none;
   cursor: pointer;
+  transition: background-color 0.1s linear, color 0.1s linear;
+  & [data-nav-icon] { transition: color 0.1s linear; }
   &:hover {
     background: ${current ? color('bg-secondary_hover') : color('bg-primary_hover')};
     color: ${color('text-secondary_hover')};
@@ -188,7 +197,8 @@ const ItemIcon = styled.span<{ active: boolean }>`
 const Chevron = styled.span<{ open: boolean }>`
   display: inline-flex;
   color: ${color('fg-quaternary')};
-  transform: rotate(${(p) => (p.open ? 180 : 0)}deg);
+  transform: rotate(${(p) => (p.open ? 90 : 0)}deg);
+  transition: transform ${(p) => (p.open ? '0.2s ease-out' : '0.15s ease-in')};
 `;
 
 const SubLink = styled(Link)<{ current: number }>`
@@ -197,17 +207,35 @@ const SubLink = styled(Link)<{ current: number }>`
   ${text('text-sm', 'semibold')};
 `;
 
+const Collapse = styled.div<{ open: boolean }>`
+  display: grid;
+  grid-template-rows: ${(p) => (p.open ? '1fr' : '0fr')};
+  transition: grid-template-rows ${(p) => (p.open ? '0.2s ease-out' : '0.15s ease-in')};
+  visibility: ${(p) => (p.open ? 'visible' : 'hidden')};
+  transition-property: grid-template-rows, visibility;
+  transition-delay: 0s, ${(p) => (p.open ? '0s' : '0.15s')};
+`;
+
 const SubMenu = styled.div`
   display: flex;
   flex-direction: column;
-  padding-bottom: 4px;
+  min-height: 0;
+  overflow: hidden;
+  > div { padding-bottom: 4px; display: flex; flex-direction: column; }
+`;
+
+// Smart animate 에서 새로 생기는 레이어 = 투명도 0 → 1
+const SubItems = styled.div<{ open: boolean }>`
+  opacity: ${(p) => (p.open ? 1 : 0)};
+  transition: opacity ${(p) => (p.open ? '0.2s ease-out' : '0.15s ease-in')};
 `;
 
 const Footer = styled.div<{ collapsed: boolean }>`
   display: flex;
+  flex-direction: ${(p) => (p.collapsed ? 'column' : 'row')};
   align-items: center;
   justify-content: ${(p) => (p.collapsed ? 'center' : 'flex-start')};
-  gap: 10px;
+  gap: ${(p) => (p.collapsed ? 12 : 10)}px;
   padding: ${(p) => (p.collapsed ? '15px 0 16px' : '15px 12px 16px 16px')};
   border-top: 1px solid ${color('border-secondary')};
 `;
@@ -278,18 +306,22 @@ function NavGroup({ item, path, collapsed }: { item: NavItem; path: string; coll
         </Label>
         {!collapsed && (
           <Chevron open={open}>
-            <Icon name="keyboard_arrow_down" size={16} />
+            <Icon name="chevron_right" size={16} />
           </Chevron>
         )}
       </ItemButton>
-      {open && !collapsed && (
-        <SubMenu>
-          {item.children!.map((c) => (
-            <SubLink key={c.href} href={c.href} current={isUnder(path, c.href) ? 1 : 0}>
-              {c.label}
-            </SubLink>
-          ))}
-        </SubMenu>
+      {!collapsed && (
+        <Collapse open={open} aria-hidden={!open}>
+          <SubMenu>
+            <SubItems open={open}>
+              {item.children!.map((c) => (
+                <SubLink key={c.href} href={c.href} current={isUnder(path, c.href) ? 1 : 0} tabIndex={open ? 0 : -1}>
+                  {c.label}
+                </SubLink>
+              ))}
+            </SubItems>
+          </SubMenu>
+        </Collapse>
       )}
     </>
   );
@@ -311,7 +343,7 @@ export default function Sidebar() {
             </Logo>
           )}
           <UtilityButton type="button" aria-label={collapsed ? '사이드바 펼치기' : '사이드바 접기'} onClick={() => setCollapsed((v) => !v)}>
-            <Icon name="left_panel_close" size={20} />
+            <Icon name={collapsed ? 'left_panel_open' : 'left_panel_close'} size={20} />
           </UtilityButton>
         </Header>
 
@@ -347,9 +379,16 @@ export default function Sidebar() {
         </Scroll>
 
         <Footer collapsed={collapsed}>
-          <Avatar>한</Avatar>
-          {!collapsed && (
+          {collapsed ? (
             <>
+              <UtilityButton type="button" aria-label="도움말">
+                <Icon name="help" size={20} />
+              </UtilityButton>
+              <Avatar>한</Avatar>
+            </>
+          ) : (
+            <>
+              <Avatar>한</Avatar>
               <Lang type="button">
                 <span>한글</span>
                 <span>
