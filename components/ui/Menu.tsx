@@ -43,7 +43,8 @@ export const MenuPanel = styled.div<{ width?: number; align?: 'start' | 'end' | 
   cursor: default;
 `;
 
-const ItemWrap = styled.button`
+// 호버는 바깥 버튼(ItemWrap)에서 안쪽 칸을 칠함 — 다른 스타일 컴포넌트를 선택자로 쓰지 않음
+const ItemWrap = styled.button<{ destructive: boolean }>`
   display: flex;
   width: 100%;
   padding: 1px 6px;
@@ -51,10 +52,14 @@ const ItemWrap = styled.button`
   background: transparent;
   text-align: left;
   cursor: pointer;
+  --mi-text: ${(p) => (p.destructive ? color('text-error-primary') : color('text-secondary'))};
+  --mi-icon: ${(p) => (p.destructive ? color('fg-error-primary') : color('fg-quaternary'))};
   &:focus-visible { outline: none; }
+  &:hover > span, &:focus-visible > span { background: ${color('bg-primary_hover')}; }
+  ${(p) => (p.destructive ? '' : `&:hover, &:focus-visible { --mi-text: ${color('text-secondary_hover')}; }`)}
 `;
 
-const ItemContent = styled.span<{ destructive: boolean }>`
+const ItemContent = styled.span`
   display: flex;
   align-items: center;
   gap: 8px;
@@ -62,12 +67,6 @@ const ItemContent = styled.span<{ destructive: boolean }>`
   padding: 8px 6px 8px 10px;
   border-radius: ${radius.sm}px;
   transition: background-color 0.1s linear;
-  --menu-label: ${(p) => (p.destructive ? color('text-error-primary') : color('text-secondary'))};
-  --menu-icon: ${(p) => (p.destructive ? color('fg-error-primary') : color('fg-quaternary'))};
-  ${ItemWrap}:hover &, ${ItemWrap}:focus-visible & {
-    background: ${color('bg-primary_hover')};
-    ${(p) => (p.destructive ? '' : `--menu-label: ${color('text-secondary_hover')};`)}
-  }
 `;
 
 const ItemText = styled.span`
@@ -76,16 +75,16 @@ const ItemText = styled.span`
   gap: 2px;
   flex: 1;
   min-width: 0;
-  b { ${text('text-sm', 'semibold')}; color: var(--menu-label); }
+  b { ${text('text-sm', 'semibold')}; color: var(--mi-text); }
   small { ${text('text-xs', 'regular')}; color: ${color('text-tertiary')}; }
 `;
 
 export function MenuItem({ icon, label, description, destructive = false, onClick }: { icon?: string; label: string; description?: string; destructive?: boolean; onClick: () => void }) {
   return (
-    <ItemWrap type="button" role="menuitem" onClick={(e) => { e.stopPropagation(); onClick(); }}>
-      <ItemContent destructive={destructive}>
+    <ItemWrap type="button" role="menuitem" destructive={destructive} onClick={(e) => { e.stopPropagation(); onClick(); }}>
+      <ItemContent>
         {icon && (
-          <span style={{ display: 'inline-flex', color: 'var(--menu-icon)' }}>
+          <span style={{ display: 'inline-flex', color: 'var(--mi-icon)' }}>
             <Icon name={icon} size={16} />
           </span>
         )}
