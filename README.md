@@ -1,36 +1,13 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FlareLane 콘솔 프로토타입
 
-## Getting Started
+콘솔 DS 개편 시안(Figma `mINbfbhobp3GOZKmHDWs9C` 「페이지별 개편 작업」)을 실제로 눌러볼 수 있게 만든 껍데기 프로토타입.
 
-First, run the development server:
+- Next.js (Pages Router) + Emotion — 프로덕션 콘솔과 같은 스택
+- 데이터 = 스테이징 화면 값을 옮긴 더미, 저장·발송 같은 실제 동작 없음
+- 색 · 간격 · 모서리 · 그림자 = Figma 변수 값 그대로 (`styles/tokens.ts`), 글자 = Figma 텍스트 스타일 (`styles/typography.ts`)
+- 아이콘 = Figma `ms` 세트(Material Symbols Rounded 300)에서 내려받은 SVG (`public/icons`)
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
