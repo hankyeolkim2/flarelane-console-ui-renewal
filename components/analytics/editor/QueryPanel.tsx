@@ -575,7 +575,7 @@ function ConversionWindow({ value, onChange }: { value: EditorState['conversionW
 export default function QueryPanel({ state, onChange }: { state: EditorState; onChange: (s: EditorState) => void }) {
   const set = (patch: Partial<EditorState>) => onChange({ ...state, ...patch });
   return (
-    <Panel>
+    <Panel style={{ viewTransitionName: 'query-panel' } as React.CSSProperties}>
       <div style={{ padding: '16px 16px 0' }}>
         <MinimalTabs<ReportType>
           items={[

@@ -336,7 +336,7 @@ export default function Sidebar({ defaultCollapsed = false }: { defaultCollapsed
   useEffect(() => setCollapsed(defaultCollapsed), [defaultCollapsed]);
 
   return (
-    <Outer collapsed={collapsed}>
+    <Outer collapsed={collapsed} style={{ viewTransitionName: 'sidebar' } as React.CSSProperties}>
       <Panel>
         <Header collapsed={collapsed}>
           {!collapsed && (
