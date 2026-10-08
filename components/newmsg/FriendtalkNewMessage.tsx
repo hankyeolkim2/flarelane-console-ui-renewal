@@ -41,12 +41,13 @@ const fresh = (kind: Kind, keep?: Pick<M, 'targeting' | 'isAd' | 'age'>): M => (
   more: { on: false, link: '' },
 });
 const LIMIT: Record<Kind, { text: number; buttons: number; btnName: number }> = { FI: { text: 400, buttons: 5, btnName: 14 }, FW: { text: 76, buttons: 2, btnName: 8 }, FL: { text: 30, buttons: 2, btnName: 8 }, FA: { text: 50, buttons: 2, btnName: 8 }, FC: { text: 180, buttons: 2, btnName: 8 } };
+// 설명은 스테이징에서 확인된 기본 텍스트형만 넣음(나머지 문구 미확인)
 const KINDS: [Kind, string, string][] = [
   ['FI', '기본 텍스트형', '이미지, 버튼 첨부가 가능한\n기본형 메시지입니다.'],
-  ['FW', '와이드 이미지형', '와이드 이미지를 강조한\n메시지입니다.'],
-  ['FL', '와이드 리스트형', '여러 항목을 리스트로\n보여주는 메시지입니다.'],
-  ['FA', '캐러셀 커머스형', '상품 가격 정보를 담은\n캐러셀 메시지입니다.'],
-  ['FC', '캐러셀 피드형', '이미지와 글을 여러 장\n넘겨 보는 메시지입니다.'],
+  ['FW', '와이드 이미지형', ''],
+  ['FL', '와이드 리스트형', ''],
+  ['FA', '캐러셀 커머스형', ''],
+  ['FC', '캐러셀 피드형', ''],
 ];
 
 const TypeCard = styled.button<{ $on: boolean }>`
@@ -92,7 +93,7 @@ function TypePicker({ value, onClose, onPick }: { value: Kind; onClose: () => vo
               <Icon name={ICON[k]} size={32} />
             </i>
             <b>{l}</b>
-            <span>{d}</span>
+            {d && <span>{d}</span>}
           </TypeCard>
         ))}
       </div>
