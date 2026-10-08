@@ -190,3 +190,35 @@ export function CountTabs<T extends string>({ items, value, onChange }: { items:
     </CountWrap>
   );
 }
+
+// Figma `Horizontal tabs` Underline sm — 선택 = text-brand-secondary + 아래 2px border-brand, 탭 아래 1px 선.
+const UnderWrap = styled.div`
+  display: inline-flex;
+  gap: 12px;
+  border-bottom: 1px solid ${color('border-secondary')};
+`;
+
+const UnderTab = styled.button<{ current: boolean }>`
+  height: 36px;
+  margin-bottom: -1px;
+  padding: 0 4px;
+  border: 0;
+  border-bottom: 2px solid ${(p) => (p.current ? color('fg-brand-primary_alt') : 'transparent')};
+  background: transparent;
+  ${text('text-sm', 'semibold')};
+  color: ${(p) => (p.current ? color('text-brand-secondary') : color('text-quaternary'))};
+  cursor: pointer;
+  &:hover { color: ${(p) => (p.current ? color('text-brand-secondary') : color('text-secondary'))}; }
+`;
+
+export function UnderlineTabs<T extends string>({ items, value, onChange }: { items: TabItem<T>[]; value: T; onChange: (v: T) => void }) {
+  return (
+    <UnderWrap role="tablist">
+      {items.map((it) => (
+        <UnderTab key={it.value} type="button" role="tab" aria-selected={it.value === value} current={it.value === value} onClick={() => onChange(it.value)}>
+          {it.label}
+        </UnderTab>
+      ))}
+    </UnderWrap>
+  );
+}
