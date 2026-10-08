@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react';
 import { initialBoards, initialReports, ME, type Board, type Report } from './analytics';
+import { initialWebhooks, type Webhook } from './webhooks';
 
 // 화면 사이에 공유하는 프로토타입 상태 (새로고침하면 처음 값으로 돌아감).
 type Toast = { id: number; text: string };
@@ -13,6 +14,9 @@ type Store = {
   renameReport: (id: string, name: string | null) => void;
   deleteReport: (id: string) => void;
   saveReport: (r: Report) => void; // 새로 만들기 · 고치기 공통
+  webhooks: Webhook[];
+  saveWebhook: (w: Webhook) => void;
+  deleteWebhook: (id: string) => void;
   createBoardNamed: (name: string) => Board;
   toasts: Toast[];
   toast: (text: string) => void;
@@ -25,6 +29,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [boards, setBoards] = useState(initialBoards);
   const [reports, setReports] = useState(initialReports);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [webhooks, setWebhooks] = useState(initialWebhooks);
+  const saveWebhook = useCallback((w: Webhook) => setWebhooks((l) => (l.some((x) => x.id === w.id) ? l.map((x) => (x.id === w.id ? w : x)) : [w, ...l])), []);
+  const deleteWebhook = useCallback((id: string) => setWebhooks((l) => l.filter((x) => x.id !== id)), []);
   const seq = useRef(0);
 
   const toast = useCallback((text: string) => {
@@ -79,8 +86,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ boards, reports, createBoard, renameBoard, deleteBoard, renameReport, deleteReport, saveReport, createBoardNamed, toasts, toast, dismissToast }),
-    [boards, reports, createBoard, renameBoard, deleteBoard, renameReport, deleteReport, saveReport, createBoardNamed, toasts, toast, dismissToast],
+    () => ({ boards, reports, createBoard, renameBoard, deleteBoard, renameReport, deleteReport, saveReport, createBoardNamed, webhooks, saveWebhook, deleteWebhook, toasts, toast, dismissToast }),
+    [boards, reports, createBoard, renameBoard, deleteBoard, renameReport, deleteReport, saveReport, createBoardNamed, webhooks, saveWebhook, deleteWebhook, toasts, toast, dismissToast],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
