@@ -203,8 +203,8 @@ const Chevron = styled.span<{ open: boolean }>`
 
 const SubLink = styled(Link)<{ current: number }>`
   ${(p) => itemBase(!!p.current)};
-  padding-left: 36px;
-  ${text('text-sm', 'semibold')};
+  padding-left: 46px; /* 상위 글자(38)보다 8 더 들여씀 */
+  ${text('text-sm', 'medium')};
 `;
 
 const Collapse = styled.div<{ open: boolean }>`
