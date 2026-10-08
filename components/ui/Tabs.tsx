@@ -93,3 +93,41 @@ export function MinimalTabs<T extends string>({ items, value, onChange, disabled
     </MinimalWrap>
   );
 }
+
+// Figma `Horizontal tabs` (button border, 안쪽 여백 4) — 바탕 bg-secondary_alt · r10, 탭 36 · r6, 선택 = bg-primary_alt + shadow-sm.
+const PaddedWrap = styled.div`
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  background: ${color('bg-secondary_alt')};
+  border: 1px solid ${color('border-secondary')};
+  border-radius: ${radius.lg}px;
+`;
+
+const PaddedTab = styled.button<{ current: boolean }>`
+  height: 36px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: ${radius.sm}px;
+  background: ${(p) => (p.current ? color('bg-primary_alt') : 'transparent')};
+  box-shadow: ${(p) => (p.current ? shadow.sm : 'none')};
+  ${text('text-sm', 'semibold')};
+  color: ${(p) => (p.current ? color('text-secondary') : color('text-quaternary'))};
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.1s linear;
+  &:hover { color: ${color('text-secondary')}; }
+  &:focus-visible { outline: none; box-shadow: ${shadow['focus-ring']}; }
+`;
+
+export function ButtonTabs<T extends string>({ items, value, onChange }: { items: TabItem<T>[]; value: T; onChange: (v: T) => void }) {
+  return (
+    <PaddedWrap role="tablist">
+      {items.map((it) => (
+        <PaddedTab key={it.value} type="button" role="tab" aria-selected={it.value === value} current={it.value === value} onClick={() => it.value !== value && onChange(it.value)}>
+          {it.label}
+        </PaddedTab>
+      ))}
+    </PaddedWrap>
+  );
+}

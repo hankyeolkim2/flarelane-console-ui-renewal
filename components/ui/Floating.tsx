@@ -6,7 +6,7 @@ import { color, radius, shadow } from '@/styles/tokens';
 // 화면 위에 띄우는 팝오버(fixed) — 스테이징 팝오버 공통: 기본 bottom-end, 바깥 클릭으로 닫힘.
 const Panel = styled.div`
   position: fixed;
-  z-index: 40;
+  z-index: 60;
   background: ${color('bg-primary')};
   border: 1px solid ${color('border-secondary')};
   border-radius: ${radius.xl}px;

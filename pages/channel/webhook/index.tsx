@@ -2,7 +2,7 @@ import { useRouter } from 'next/router';
 import Button from '@/components/ui/Button';
 import { ChannelShell } from '@/components/channel/ChannelShell';
 import DataTable, { Dot, Sub } from '@/components/channel/DataTable';
-import { failRate, webhookTone } from '@/lib/webhooks';
+import { abbr, failRate, webhookTone } from '@/lib/webhooks';
 import { useStore } from '@/lib/store';
 
 // Figma 「채널 — 웹훅 — 1440」(1245:3454) — 표를 감싸는 카드 없이 표가 바로 본문에(사용자). 행 전체 클릭 → 상세.
@@ -22,7 +22,7 @@ export default function WebhookList() {
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{w.name}</span>
               <Sub>{`${w.method} ${w.url}`}</Sub>
             </div>,
-            w.success30.toLocaleString('ko-KR'),
+            abbr(w.success30),
             failRate(w),
             <Dot key="d" tone={webhookTone(w)} />,
           ],

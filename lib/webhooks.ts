@@ -26,6 +26,12 @@ const pr4Logs: SendLog[] = [
   ['2026.09.17 16:17:14', true],
   ['2026.09.15 21:37:13', true],
   ['2026.09.15 21:36:27', true],
+  ['2026.09.15 21:30:02', true],
+  ['2026.09.15 20:12:45', false],
+  ['2026.09.14 18:40:11', true],
+  ['2026.09.14 18:39:58', true],
+  ['2026.09.14 11:05:30', true],
+  ['2026.09.12 09:21:14', true],
 ].map(([at, ok], i) => ({ id: `l${i}`, ok: ok as boolean, test: i >= 8, at: at as string, requestId: ['6ef3634e-11b8-428e-887a-55bc770b34a5', '0b9a1c2e-5d7f-4e21-9a3b-7c1d2e4f6a80', 'c4e2f1a0-8b3d-4c5e-9f7a-1b2c3d4e5f60'][i % 3], response: '{}' }));
 
 export const initialWebhooks: Webhook[] = [
@@ -49,10 +55,28 @@ export const initialWebhooks: Webhook[] = [
   { id: 'wh-success', name: 'Success', method: 'GET', url: 'https://17db-175-113-78-31.ngrok-free.app/success', headers: [], body: '', success30: 0, fail30: 0, logs: [] },
 ];
 
-// 상태 점: 실패 있음 = 빨강 · 성공만 = 초록 · 호출 없음 = 회색 (Figma 시안 규칙)
+// 상태등(스테이징): 성공·실패 모두 0 = 회색 · 실패율 ≥ 30% = 빨강 · 그 외 초록
 export const webhookTone = (w: Pick<Webhook, 'success30' | 'fail30'>) =>
-  w.success30 + w.fail30 === 0 ? 'gray' : w.fail30 > 0 && w.fail30 / (w.success30 + w.fail30) >= 0.5 ? 'error' : 'success';
+  w.success30 + w.fail30 === 0 ? 'gray' : w.fail30 / (w.success30 + w.fail30) >= 0.3 ? 'error' : 'success';
+// 1,000 이상은 K/M/B 축약
+export const abbr = (n: number) => {
+  for (const [v, u] of [[1e9, 'B'], [1e6, 'M'], [1e3, 'K']] as const) if (n >= v) return `${Number((n / v).toFixed(1))}${u}`;
+  return n.toLocaleString('ko-KR');
+};
 export const failRate = (w: Pick<Webhook, 'success30' | 'fail30'>) => {
   const t = w.success30 + w.fail30;
-  return `${w.fail30} (${(t ? (w.fail30 / t) * 100 : 0).toFixed(1)}%)`;
+  return `${abbr(w.fail30)} (${(t ? (w.fail30 / t) * 100 : 0).toFixed(1)}%)`;
+};
+
+// 발송 기록 상세 패널 글 — RESPONSE 첫 줄 「{statusCode} {statusText}」 + 본문(JSON이면 4칸), REQUEST 「{method} {url}」 + headers + body
+export const responseText = (l: SendLog) => (l.ok ? `200 OK\n${l.response}` : `500 Internal Server Error\n${JSON.stringify({ message: 'Internal Server Error' }, null, 4)}`);
+export const requestText = (w: Webhook) => {
+  const headers = w.headers.length ? JSON.stringify(Object.fromEntries(w.headers.map((h) => [h.key, h.value])), null, 4) : '';
+  let body = w.body;
+  try {
+    body = JSON.stringify(JSON.parse(w.body.replace(/\{\{[\s\S]*?\}\}/g, (m) => m)), null, 4);
+  } catch {
+    // 변수 때문에 JSON 이 아니면 그대로
+  }
+  return [`${w.method} ${w.url}`, headers, body].filter(Boolean).join('\n');
 };
