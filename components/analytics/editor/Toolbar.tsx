@@ -184,7 +184,7 @@ const clampDate = (s: string) => {
 };
 const validYmd = (s: string) => /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(parseYmd(s).getTime()) && ymd(parseYmd(s)) === s;
 
-function RangePicker({ range, onConfirm, onCancel }: { range: { from: string; to: string }; onConfirm: (r: { from: string; to: string }) => void; onCancel: () => void }) {
+export function RangePicker({ range, onConfirm, onCancel }: { range: { from: string; to: string }; onConfirm: (r: { from: string; to: string }) => void; onCancel: () => void }) {
   const [from, setFrom] = useState(range.from);
   const [to, setTo] = useState<string>(range.to);
   const [picking, setPicking] = useState(false); // 시작만 고른 상태
