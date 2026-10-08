@@ -2,6 +2,7 @@ import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import styled from '@emotion/styled';
 import Icon from '@/components/Icon';
 import { color, shadow } from '@/styles/tokens';
+import { gradientBorder, primaryShadow, secondaryShadow } from '@/styles/effects';
 import { text } from '@/styles/typography';
 
 // Figma `Buttons/Button` · `Buttons/Button destructive`.
@@ -19,7 +20,8 @@ const look = {
     background: ${color('bg-brand-solid')};
     color: ${color('text-white')};
     --btn-icon: ${color('fg-white')};
-    box-shadow: ${shadow['xs-skeuomorphic']}, inset 0 0 0 2px rgba(255, 255, 255, 0.12);
+    box-shadow: ${primaryShadow};
+    ${gradientBorder}
     &:hover:not(:disabled) { background: ${color('bg-brand-solid_hover')}; }
   `,
   secondary: `
@@ -27,7 +29,7 @@ const look = {
     color: ${color('text-secondary')};
     --btn-icon: ${color('fg-quaternary')};
     border: 1px solid ${color('border-primary')};
-    box-shadow: ${shadow['xs-skeuomorphic']};
+    box-shadow: ${secondaryShadow};
     &:hover:not(:disabled) { background: ${color('bg-primary_hover')}; color: ${color('text-secondary_hover')}; --btn-icon: ${color('fg-quaternary_hover')}; }
   `,
   tertiary: `

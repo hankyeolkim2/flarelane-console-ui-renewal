@@ -5,6 +5,7 @@ import Icon from '@/components/Icon';
 import { findNav } from '@/lib/nav';
 import { color, radius, shadow } from '@/styles/tokens';
 import { text } from '@/styles/typography';
+import { secondaryShadow } from '@/styles/effects';
 
 // 아직 만들지 않은 화면 — 메뉴 이름만 보여주는 자리.
 const Card = styled.section`
@@ -28,7 +29,7 @@ const Featured = styled.span`
   height: 48px;
   border-radius: ${radius.lg}px;
   border: 1px solid ${color('border-primary')};
-  box-shadow: ${shadow['xs-skeuomorphic']};
+  box-shadow: ${secondaryShadow};
   color: ${color('fg-secondary')};
 `;
 

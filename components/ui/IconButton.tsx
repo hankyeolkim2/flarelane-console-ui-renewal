@@ -2,6 +2,7 @@ import type { ButtonHTMLAttributes } from 'react';
 import styled from '@emotion/styled';
 import Icon from '@/components/Icon';
 import { color, radius, shadow } from '@/styles/tokens';
+import { secondaryShadow } from '@/styles/effects';
 
 // Figma `Buttons/Button utility` — xs 28(아이콘 16) · sm 32(아이콘 20), 모서리 6.
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -22,7 +23,7 @@ const Base = styled.button<{ size: 'xs' | 'sm'; hierarchy: 'tertiary' | 'seconda
   border: ${(p) => (p.hierarchy === 'secondary' ? `1px solid ${color('border-primary')}` : '0')};
   border-radius: ${radius.sm}px;
   background: ${(p) => (p.hierarchy === 'secondary' ? color('bg-primary') : 'transparent')};
-  box-shadow: ${(p) => (p.hierarchy === 'secondary' ? shadow['xs-skeuomorphic'] : 'none')};
+  box-shadow: ${(p) => (p.hierarchy === 'secondary' ? secondaryShadow : 'none')};
   color: ${color('fg-quaternary')};
   cursor: pointer;
   transition: background-color 0.1s linear, color 0.1s linear;

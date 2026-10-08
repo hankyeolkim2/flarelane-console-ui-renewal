@@ -15,6 +15,7 @@ import { boardName, formatEdited, LIMITS, ME, type Board } from '@/lib/analytics
 import { useStore } from '@/lib/store';
 import { color, radius, shadow } from '@/styles/tokens';
 import { text } from '@/styles/typography';
+import { secondaryShadow } from '@/styles/effects';
 
 // Figma 「분석 보드 — 목록 — 1440」(1265:2134) + 스테이징 목록 동작(docs/staging-behavior-analytics.md).
 type Sort = 'updatedAt' | 'createdAt';
@@ -103,7 +104,7 @@ const EmptyBox = styled.div`
   border: 1px solid ${color('border-secondary')};
   border-radius: ${radius.xl}px;
   box-shadow: ${shadow.xs};
-  > span { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: ${radius.lg}px; border: 1px solid ${color('border-primary')}; box-shadow: ${shadow['xs-skeuomorphic']}; color: ${color('fg-secondary')}; }
+  > span { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: ${radius.lg}px; border: 1px solid ${color('border-primary')}; box-shadow: ${secondaryShadow}; color: ${color('fg-secondary')}; }
   > p { margin: 0; ${text('text-sm', 'regular')}; color: ${color('text-tertiary')}; }
 `;
 

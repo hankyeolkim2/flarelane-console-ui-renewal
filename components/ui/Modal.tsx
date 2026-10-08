@@ -2,6 +2,7 @@ import { useEffect, type ReactNode } from 'react';
 import styled from '@emotion/styled';
 import Button from './Button';
 import { color, radius, shadow } from '@/styles/tokens';
+import { gradientBorder, primaryShadow } from '@/styles/effects';
 import { text } from '@/styles/typography';
 
 // Figma 확인 모달(400) — Header 제목 · Body 설명 · Footer 오른쪽 정렬 버튼 2개.
@@ -71,7 +72,8 @@ const DestructivePrimary = styled.button<{ destructive: boolean }>`
   ${text('text-sm', 'semibold')};
   color: ${color('text-white')};
   background: ${(p) => (p.destructive ? color('bg-error-solid') : color('bg-brand-solid'))};
-  box-shadow: ${shadow['xs-skeuomorphic']}, inset 0 0 0 2px rgba(255, 255, 255, 0.12);
+  box-shadow: ${primaryShadow};
+  ${gradientBorder}
   cursor: pointer;
   transition: background-color 0.1s linear;
   &:hover { background: ${(p) => (p.destructive ? color('bg-error-solid_hover') : color('bg-brand-solid_hover'))}; }
