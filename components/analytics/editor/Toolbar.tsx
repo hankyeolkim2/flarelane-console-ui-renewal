@@ -24,14 +24,17 @@ const Bar = styled.div`
   > i { flex: 1; }
 `;
 
+// 높이 36 (sm) — 테두리를 포함한 바깥 높이를 기간 버튼(36)과 같게
 const Group = styled.div`
   display: inline-flex;
+  box-sizing: border-box;
+  height: 36px;
   border: 1px solid ${color('border-primary')};
   border-radius: ${radius.md}px;
   overflow: hidden;
   box-shadow: ${shadow.xs};
   > button {
-    height: 36px;
+    height: 34px;
     padding: 0 14px;
     border: 0;
     background: ${color('bg-primary')};
