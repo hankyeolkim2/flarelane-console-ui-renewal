@@ -2,6 +2,7 @@ import { useState } from 'react';
 import styled from '@emotion/styled';
 import Button from '@/components/ui/Button';
 import { fmtK, niceMax } from './MiniCharts';
+import { PointTip } from '@/components/ui/Tooltip';
 import { color, radius, shadow } from '@/styles/tokens';
 import { text } from '@/styles/typography';
 
@@ -80,21 +81,23 @@ const GridArea = styled.div`
 `;
 
 
-const Tip = styled.div`
-  position: absolute;
-  z-index: 5;
-  padding: 8px 12px;
-  border-radius: ${radius.md}px;
-  background: ${color('bg-primary-solid')};
-  box-shadow: ${shadow.lg};
-  pointer-events: none;
-  white-space: nowrap;
-  ${text('text-xs', 'semibold')};
+const TipHead = styled.b`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  > i { display: block; width: 12px; height: 2px; border-radius: 1px; }
+`;
+const TipDate = styled.small`
+  display: block;
+  margin-top: 2px;
+  ${text('text-xs', 'regular')};
+  color: ${color('text-tertiary_on-brand')};
+`;
+const TipValue = styled.strong`
+  display: block;
+  margin-top: 4px;
+  ${text('text-sm', 'semibold')};
   color: ${color('text-white')};
-  > b { display: flex; align-items: center; gap: 6px; }
-  > b > i { display: block; width: 12px; height: 2px; border-radius: 1px; }
-  > small { display: block; margin-top: 2px; ${text('text-xs', 'regular')}; color: ${color('text-tertiary_on-brand')}; }
-  > strong { display: block; margin-top: 4px; ${text('text-sm', 'semibold')}; color: ${color('text-white')}; }
 `;
 
 const XAxis = styled.div`
@@ -107,7 +110,7 @@ const XAxis = styled.div`
 `;
 
 export function InsightChart({ series, dates, unit, granularity }: { series: { name: string; values: number[] }[]; dates: Date[]; unit: '명' | '회'; granularity: Gran }) {
-  const [hover, setHover] = useState<{ i: number; s: number; w: number; h: number } | null>(null);
+  const [hover, setHover] = useState<{ i: number; s: number; w: number; h: number; left: number; top: number } | null>(null);
   const max = niceMax(Math.max(0, ...series.flatMap((s) => s.values)));
   const ticks = [4, 3, 2, 1, 0].map((k) => (max / 4) * k);
   const n = dates.length;
@@ -140,7 +143,7 @@ export function InsightChart({ series, dates, unit, granularity }: { series: { n
             series.forEach((sr, k) => {
               if (Math.abs(y(sr.values[i]) - py) < Math.abs(y(series[s].values[i]) - py)) s = k;
             });
-            setHover({ i, s, w: r.width, h: r.height });
+            setHover({ i, s, w: r.width, h: r.height, left: r.left, top: r.top });
           }}
           onMouseLeave={() => setHover(null)}
         >
@@ -158,19 +161,17 @@ export function InsightChart({ series, dates, unit, granularity }: { series: { n
             const v = sr.values[hover.i];
             const px = (x(hover.i) / 100) * hover.w;
             const py = 8 + (y(v) / 100) * (hover.h - 16);
-            const flip = px > hover.w - 200; // 오른쪽이 모자라면 왼쪽으로
-            const top = Math.max(0, Math.min(py - 36, hover.h - 76)); // 그래프 영역 안에서
             return (
               <>
                 <span style={{ position: 'absolute', left: px - 4, top: py - 4, width: 8, height: 8, borderRadius: 4, background: 'var(--bg-primary)', border: `2px solid ${SERIES[hover.s % SERIES.length]}`, pointerEvents: 'none' }} />
-                <Tip style={{ top, ...(flip ? { right: hover.w - px + 12 } : { left: px + 12 }) }}>
-                  <b>
+                <PointTip x={hover.left + px} y={hover.top + py}>
+                  <TipHead>
                     <i style={{ background: SERIES[hover.s % SERIES.length] }} />
                     {`${hover.s + 1}. ${sr.name}`}
-                  </b>
-                  <small>{tipLabel(dates[hover.i], granularity)}</small>
-                  <strong>{`${v.toLocaleString('ko-KR')}${unit}`}</strong>
-                </Tip>
+                  </TipHead>
+                  <TipDate>{tipLabel(dates[hover.i], granularity)}</TipDate>
+                  <TipValue>{`${v.toLocaleString('ko-KR')}${unit}`}</TipValue>
+                </PointTip>
               </>
             );
           })()}

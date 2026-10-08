@@ -4,6 +4,7 @@ import Icon from '@/components/Icon';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import Floating from '@/components/ui/Floating';
+import { HoverTip } from '@/components/ui/Tooltip';
 import IconButton from '@/components/ui/IconButton';
 import Select from '@/components/ui/Select';
 import { MinimalTabs } from '@/components/ui/Tabs';
@@ -52,22 +53,14 @@ const Head = styled.div`
   > i { flex: 1; }
 `;
 
-const HelpWrap = styled.span`
-  position: relative;
-  display: inline-flex;
-  color: ${color('fg-quaternary')};
-  cursor: help;
-  > [data-tip] { display: none; position: absolute; left: 50%; top: calc(100% + 6px); transform: translateX(-50%); z-index: 20; width: max-content; max-width: 240px; padding: 8px 12px; border-radius: ${radius.md}px; background: ${color('bg-primary-solid')}; box-shadow: ${shadow.lg}; ${text('text-xs', 'regular')}; color: ${color('text-white')}; white-space: normal; }
-  > [data-tip] a { color: ${color('text-white')}; font-weight: 600; }
-  &:hover > [data-tip] { display: block; }
-`;
-
+// 도움말 (?) — 툴팁은 화면 맨 위층에 띄움(조건 패널 스크롤 영역에 잘리지 않게), 최대 폭 240, 안에 가이드 링크
 function Help({ children }: { children: ReactNode }) {
   return (
-    <HelpWrap>
-      <Icon name="help" size={16} />
-      <span data-tip>{children}</span>
-    </HelpWrap>
+    <HoverTip content={children}>
+      <span style={{ display: 'inline-flex', color: 'var(--fg-quaternary)', cursor: 'help' }}>
+        <Icon name="help" size={16} />
+      </span>
+    </HoverTip>
   );
 }
 

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import styled from '@emotion/styled';
-import { color, radius, shadow } from '@/styles/tokens';
+import { color } from '@/styles/tokens';
+import { PointTip } from '@/components/ui/Tooltip';
 import { text } from '@/styles/typography';
 
 // 보드 카드 안 미리보기 — Figma 「widget — 인사이트」(Line and bar chart) · 「widget — 퍼널」(step 막대).
@@ -67,23 +68,14 @@ const XAxis = styled.div`
   color: ${color('text-quaternary')};
 `;
 
-const Tip = styled.div`
-  position: absolute;
-  z-index: 5;
-  transform: translate(-50%, calc(-100% - 10px));
-  padding: 8px 12px;
-  border-radius: ${radius.md}px;
-  background: ${color('bg-primary-solid')};
-  box-shadow: ${shadow.lg};
-  pointer-events: none;
-  white-space: nowrap;
-  ${text('text-xs', 'semibold')};
-  color: ${color('text-white')};
-  > small { display: block; ${text('text-xs', 'regular')}; color: ${color('text-tertiary_on-brand')}; }
+const TipSub = styled.small`
+  display: block;
+  ${text('text-xs', 'regular')};
+  color: ${color('text-tertiary_on-brand')};
 `;
 
 export function InsightMiniChart({ values, label }: { values: number[]; label: string }) {
-  const [hover, setHover] = useState<number | null>(null);
+  const [hover, setHover] = useState<{ i: number; x: number; y: number } | null>(null);
   const max = niceMax(Math.max(...values));
   const Y = [4, 3, 2, 1, 0].map((k) => fmtK((max / 4) * k));
   const n = values.length;
@@ -100,7 +92,8 @@ export function InsightMiniChart({ values, label }: { values: number[]; label: s
         <Grid
           onMouseMove={(e) => {
             const r = e.currentTarget.getBoundingClientRect();
-            setHover(Math.max(0, Math.min(n - 1, Math.round(((e.clientX - r.left) / r.width) * (n - 1)))));
+            const i = Math.max(0, Math.min(n - 1, Math.round(((e.clientX - r.left) / r.width) * (n - 1))));
+            setHover({ i, x: r.left + (pts[i][0] / 100) * r.width, y: r.top + (pts[i][1] / 100) * r.height });
           }}
           onMouseLeave={() => setHover(null)}
         >
@@ -116,13 +109,13 @@ export function InsightMiniChart({ values, label }: { values: number[]; label: s
             </defs>
             <path d={`${path} L100,100 L0,100 Z`} fill="url(#insightFill)" />
             <path d={path} fill="none" stroke="var(--fg-brand-primary)" strokeWidth={2} vectorEffect="non-scaling-stroke" />
-            {hover != null && <line x1={pts[hover][0]} x2={pts[hover][0]} y1={0} y2={100} stroke="var(--border-primary)" strokeWidth={1} vectorEffect="non-scaling-stroke" />}
+            {hover && <line x1={pts[hover.i][0]} x2={pts[hover.i][0]} y1={0} y2={100} stroke="var(--border-primary)" strokeWidth={1} vectorEffect="non-scaling-stroke" />}
           </svg>
-          {hover != null && (
-            <Tip style={{ left: `${pts[hover][0]}%`, top: `${pts[hover][1]}%` }}>
-              {values[hover].toLocaleString()}명
-              <small>{md(last30[hover])} · {label}</small>
-            </Tip>
+          {hover && (
+            <PointTip x={hover.x} y={hover.y}>
+              {values[hover.i].toLocaleString('ko-KR')}명
+              <TipSub>{md(last30[hover.i])} · {label}</TipSub>
+            </PointTip>
           )}
         </Grid>
         <XAxis>
@@ -179,7 +172,7 @@ const pct = (v: number) => (v === 100 ? '100%' : `${v.toFixed(1)}%`);
 
 // 막대 = 전환(진한 부분) · 이탈(나머지, 2단계부터) — 마우스를 올리면 각각 전환/이탈 말풍선 (스테이징 동작)
 export function FunnelMiniChart({ steps, counts }: { steps: string[]; counts: number[] }) {
-  const [hover, setHover] = useState<{ i: number; kind: 'conversion' | 'drop' } | null>(null);
+  const [hover, setHover] = useState<{ i: number; kind: 'conversion' | 'drop'; x: number; y: number } | null>(null);
   const first = counts[0] || 0;
   return (
     <Steps>
@@ -198,15 +191,15 @@ export function FunnelMiniChart({ steps, counts }: { steps: string[]; counts: nu
               <Fill
                 dim={on && hover?.kind === 'drop'}
                 style={{ width: `${conv}%` }}
-                onMouseEnter={() => setHover({ i, kind: 'conversion' })}
+                onMouseMove={(e) => setHover({ i, kind: 'conversion', x: e.clientX, y: e.clientY })}
                 onMouseLeave={() => setHover(null)}
               />
-              {i > 0 && <Drop $on={on && hover?.kind === 'drop'} onMouseEnter={() => setHover({ i, kind: 'drop' })} onMouseLeave={() => setHover(null)} />}
-              {on && (
-                <Tip style={{ left: hover!.kind === 'conversion' ? `${conv / 2}%` : `${(conv + 100) / 2}%`, top: 0 }}>
-                  {hover!.kind === 'conversion' ? `${pct(stepConv)} 전환` : `${pct(dropRate)} 이탈`}
-                  <small>{`${i + 1}. ${s} · ${hover!.kind === 'conversion' ? counts[i] : dropCount}명`}</small>
-                </Tip>
+              {i > 0 && <Drop $on={on && hover?.kind === 'drop'} onMouseMove={(e) => setHover({ i, kind: 'drop', x: e.clientX, y: e.clientY })} onMouseLeave={() => setHover(null)} />}
+              {on && hover && (
+                <PointTip x={hover.x} y={hover.y}>
+                  {hover.kind === 'conversion' ? `${pct(stepConv)} 전환` : `${pct(dropRate)} 이탈`}
+                  <TipSub>{`${i + 1}. ${s} · ${(hover.kind === 'conversion' ? counts[i] : dropCount).toLocaleString('ko-KR')}명`}</TipSub>
+                </PointTip>
               )}
             </Track>
             <b>{pct(conv)}</b>
