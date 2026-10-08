@@ -575,7 +575,7 @@ export function ConversionSection({ value, onChange, sendOnly, readOnly }: { val
                 <Label>이벤트</Label>
                 <Row>
                   <div style={{ width: 280 }}>
-                    <Select<string> disabled={readOnly} value={it.event || null} placeholder="이벤트 선택" options={events.map((e) => ({ value: e.name, label: e.name }))} onChange={(event) => setIt({ event, filters: [] })} />
+                    <Select<string> disabled={readOnly} value={it.event || null} placeholder="이벤트 선택" options={[...events.map((e) => e.name), ...(it.event && !events.some((e) => e.name === it.event) ? [it.event] : [])].map((n) => ({ value: n, label: n }))} onChange={(event) => setIt({ event, filters: [] })} />
                   </div>
                   {!readOnly && (
                     <Button iconLeading="add" disabled={it.filters.length >= 3} onClick={() => setIt({ filters: [...it.filters, ['', 'EQ', '']] })}>
