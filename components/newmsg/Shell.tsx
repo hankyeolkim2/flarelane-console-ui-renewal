@@ -13,7 +13,7 @@ import { useStore } from '@/lib/store';
 import { useLeaveGuard } from '@/lib/useLeaveGuard';
 import { color, radius } from '@/styles/tokens';
 import { text } from '@/styles/typography';
-import { ConversionSection, convError, drafts, DraftsModal, initialConv, initialSend, initialTarget, Label, now, recurringRows, Row, Section, SendConfirm, SendSection, sendSummary, TargetSection, targetEmpty, targetSummary, useEstimate, Radios, type ConfirmBlock, type Conv, type SendState, type TargetState } from './parts';
+import { ConversionSection, convError, drafts, DraftsModal, editTitle, sendFromEdit, targetFrom, type EditMode, initialConv, initialSend, initialTarget, Label, now, recurringRows, Row, Section, SendConfirm, SendSection, sendSummary, TargetSection, targetEmpty, targetSummary, useEstimate, Radios, type ConfirmBlock, type Conv, type SendState, type TargetState } from './parts';
 import { Cols, DraftBtn, Foot, Head, invisibleAlert } from './PushNewMessage';
 
 // 알림톡 · 브랜드메시지 · 문자 · 이메일 새 메시지 공용 틀 — 푸시와 같은 5섹션(docs 3 ~ 6장 「푸시 대비 차이」).
@@ -26,7 +26,8 @@ export type ShellProps<M> = {
   ch: Ch;
   recurring: boolean;
   initial: M;
-  copy?: { campaign?: string; msg: M };
+  copy?: { campaign?: string; msg: M; target?: Target; conversions?: Conversion[]; ignoreCapping?: boolean };
+  edit?: EditMode;
   msgActions?: (m: M, set: (p: Partial<M>) => void) => ReactNode;
   renderMsg: (m: M, set: (p: Partial<M>) => void) => ReactNode;
   preview?: (m: M, openTest: () => void) => ReactNode;
@@ -51,10 +52,12 @@ export default function Shell<M>(p: ShellProps<M>) {
   const { toast } = useStore();
   const allow = useLeaveGuard();
   const [campaign, setCampaign] = useState(p.copy?.campaign ?? '');
-  const [target, setTarget] = useState<TargetState>(initialTarget);
+  const [target, setTarget] = useState<TargetState>(() => (p.copy?.target ? targetFrom(p.copy.target) : initialTarget()));
   const [msg, setMsg] = useState<M>(p.copy?.msg ?? p.initial);
-  const [conv, setConv] = useState<Conv>(initialConv('SEND'));
-  const [send, setSend] = useState<SendState>(() => initialSend(p.recurring));
+  const [conv, setConv] = useState<Conv>(() =>
+    p.copy?.conversions?.length ? { on: true, items: p.copy.conversions.map((c) => ({ event: c.eventType, filters: [], basis: p.ch === 'email' ? c.basis ?? 'CLICK' : 'SEND', n: c.hours % 24 ? c.hours : c.hours / 24, unit: c.hours % 24 ? 'HOUR' : 'DAY' })) } : initialConv('SEND'),
+  );
+  const [send, setSend] = useState<SendState>(() => ({ ...sendFromEdit(p.edit, initialSend(p.recurring)), ignoreCapping: !!p.copy?.ignoreCapping }));
   const [modal, setModal] = useState<'drafts' | 'test' | 'confirm' | null>(null);
   const [draftId, setDraftId] = useState<string>();
   const count = useEstimate(target);
@@ -62,7 +65,7 @@ export default function Shell<M>(p: ShellProps<M>) {
   const kind = p.ch === 'email' ? 'email' : 'kakao';
   const sendOnly = p.ch !== 'email';
   const label = send.mode === 'now' ? '발송' : '저장';
-  const showDrafts = !p.recurring || p.draftsInRecurring;
+  const showDrafts = !p.edit && (!p.recurring || p.draftsInRecurring);
   const disabled = p.disabled?.(msg) ?? false;
 
   const saveDraft = () => {
@@ -85,6 +88,7 @@ export default function Shell<M>(p: ShellProps<M>) {
     if (ce) return window.alert(ce);
     if (!p.check(msg)) return;
     if ((p.invisible?.(msg) ?? []).some(invisibleAlert)) return;
+    if (p.edit) return confirmed();
     setModal('confirm');
   };
 
@@ -92,7 +96,7 @@ export default function Shell<M>(p: ShellProps<M>) {
     allow();
     const name = (id: string) => segments.find((s) => s.id === id)?.name ?? id;
     const base: Base = {
-      id: crypto.randomUUID(),
+      id: p.edit?.id ?? crypto.randomUUID(),
       source: 'console',
       campaignName: campaign || undefined,
       createdAt: now(),
@@ -107,6 +111,21 @@ export default function Shell<M>(p: ShellProps<M>) {
       canExport: true,
     };
     const m = p.build(msg, base, send.mode);
+    if (p.edit) {
+      if (p.edit.kind === 'scheduled') {
+        const it = (scheduled[p.ch] as { id: string; sendAfter: string; m: unknown }[]).find((x) => x.id === p.edit!.id);
+        const at = `${send.date.replace(/-/g, '.')} ${String(send.hour).padStart(2, '0')}:${String(send.minute).padStart(2, '0')}:00`;
+        if (it) Object.assign(it, { m: { ...m, createdAt: at }, sendAfter: at });
+        toast('성공적으로 반영되었습니다.');
+        router.push(p.ch === 'email' ? '/email/scheduled-messages' : `/${p.ch}/scheduled-messages/${p.edit.id}`);
+      } else {
+        const r = recurringMessages.find((x) => x.id === p.edit!.id);
+        if (r) Object.assign(r, { m: { ...m, id: r.m.id, source: 'system' }, config: send.recurring });
+        toast('성공적으로 반영되었습니다.');
+        router.push(`/recurring-messages/${p.ch}/${p.edit.id}`);
+      }
+      return;
+    }
     if (draftId) drafts.splice(drafts.findIndex((d) => d.id === draftId), 1);
     if (send.mode === 'now') {
       SENT[p.ch].unshift(m as never);
@@ -171,13 +190,19 @@ export default function Shell<M>(p: ShellProps<M>) {
         <SendSection value={send} ttl={false} capping="1일 최대 3개, 1주 최대 10개" onChange={setSend} />
       </Section>
       <Foot>
-        {!p.recurring && (
-          <Button size="md" hierarchy={p.draftTertiary ? 'tertiary' : 'secondary'} onClick={saveDraft}>
-            임시 저장
+        {p.edit ? (
+          <Button size="md" onClick={() => router.push(p.edit!.kind === 'scheduled' ? `/${p.ch}/scheduled-messages` : '/recurring-messages')}>
+            취소
           </Button>
+        ) : (
+          !p.recurring && (
+            <Button size="md" hierarchy={p.draftTertiary ? 'tertiary' : 'secondary'} onClick={saveDraft}>
+              임시 저장
+            </Button>
+          )
         )}
         <Button hierarchy="primary" size="md" disabled={disabled} onClick={submit}>
-          {count === null ? <Icon name="progress_activity" size={18} /> : label}
+          {count === null ? <Icon name="progress_activity" size={18} /> : p.edit ? '수정' : label}
         </Button>
       </Foot>
     </div>
@@ -186,7 +211,7 @@ export default function Shell<M>(p: ShellProps<M>) {
   return (
     <>
       <Head>
-        <h1>새 메시지</h1>
+        <h1>{editTitle(p.edit)}</h1>
         {showDrafts && (
           <DraftBtn type="button" onClick={() => setModal('drafts')}>
             임시 저장 <b>{drafts.filter((d) => d.channel === p.ch).length}</b>

@@ -12,6 +12,7 @@ import { emailPresets, emailSenders, emailTemplates } from '@/lib/templates';
 import { color, radius, shadow } from '@/styles/tokens';
 import { text } from '@/styles/typography';
 import { Label, Row, VarField } from './parts';
+import type { EditMode } from './parts';
 import Shell, { kakaoZero } from './Shell';
 
 // 이메일 새 메시지 — docs 6장. 미리보기 열 없음, 본문은 템플릿 선택 → 편집(전체 화면 에디터)으로 만듦.
@@ -249,15 +250,16 @@ function Fields({ m, set }: { m: M; set: (p: Partial<M>) => void }) {
   );
 }
 
-export default function EmailNewMessage({ recurring, copy }: { recurring: boolean; copy?: EmailMessage }) {
+export default function EmailNewMessage({ recurring, copy, edit }: { recurring: boolean; copy?: EmailMessage; edit?: EditMode }) {
   return (
     <Shell<M>
       ch="email"
       recurring={recurring}
+      edit={edit}
       draftTertiary
       draftsInRecurring
       initial={initial}
-      copy={copy && { campaign: copy.campaignName, msg: { ...initial, html: copy.body, sender: copy.senderEmail, subject: copy.title } }}
+      copy={copy && { campaign: copy.campaignName, target: copy.target, conversions: copy.conversions, ignoreCapping: copy.ignoreCapping, msg: { ...initial, html: copy.body, sender: copy.senderEmail, subject: copy.title } }}
       renderMsg={(m, set) => <Fields m={m} set={set} />}
       convLocked={(m) => !!m.templateId}
       check={(m) => {

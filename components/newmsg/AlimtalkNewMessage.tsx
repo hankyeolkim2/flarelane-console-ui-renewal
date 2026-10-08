@@ -11,6 +11,7 @@ import { alimtalkTemplates, varsOf, type AlimtalkTemplate } from '@/lib/template
 import { color, radius } from '@/styles/tokens';
 import { text } from '@/styles/typography';
 import { Label, VarField } from './parts';
+import type { EditMode } from './parts';
 import Shell, { KakaoTestSend, kakaoZero, PreviewCard } from './Shell';
 
 // 알림톡 새 메시지 — docs 3장. 검수 완료 템플릿을 골라야 발송 가능, 템플릿의 #{변수}마다 값 입력.
@@ -184,14 +185,15 @@ function Fields({ m, set }: { m: M; set: (p: Partial<M>) => void }) {
   );
 }
 
-export default function AlimtalkNewMessage({ recurring, copy }: { recurring: boolean; copy?: AlimtalkMessage }) {
+export default function AlimtalkNewMessage({ recurring, copy, edit }: { recurring: boolean; copy?: AlimtalkMessage; edit?: EditMode }) {
   const ct = copy && alimtalkTemplates.find((t) => t.templateCode === copy.templateCode);
   return (
     <Shell<M>
       ch="alimtalk"
       recurring={recurring}
+      edit={edit}
       initial={initial}
-      copy={copy && { campaign: copy.campaignName, msg: { t: ct ?? null, vars: ct ? Object.fromEntries(varsOf(ct).map((k) => [k, copy.interpolations[k] ?? ''])) : {}, detail: false, picker: false } }}
+      copy={copy && { campaign: copy.campaignName, target: copy.target, conversions: copy.conversions, ignoreCapping: copy.ignoreCapping, msg: { t: ct ?? null, vars: ct ? Object.fromEntries(varsOf(ct).map((k) => [k, copy.interpolations[k] ?? ''])) : {}, detail: false, picker: false } }}
       msgActions={(_, set) => <Button onClick={() => set({ picker: true })}>템플릿 선택</Button>}
       renderMsg={(m, set) => <Fields m={m} set={set} />}
       preview={(m, test) => (

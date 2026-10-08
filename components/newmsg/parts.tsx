@@ -16,6 +16,7 @@ import { Help } from '@/components/channel/ChannelShell';
 import DataTable from '@/components/channel/DataTable';
 import PersonalizeModal from '@/components/channel/PersonalizeModal';
 import { segments } from '@/lib/audience';
+import type { Target } from '@/lib/sent';
 import { events } from '@/lib/catalog';
 import { fmtDate, fmtTime, nextDates, periodText, type RecurringConfig } from '@/lib/recurring';
 import { color, radius, shadow } from '@/styles/tokens';
@@ -964,3 +965,28 @@ export function DraftsModal({ channel, current, onClose, onLoad }: { channel: st
 
 export const now = () => '2026.10.08 23:00:00';
 export { ConfirmModal };
+
+// 보낸 · 예약 메시지의 대상 → 폼 대상 (복제 · 수정 진입 시)
+export function targetFrom(t: Target, platforms?: string[]): TargetState {
+  const base = initialTarget();
+  const id = (name: string) => segments.find((s) => s.name === name)?.id;
+  if (t.kind === 'segment') {
+    const map = (g: { name: string }[][]) => g.map((x) => x.map((s) => id(s.name)).filter(Boolean) as string[]).filter((x) => x.length);
+    const include = map(t.include);
+    const exclude = map(t.exclude ?? []);
+    return { ...base, include: include.length ? include : [[]], exclude: exclude.length ? exclude : [[]], showExclude: exclude.length > 0 };
+  }
+  if (t.kind === 'csv') return { ...base, tab: 'csv', file: { name: t.file, rows: 3 } };
+  const tab: TargetTab = t.label === '유저 ID' ? 'userId' : t.label === '기기' ? 'device' : t.label === '이메일' ? 'email' : 'phone';
+  return { ...base, tab, ids: t.ids, platforms: platforms ?? base.platforms };
+}
+
+// 예약 · 반복 수정 모드 (docs scheduled-recurring 3 · 6.2장)
+export type EditMode = { kind: 'scheduled' | 'recurring'; id: string; sendAfter?: string; config?: RecurringConfig };
+export function sendFromEdit(e: EditMode | undefined, base: SendState): SendState {
+  if (!e) return base;
+  if (e.kind === 'recurring' && e.config) return { ...base, mode: 'recurring', recurring: e.config };
+  const [d, t] = (e.sendAfter ?? '2026.10.09 00:00:00').split(' ');
+  return { ...base, mode: 'at', date: d.replace(/\./g, '-'), hour: Number(t.slice(0, 2)), minute: Number(t.slice(3, 5)) };
+}
+export const editTitle = (e?: EditMode) => (e ? (e.kind === 'scheduled' ? '예약된 메시지 수정' : '반복 발송 메시지 수정') : '새 메시지');

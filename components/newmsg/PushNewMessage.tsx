@@ -13,7 +13,7 @@ import { useStore } from '@/lib/store';
 import { useLeaveGuard } from '@/lib/useLeaveGuard';
 import { color } from '@/styles/tokens';
 import { text } from '@/styles/typography';
-import { ConversionSection, convError, drafts, DraftsModal, initialConv, initialSend, initialTarget, now, PLATFORM_NAME, recurringRows, Section, SendConfirm, SendSection, sendSummary, TargetSection, targetEmpty, targetSummary, useEstimate, type ConfirmBlock, type Conv, type SendState, type TargetState } from './parts';
+import { ConfirmModal, ConversionSection, convError, drafts, editTitle, sendFromEdit, targetFrom, type EditMode, DraftsModal, initialConv, initialSend, initialTarget, now, PLATFORM_NAME, recurringRows, Section, SendConfirm, SendSection, sendSummary, TargetSection, targetEmpty, targetSummary, useEstimate, type ConfirmBlock, type Conv, type SendState, type TargetState } from './parts';
 import { AiModal, fromMessage, initialPushMsg, PushFields, PushPreviewPanel, RecentModal, TemplateModal, TestSend, type PushMsg } from './push';
 
 // 푸시 새 메시지 — Figma 「새 메시지 — C+A 규칙」(1081:18985) + docs/staging-behavior-new-message-templates.md 2장.
@@ -64,18 +64,25 @@ export function invisibleAlert(s: string) {
 type Form = { campaign: string; target: TargetState; msg: PushMsg; conv: Conv; send: SendState; template: PushTemplate | null };
 const initialForm = (recurring: boolean): Form => ({ campaign: '', target: initialTarget(), msg: initialPushMsg(), conv: initialConv('CLICK'), send: initialSend(recurring), template: null });
 
-export default function PushNewMessage({ recurring = false, copy }: { recurring?: boolean; copy?: PushMessage }) {
+export default function PushNewMessage({ recurring = false, copy, edit }: { recurring?: boolean; copy?: PushMessage; edit?: EditMode }) {
   const router = useRouter();
   const { toast } = useStore();
   const allow = useLeaveGuard();
   const [f, setF] = useState<Form>(() => {
-    const base = initialForm(recurring);
+    const base = { ...initialForm(recurring), send: sendFromEdit(edit, initialForm(recurring).send) };
     if (!copy) return base;
-    return { ...base, campaign: copy.campaignName ?? '', msg: fromMessage(copy), target: { ...base.target, platforms: copy.targetPlatforms } };
+    return {
+      ...base,
+      campaign: copy.campaignName ?? '',
+      msg: fromMessage(copy),
+      target: { ...targetFrom(copy.target, copy.targetPlatforms), rate: copy.targetSelectionRate ? Math.round(copy.targetSelectionRate * 100) : null, advanced: !!copy.targetSelectionRate },
+      conv: copy.conversions.length ? { on: true, items: copy.conversions.map((c) => ({ event: c.eventType, filters: [], basis: c.basis ?? 'CLICK', n: c.hours % 24 ? c.hours : c.hours / 24, unit: c.hours % 24 ? 'HOUR' : 'DAY' })) } : base.conv,
+      send: { ...base.send, ignoreCapping: !!copy.ignoreCapping },
+    };
   });
   const set = (p: Partial<Form>) => setF((x) => ({ ...x, ...p }));
   const count = useEstimate(f.target);
-  const [modal, setModal] = useState<'drafts' | 'recent' | 'template' | 'ai' | 'test' | 'confirm' | null>(null);
+  const [modal, setModal] = useState<'drafts' | 'recent' | 'template' | 'ai' | 'test' | 'confirm' | 'edit' | null>(null);
   const [draftId, setDraftId] = useState<string | undefined>();
   const locked = !!f.template;
   const sendLabel = f.send.mode === 'now' ? '발송' : '저장';
@@ -112,12 +119,12 @@ export default function PushNewMessage({ recurring = false, copy }: { recurring?
     if (ce) return window.alert(ce);
     if (!f.msg.body.trim()) return toast('메시지 내용을 입력해 주세요.');
     if ([f.msg.title, f.msg.body, f.msg.url].some(invisibleAlert)) return;
-    setModal('confirm');
+    setModal(edit ? 'edit' : 'confirm');
   };
 
   const confirmed = () => {
     allow();
-    const id = crypto.randomUUID();
+    const id = edit?.id ?? crypto.randomUUID();
     const pf = (f.target.tab === 'userId' ? f.target.platforms : ['android', 'ios', 'webDesktop', 'webMobile']) as Platform[];
     const zero = { sent: 0, clicked: 0, remaining: 0, uninstalled: 0, capped: 0, failed: 0, conversions: 0, amount: 0 };
     const est = count ?? 0;
@@ -149,6 +156,22 @@ export default function PushNewMessage({ recurring = false, copy }: { recurring?
       failure: {},
       canExport: true,
     };
+    if (edit) {
+      // 예약 · 반복 수정: 같은 항목을 바꾸고 「성공적으로 반영되었습니다.」
+      if (edit.kind === 'scheduled') {
+        const it = scheduled.push.find((x) => x.id === edit.id);
+        const at = `${f.send.date.replace(/-/g, '.')} ${String(f.send.hour).padStart(2, '0')}:${String(f.send.minute).padStart(2, '0')}:00`;
+        if (it) Object.assign(it, { m: { ...m, createdAt: at }, sendAfter: at });
+        toast('성공적으로 반영되었습니다.');
+        router.push('/push/scheduled-messages');
+      } else {
+        const r = recurringMessages.find((x) => x.id === edit.id);
+        if (r) Object.assign(r, { m: { ...m, id: r.m.id, source: 'system' }, config: f.send.recurring });
+        toast('성공적으로 반영되었습니다.');
+        router.push(`/recurring-messages/push/${edit.id}`);
+      }
+      return;
+    }
     if (draftId) drafts.splice(drafts.findIndex((d) => d.id === draftId), 1);
     if (f.send.mode === 'now') {
       pushMessages.unshift(m);
@@ -215,8 +238,8 @@ export default function PushNewMessage({ recurring = false, copy }: { recurring?
   return (
     <>
       <Head>
-        <h1>새 메시지</h1>
-        {!recurring && (
+        <h1>{editTitle(edit)}</h1>
+        {!recurring && !edit && (
           <DraftBtn type="button" onClick={() => setModal('drafts')}>
             임시 저장 <b>{draftCount}</b>
           </DraftBtn>
@@ -260,13 +283,19 @@ export default function PushNewMessage({ recurring = false, copy }: { recurring?
             <SendSection value={f.send} ttl capping="1일 최대 3개, 1주 최대 10개" onChange={(send) => set({ send })} />
           </Section>
           <Foot>
-            {!recurring && (
-              <Button size="md" onClick={saveDraft}>
-                임시 저장
+            {edit ? (
+              <Button size="md" onClick={() => router.push(edit.kind === 'scheduled' ? '/push/scheduled-messages' : '/recurring-messages')}>
+                취소
               </Button>
+            ) : (
+              !recurring && (
+                <Button size="md" onClick={saveDraft}>
+                  임시 저장
+                </Button>
+              )
             )}
             <Button hierarchy="primary" size="md" onClick={submit}>
-              {count === null ? <Icon name="progress_activity" size={18} /> : sendLabel}
+              {count === null ? <Icon name="progress_activity" size={18} /> : edit ? '수정' : sendLabel}
             </Button>
           </Foot>
         </div>
@@ -305,6 +334,9 @@ export default function PushNewMessage({ recurring = false, copy }: { recurring?
         />
       )}
       {modal === 'test' && <TestSend msg={f.msg} platformsFixed={f.template?.targetPlatforms} toast={toast} onClose={() => setModal(null)} />}
+      {modal === 'edit' && edit && (
+        <ConfirmModal title={edit.kind === 'scheduled' ? '예약된 메시지를 수정하시겠습니까?' : '반복 발송 메시지를 수정하시겠습니까?'} cancelLabel="취소" confirmLabel="확인" onClose={() => setModal(null)} onConfirm={confirmed} />
+      )}
       {modal === 'confirm' && <SendConfirm blocks={blocks} label={sendLabel} onClose={() => setModal(null)} onConfirm={confirmed} />}
     </>
   );

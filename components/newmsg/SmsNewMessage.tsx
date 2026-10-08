@@ -7,6 +7,7 @@ import { Help } from '@/components/channel/ChannelShell';
 import SmsPreview from '@/components/preview/SmsPreview';
 import type { SmsMessage } from '@/lib/sent';
 import { Label, LabeledToggle, Row, VarField } from './parts';
+import type { EditMode } from './parts';
 import Shell, { KakaoTestSend, kakaoZero, PreviewCard } from './Shell';
 
 // 문자 새 메시지 — docs 5장. 광고 ON 이면 머리/꼬리 문구 붙인 전체 텍스트로 바이트 · 유형 계산.
@@ -77,13 +78,14 @@ function Fields({ m, set }: { m: M; set: (p: Partial<M>) => void }) {
 
 const asMsg = (m: M) => ({ type: typeOf(m), title: m.title || undefined, body: full(m), isAd: m.isAd, image: m.image || undefined }) as SmsMessage;
 
-export default function SmsNewMessage({ recurring, copy }: { recurring: boolean; copy?: SmsMessage }) {
+export default function SmsNewMessage({ recurring, copy, edit }: { recurring: boolean; copy?: SmsMessage; edit?: EditMode }) {
   return (
     <Shell<M>
       ch="sms"
       recurring={recurring}
+      edit={edit}
       initial={initial}
-      copy={copy && { campaign: copy.campaignName, msg: { isAd: copy.isAd, title: copy.title ?? '', body: strip(copy.body), image: copy.image ?? '' } }}
+      copy={copy && { campaign: copy.campaignName, target: copy.target, conversions: copy.conversions, ignoreCapping: copy.ignoreCapping, msg: { isAd: copy.isAd, title: copy.title ?? '', body: strip(copy.body), image: copy.image ?? '' } }}
       renderMsg={(m, set) => <Fields m={m} set={set} />}
       preview={(m, test) => (
         <PreviewCard>

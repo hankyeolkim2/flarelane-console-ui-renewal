@@ -12,6 +12,7 @@ import { FRIENDTALK_TYPE, type FriendtalkMessage } from '@/lib/sent';
 import { color, radius } from '@/styles/tokens';
 import { text } from '@/styles/typography';
 import { Label, LabeledToggle, Radios, Row, VarField } from './parts';
+import type { EditMode } from './parts';
 import Shell, { KakaoTestSend, kakaoZero, PreviewCard } from './Shell';
 
 // 브랜드메시지(친구톡) 새 메시지 — docs 4장. 유형(FI/FW/FL/FA/FC)마다 필드 · 한도가 다르고, 유형을 바꾸면 내용 초기화.
@@ -363,15 +364,16 @@ function check(m: M) {
   return true;
 }
 
-export default function FriendtalkNewMessage({ recurring, copy }: { recurring: boolean; copy?: FriendtalkMessage }) {
+export default function FriendtalkNewMessage({ recurring, copy, edit }: { recurring: boolean; copy?: FriendtalkMessage; edit?: EditMode }) {
   return (
     <Shell<M>
       ch="friendtalk"
       recurring={recurring}
+      edit={edit}
       initial={fresh('FI')}
       copy={
         copy && {
-          campaign: copy.campaignName,
+          campaign: copy.campaignName, target: copy.target, conversions: copy.conversions, ignoreCapping: copy.ignoreCapping,
           msg: { ...fresh(copy.messageType === 'FT' ? 'FI' : (copy.messageType as Kind)), targeting: copy.targeting ?? 'I', isAd: copy.isAd, text: copy.text, header: copy.header ?? '', image: copy.image ?? '', buttons: copy.buttons.map((b) => ({ kind: 'WL', name: b.name, mobile: b.link, pc: '', android: '', ios: '' })) },
         }
       }
