@@ -53,8 +53,8 @@ export function AlimtalkPreview({ m }: { m: AlimtalkMessage }) {
           {m.items && (
             <>
               <i />
-              {m.items.map((it) => (
-                <div key={it.name} data-li="">
+              {m.items.map((it, i) => (
+                <div key={i} data-li="">
                   <span>{it.name}</span>
                   <span>{it.desc}</span>
                 </div>
@@ -65,8 +65,8 @@ export function AlimtalkPreview({ m }: { m: AlimtalkMessage }) {
           <span>{m.templateContent}</span>
           {m.templateExtra && <span>{m.templateExtra}</span>}
           {m.templateAd && <span data-mute="">{m.templateAd}</span>}
-          {m.buttons.map((b) => (
-            <div key={b.name} data-btn={b.type === '채널 추가' ? 'yellow' : ''}>
+          {m.buttons.map((b, i) => (
+            <div key={i} data-btn={b.type === '채널 추가' ? 'yellow' : ''}>
               {b.name}
             </div>
           ))}
@@ -87,8 +87,8 @@ export function FriendtalkPreview({ m, serviceNumber = '080-000-0000' }: { m: Fr
           {m.header && <b>{m.header}</b>}
           <span>{`${m.isAd ? '(광고) ' : ''}${m.text}`}</span>
           {brand && <span data-mute="">{`무료수신거부 ${serviceNumber}`}</span>}
-          {m.buttons.map((b) => (
-            <div key={b.name} data-btn="">
+          {m.buttons.map((b, i) => (
+            <div key={i} data-btn="">
               {b.name}
             </div>
           ))}
