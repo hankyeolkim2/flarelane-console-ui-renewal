@@ -12,7 +12,6 @@ import { boardName, ME, type Board, type Report, type ReportType } from '@/lib/a
 import { funnelCounts, insightValues } from '@/lib/catalog';
 import { addDays, defaultState, NAME_MAX, parseYmd, queryKey, serialize, uid, withRange, type EditorState } from '@/lib/editor';
 import { useStore } from '@/lib/store';
-import { pushWithTransition, reportVT } from '@/lib/viewTransition';
 import BoardSelectModal from './BoardSelectModal';
 import QueryPanel from './QueryPanel';
 import Toolbar from './Toolbar';
@@ -244,14 +243,14 @@ export default function ReportEditor({ mode, boardId, report, initialType }: Pro
   const crumbs = boardId
     ? [
         { label: '분석 보드', href: '/analytics-boards' },
-        { label: board ? boardName(board) : '제목 없음', href: `/analytics-boards/${boardId}`, transition: true }, // [실험] 결과 카드가 보드 카드 자리로 줄어듦
+        { label: board ? boardName(board) : '제목 없음', href: `/analytics-boards/${boardId}` },
         { label: shownName },
       ]
     : [{ label: shownName }];
 
   return (
     <>
-      <ReportCard style={report ? ({ viewTransitionName: reportVT(report.id), viewTransitionClass: 'report-card' } as React.CSSProperties) : undefined}>
+      <ReportCard>
         <Header>
           {editingName ? (
             <NameInput
@@ -361,7 +360,7 @@ export default function ReportEditor({ mode, boardId, report, initialType }: Pro
             bypass.current = true;
             deleteReport(report.id);
             toast(`${name || '제목 없음'} 통계가 삭제되었습니다.`);
-            pushWithTransition(router, `/analytics-boards/${report.boardId}`);
+            router.push(`/analytics-boards/${report.boardId}`);
           }}
         />
       )}

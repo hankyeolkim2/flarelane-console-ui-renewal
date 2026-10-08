@@ -13,7 +13,6 @@ import { FunnelMiniChart, InsightMiniChart, last30 } from '@/components/analytic
 import { funnelCounts, insightValues } from '@/lib/catalog';
 import { boardName, formatEdited, LIMITS, ME, reportName, type Report } from '@/lib/analytics';
 import { useStore } from '@/lib/store';
-import { pushWithTransition, reportVT } from '@/lib/viewTransition';
 import { color, radius, shadow } from '@/styles/tokens';
 import { text } from '@/styles/typography';
 
@@ -106,11 +105,7 @@ function ReportCard({ report, onDelete }: { report: Report; onDelete: () => void
   const [menu, setMenu] = useState(false);
   const insight = report.type === 'INSIGHT';
   return (
-    <Card
-      role="link"
-      style={{ viewTransitionName: reportVT(report.id), viewTransitionClass: 'report-card' } as React.CSSProperties}
-      onClick={() => !nameRef.current?.isEditing && pushWithTransition(router, `/analytics-boards/${report.boardId}/reports/${report.id}`)}
-    >
+    <Card role="link" onClick={() => !nameRef.current?.isEditing && router.push(`/analytics-boards/${report.boardId}/reports/${report.id}`)}>
       <CardHead>
         <span>
           <Icon name={insight ? 'show_chart' : 'funnel'} size={20} />

@@ -1,6 +1,4 @@
 import Link from 'next/link';
-import { useRouter } from 'next/router';
-import { pushWithTransition } from '@/lib/viewTransition';
 import styled from '@emotion/styled';
 import Icon from '@/components/Icon';
 import { color } from '@/styles/tokens';
@@ -36,8 +34,7 @@ const Last = styled.span`
   max-width: 240px;
 `;
 
-export default function Breadcrumbs({ items }: { items: { label: string; href?: string; transition?: boolean }[] }) {
-  const router = useRouter();
+export default function Breadcrumbs({ items }: { items: { label: string; href?: string }[] }) {
   return (
     <Wrap aria-label="경로">
       {items.map((it, i) => (
@@ -47,20 +44,7 @@ export default function Breadcrumbs({ items }: { items: { label: string; href?: 
               <Icon name="chevron_right" size={16} />
             </span>
           )}
-          {it.href ? (
-            <Crumb
-              href={it.href}
-              onClick={(e) => {
-                if (!it.transition) return;
-                e.preventDefault();
-                pushWithTransition(router, it.href!);
-              }}
-            >
-              {it.label}
-            </Crumb>
-          ) : (
-            <Last>{it.label}</Last>
-          )}
+          {it.href ? <Crumb href={it.href}>{it.label}</Crumb> : <Last>{it.label}</Last>}
         </span>
       ))}
     </Wrap>
