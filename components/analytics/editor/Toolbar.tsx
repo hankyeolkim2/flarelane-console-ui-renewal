@@ -10,11 +10,10 @@ import { text } from '@/styles/typography';
 
 // Figma Toolbar(기간 버튼 · Date presets · 단위 Select) + 스테이징 기간 · 단위 규칙.
 
-// 기간 버튼 폭 240 고정 — 해가 바뀌는 가장 긴 표기 「yyyy-MM-dd ~ yyyy-MM-dd」(글자 184.1px)까지 들어가게:
-// 좌우 12×2 + 달력 아이콘 20 + 간격 4 + 글자 여백 2×2 + 글자 184.1 = 236.1 → 240. 날짜가 바뀌어도 옆 프리셋 그룹이 움직이지 않음.
+// 기간 버튼 = 프리셋 그룹 뒤에 두고 글자 폭에 맞춤(사용자, SaaS 툴바 관례) — 폭이 바뀌어도 뒤에 밀리는 요소가 없음.
+// 숫자는 같은 폭(tabular-nums)이라 같은 해 기간끼리는 폭이 변하지 않음.
 const RangeButton = styled.div`
-  > button { width: 240px; justify-content: flex-start; }
-  > button > [data-btn-label] { flex: 1; min-width: 0; text-align: left; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  > button > [data-btn-label] { font-variant-numeric: tabular-nums; }
 `;
 
 const Bar = styled.div`
@@ -45,11 +44,12 @@ const Group = styled.div`
   > button:hover, > button[aria-pressed='true'] { background: ${color('bg-primary_hover')}; color: ${color('text-secondary_hover')}; }
 `;
 
-const PRESETS: { value: Preset; label: string }[] = [
-  { value: 'YESTERDAY', label: '어제' },
-  { value: 'TODAY', label: '오늘' },
-  { value: 'LAST_7D', label: '7일' },
-  { value: 'LAST_30D', label: '30일' },
+// 폭 = Figma 「Date presets」(215 = 53 · 53 · 49 · 58 + 테두리) — 정수 폭이라 뒤의 기간 버튼이 정수 픽셀에 놓임
+const PRESETS: { value: Preset; label: string; w: number }[] = [
+  { value: 'YESTERDAY', label: '어제', w: 53 },
+  { value: 'TODAY', label: '오늘', w: 53 },
+  { value: 'LAST_7D', label: '7일', w: 49 },
+  { value: 'LAST_30D', label: '30일', w: 58 },
 ];
 
 // ── 기간 피커 (범위 달력 + 「기간설정」 프리셋 + 날짜 입력) ──
@@ -330,6 +330,13 @@ export default function Toolbar({ state, onRange, onGranularity }: { state: Edit
   const rule = granularityRule(rangeDays(state.range));
   return (
     <Bar>
+      <Group role="group" aria-label="기간 프리셋">
+        {PRESETS.map((p) => (
+          <button key={p.value} type="button" style={{ width: p.w, padding: 0 }} aria-pressed={state.range.preset === p.value} onClick={() => onRange({ ...presetRange(p.value), preset: p.value })}>
+            {p.label}
+          </button>
+        ))}
+      </Group>
       <RangeButton ref={ref}>
         <Button iconLeading="calendar_today" onClick={() => setOpen((v) => !v)}>
           {rangeLabel(state.range)}
@@ -346,13 +353,6 @@ export default function Toolbar({ state, onRange, onGranularity }: { state: Edit
           }}
         />
       </Floating>
-      <Group role="group" aria-label="기간 프리셋">
-        {PRESETS.map((p) => (
-          <button key={p.value} type="button" aria-pressed={state.range.preset === p.value} onClick={() => onRange({ ...presetRange(p.value), preset: p.value })}>
-            {p.label}
-          </button>
-        ))}
-      </Group>
       <i />
       {state.type === 'INSIGHT' && (
         <Select<Granularity>
