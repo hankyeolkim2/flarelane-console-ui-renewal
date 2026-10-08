@@ -299,8 +299,9 @@ function NavGroup({ item, path, collapsed }: { item: NavItem; path: string; coll
         onClick={() => setOpen((v) => !v)}
       >
         <Label>
-          <ItemIcon data-nav-icon active={open || hasCurrent}>
-            <Icon name={collapsed && hasCurrent ? `${item.icon}_filled` : item.icon} size={22} />
+          {/* 펼침만으로는 그대로, 하위 항목이 선택됐을 때만 진한 색 + 채운 아이콘. 호버는 색만 */}
+          <ItemIcon data-nav-icon active={hasCurrent}>
+            <Icon name={hasCurrent ? `${item.icon}_filled` : item.icon} size={22} />
           </ItemIcon>
           {!collapsed && item.label}
         </Label>
