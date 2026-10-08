@@ -108,6 +108,21 @@ export function Radios<T extends string>({ value, options, onChange, gap = 16, d
   );
 }
 
+// 스테이징 로케일 도움말(HTML 문자열 · <br /> · 링크) 그대로
+export const HelpHtml = ({ html }: { html: string }) => <span dangerouslySetInnerHTML={{ __html: html.replace(/"target=/g, '" target=').replace(/"rel=/g, '" rel=') }} />;
+export const HELP = {
+  audience: '메시지 발송 대상을 지정합니다.<br /><br /> - 세그먼트: 여러 기기 대상으로 그룹 발송합니다. 세그먼트를 다수 선택하는 경우 각 세그먼트를 OR 조건으로 연결합니다.<br /> - 유저 ID: 고객사가 관리하는 <a href="https://docs.flarelane.co.kr/data-management"target="_blank"rel="noreferrer">유저ID</a>와 매칭되는 기기를 대상으로 발송합니다.<br /> - 기기: 기기별 고유한 기기ID를 대상으로 단일 발송합니다.',
+  preview: '기기 화면에 보이는 메시지를 미리 볼 수 있습니다.<br />이해를 돕기 위한 표현으로 실제 표현과는 다소 차이가 있을 수 있습니다.<br /><a href="https://docs.flarelane.co.kr/test-device"target="_blank"rel="noreferrer">테스트 발송</a>을 통해 실제 표현되는 모습을 확인할 수도 있습니다.',
+  template: '자주 쓰이는 메시지 규격을 미리 정의합니다. 템플릿을 사용하여 <a href="https://docs.flarelane.co.kr/rest-api-reference"target="_blank"rel="noreferrer">API 발송</a>을 하는 경우 고객사 서버에서 직접 메시지 변경을 하지 않아도 되는 장점이 있습니다.',
+  ad: '광고성 내용이 포함된 경우 체크해 주세요.',
+  age: '연령 인증 전까지 채팅방 메시지에 커버가 씌워지며, 성인만 내용을 확인할 수 있습니다.<br />성인에게 적합한 내용을 담고 있다면 필수 선택해 주세요.<br />예: 주류, 청소년 이용불가 게임 및 영화 등',
+  intro: '사용하기 선택 시 첫 번째 대표 말풍선이 추가되며, 이미지와 타이틀, 내용, URL을 입력할 수 있습니다.',
+  more: '사용 시 마지막 말풍선 우측에 더보기 버튼을 노출하며,<br/>버튼 클릭 시 설정한 페이지로 이동합니다.',
+  carouselFA: 'Intro를 제외한 말풍선 영역을 의미입니다.',
+  carouselFC: '말풍선 영역을 의미합니다.<br/>불러온 이미지 개수만큼 캐러셀 생성되며 최소 2개 이상 입력해야 합니다.',
+  targeting: '허용 타입: M,N,I (F는 미지원)<br />타겟팅(M,N) 선택은 <a href="https://docs.flarelane.co.kr/kakao-friendtalk-overview"target="_blank"rel="noreferrer">승인된 프로젝트</a>만 가능',
+};
+
 // 토글 + 보이는 라벨
 export function LabeledToggle({ checked, onChange, label, disabled }: { checked: boolean; onChange: (v: boolean) => void; label: string; disabled?: boolean }) {
   return (

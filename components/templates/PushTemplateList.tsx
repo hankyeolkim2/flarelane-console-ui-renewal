@@ -8,6 +8,7 @@ import Pagination from '@/components/ui/Pagination';
 import TextField from '@/components/ui/TextField';
 import { Help } from '@/components/channel/ChannelShell';
 import { EmptyList, ListCard, PageTitle, SentRow } from '@/components/sent/SentList';
+import { HELP, HelpHtml } from '@/components/newmsg/parts';
 import { fmt, pct, won, type Platform } from '@/lib/sent';
 import { emitTemplates, pushTemplates, subscribeTemplates, type PushTemplate } from '@/lib/templates';
 
@@ -55,7 +56,9 @@ export default function PushTemplateList() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <h1 style={{ margin: 0, fontSize: 24, fontWeight: 600 }}>템플릿</h1>
-            <Help>자주 사용하는 메시지를 템플릿으로 저장하고 새 메시지에서 불러와 발송할 수 있습니다.</Help>
+            <Help>
+              <HelpHtml html={HELP.template} />
+            </Help>
           </div>
           <p style={{ margin: 0, fontSize: 14, color: 'var(--text-tertiary)' }}>통계는 최근 30일 기준이며, 템플릿별로 더욱 상세한 통계 확인이 가능합니다.</p>
         </div>

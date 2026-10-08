@@ -3,7 +3,6 @@ import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import IconButton from '@/components/ui/IconButton';
 import TextField from '@/components/ui/TextField';
-import { Help } from '@/components/channel/ChannelShell';
 import SmsPreview from '@/components/preview/SmsPreview';
 import type { SmsMessage } from '@/lib/sent';
 import { Label, LabeledToggle, Row, VarField } from './parts';
@@ -35,7 +34,6 @@ function Fields({ m, set }: { m: M; set: (p: Partial<M>) => void }) {
     <>
       <Row>
         <LabeledToggle checked={m.isAd} onChange={(isAd) => set({ isAd })} label="광고성 메시지" />
-        <Help>광고성 정보가 포함된 경우 (광고) 표기 · 무료수신거부 번호가 함께 발송됩니다.</Help>
       </Row>
       {t !== 'SMS' && (
         <div>

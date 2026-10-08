@@ -11,7 +11,7 @@ import { FriendtalkPreview } from '@/components/preview/KakaoPreview';
 import { FRIENDTALK_TYPE, type FriendtalkMessage } from '@/lib/sent';
 import { color, radius } from '@/styles/tokens';
 import { text } from '@/styles/typography';
-import { Label, LabeledToggle, Radios, Row, VarField } from './parts';
+import { HELP, HelpHtml, Label, LabeledToggle, Radios, Row, VarField } from './parts';
 import type { EditMode } from './parts';
 import Shell, { KakaoTestSend, kakaoZero, PreviewCard } from './Shell';
 
@@ -248,7 +248,10 @@ function Fields({ m, set }: { m: M; set: (p: Partial<M>) => void }) {
       <>
         {m.kind === 'FA' && (
           <div>
-            <LabeledToggle checked={m.intro.on} label="인트로" onChange={(on) => set({ intro: { ...m.intro, on } })} />
+            <Row>
+              <LabeledToggle checked={m.intro.on} label="인트로" onChange={(on) => set({ intro: { ...m.intro, on } })} />
+              <Help>{HELP.intro}</Help>
+            </Row>
             {m.intro.on && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
                 <ImageField value={m.intro.image} hint="권장 비율 2:1" onChange={(image) => set({ intro: { ...m.intro, image } })} />
@@ -300,7 +303,12 @@ function Fields({ m, set }: { m: M; set: (p: Partial<M>) => void }) {
           </Row>
         )}
         <div>
-          <LabeledToggle checked={m.more.on} label="더보기" onChange={(on) => set({ more: { ...m.more, on } })} />
+          <Row>
+            <LabeledToggle checked={m.more.on} label="더보기" onChange={(on) => set({ more: { ...m.more, on } })} />
+            <Help>
+              <HelpHtml html={HELP.more} />
+            </Help>
+          </Row>
           {m.more.on && (
             <div style={{ marginTop: 8 }}>
               <TextField placeholder="https://" value={m.more.link} onChange={(e) => set({ more: { ...m.more, link: e.target.value } })} />
@@ -322,11 +330,13 @@ function Fields({ m, set }: { m: M; set: (p: Partial<M>) => void }) {
       <Row style={{ gap: 24 }}>
         <Row>
           <LabeledToggle checked={m.isAd} label="광고성 메시지" onChange={ad} />
-          <Help>광고성 내용이 포함된 경우 체크해 주세요.</Help>
+          <Help>{HELP.ad}</Help>
         </Row>
         <Row>
           <LabeledToggle checked={m.age} label="연령 인증 메시지" onChange={(age) => set({ age })} />
-          <Help>성인 인증이 필요한 메시지는 카카오 연령 인증을 마친 유저에게만 노출됩니다.</Help>
+          <Help>
+            <HelpHtml html={HELP.age} />
+          </Help>
         </Row>
       </Row>
       {m.picker && (
@@ -382,7 +392,9 @@ export default function FriendtalkNewMessage({ recurring, copy, edit }: { recurr
         <div style={{ paddingTop: 12, borderTop: '1px solid var(--border-secondary)' }}>
           <Label>
             수신자 타겟팅
-            <Help>허용 타입: M, N, I (F는 미지원). 타겟팅(M, N) 선택은 승인된 프로젝트만 가능합니다.</Help>
+            <Help>
+              <HelpHtml html={HELP.targeting} />
+            </Help>
           </Label>
           <Radios<M['targeting']>
             column

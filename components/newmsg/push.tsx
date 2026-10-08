@@ -16,7 +16,7 @@ import { pushMessages, sourceLabel, SOURCES, type Platform, type Source } from '
 import { pushTemplates, type PushTemplate } from '@/lib/templates';
 import { color, radius, shadow } from '@/styles/tokens';
 import { text } from '@/styles/typography';
-import { ChipInput, Label, Opt, PlatformSelect, Row, VarField } from './parts';
+import { ChipInput, HELP, HelpHtml, Label, Opt, PlatformSelect, Row, VarField } from './parts';
 
 // 푸시 「메시지」 섹션 필드 · 미리보기 · 테스트 발송 · 최근 메시지 / 템플릿 / AI 모달 — docs 2.4 ~ 2.7, 2.12.
 export type PushMsg = { title: string; body: string; url: string; image: string; uploaded: boolean; advanced: boolean; buttons: { label: string; link: string }[]; data: { key: string; value: string }[] };
@@ -191,7 +191,9 @@ export function PushPreviewPanel({ msg, onTest }: { msg: PushMsg; onTest: () => 
     <Card>
       <header>
         미리보기
-        <Help>실제 화면은 기기 · OS · 브라우저 버전에 따라 다르게 보일 수 있습니다.</Help>
+        <Help>
+          <HelpHtml html={HELP.preview} />
+        </Help>
       </header>
       <Row>
         <Seg role="tablist">

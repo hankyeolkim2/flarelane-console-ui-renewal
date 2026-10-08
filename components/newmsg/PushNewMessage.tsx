@@ -13,7 +13,7 @@ import { useStore } from '@/lib/store';
 import { useLeaveGuard } from '@/lib/useLeaveGuard';
 import { color } from '@/styles/tokens';
 import { text } from '@/styles/typography';
-import { ConfirmModal, ConversionSection, convError, drafts, editTitle, sendFromEdit, targetFrom, type EditMode, DraftsModal, initialConv, initialSend, initialTarget, now, PLATFORM_NAME, recurringRows, Section, SendConfirm, SendSection, sendSummary, TargetSection, targetEmpty, targetSummary, useEstimate, type ConfirmBlock, type Conv, type SendState, type TargetState } from './parts';
+import { ConfirmModal, ConversionSection, HELP, HelpHtml, convError, drafts, editTitle, sendFromEdit, targetFrom, type EditMode, DraftsModal, initialConv, initialSend, initialTarget, now, PLATFORM_NAME, recurringRows, Section, SendConfirm, SendSection, sendSummary, TargetSection, targetEmpty, targetSummary, useEstimate, type ConfirmBlock, type Conv, type SendState, type TargetState } from './parts';
 import { AiModal, fromMessage, initialPushMsg, PushFields, PushPreviewPanel, RecentModal, TemplateModal, TestSend, type PushMsg } from './push';
 
 // 푸시 새 메시지 — Figma 「새 메시지 — C+A 규칙」(1081:18985) + docs/staging-behavior-new-message-templates.md 2장.
@@ -250,7 +250,7 @@ export default function PushNewMessage({ recurring = false, copy, edit }: { recu
           <Section n={1} title="캠페인 명">
             <TextField id="campaign-name" placeholder="캠페인 명 (선택)" value={f.campaign} onChange={(e) => set({ campaign: e.target.value })} />
           </Section>
-          <Section n={2} title="대상" help="메시지 발송 대상을 지정합니다. 세그먼트: 여러 기기 대상으로 그룹 발송합니다. 세그먼트를 다수 선택하는 경우 각 세그먼트를 OR 조건으로 연결합니다. 유저 ID: 유저 ID 대상으로 발송합니다. 기기: 기기별 고유한 기기ID를 대상으로 단일 발송합니다.">
+          <Section n={2} title="대상" help={<HelpHtml html={HELP.audience} />}>
             <TargetSection channel="push" value={f.target} count={count} toast={toast} onChange={(target) => set({ target: locked && target.tab === 'userId' ? { ...target, platforms: f.template!.targetPlatforms } : target })} />
           </Section>
           <Section

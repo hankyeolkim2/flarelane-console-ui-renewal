@@ -214,7 +214,7 @@ export function AlimtalkTemplateDetail({ t }: { t: AlimtalkTemplate }) {
 }
 
 // ── 새로 만들기 · 수정
-const BTN_TYPES = ['웹 링크', '앱 링크', '채널 추가', '배송 조회', '봇키워드', '메시지 전달', '상담톡 전환', '챗봇 전환', '플러그인(상담)', '플러그인(결제)', '플러그인(보안)', '비즈폼'];
+const BTN_TYPES = ['웹 링크', '앱 링크', '채널 추가', '배송 조회', '봇키워드', '메시지 전달', '상담톡 전환', '챗봇 전환', '이미지 보안 전송 플러그인', '개인정보이용 플러그인', '원클릭 결제 플러그인', '비즈폼']; // kakao 로케일 그대로
 const CATS: [string, string][] = [
   ['회원', '회원가입'],
   ['회원', '포인트'],
@@ -411,7 +411,7 @@ export function AlimtalkTemplateForm({ t }: { t?: AlimtalkTemplate }) {
             </F>
             <Row>
               <LabeledToggle checked={f.security} label="보안 템플릿" onChange={(security) => set({ security })} />
-              <Help>메시지 내용은 모바일 기기에서만 확인 가능하며, PC 카카오톡에서는 노출되지 않습니다.</Help>
+              <Help>메시지 내용은 모바일 기기에서만 확인 가능하며, …</Help>{/* 뒷부분 문구 미확인(하드코딩) */}
             </Row>
           </Section>
           <Foot>

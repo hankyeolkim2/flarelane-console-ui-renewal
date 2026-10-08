@@ -13,7 +13,7 @@ import { useStore } from '@/lib/store';
 import { useLeaveGuard } from '@/lib/useLeaveGuard';
 import { color, radius } from '@/styles/tokens';
 import { text } from '@/styles/typography';
-import { ConversionSection, convError, drafts, DraftsModal, editTitle, sendFromEdit, targetFrom, type EditMode, initialConv, initialSend, initialTarget, Label, now, recurringRows, Row, Section, SendConfirm, SendSection, sendSummary, TargetSection, targetEmpty, targetSummary, useEstimate, Radios, type ConfirmBlock, type Conv, type SendState, type TargetState } from './parts';
+import { ConversionSection, convError, HELP, HelpHtml, drafts, DraftsModal, editTitle, sendFromEdit, targetFrom, type EditMode, initialConv, initialSend, initialTarget, Label, now, recurringRows, Row, Section, SendConfirm, SendSection, sendSummary, TargetSection, targetEmpty, targetSummary, useEstimate, Radios, type ConfirmBlock, type Conv, type SendState, type TargetState } from './parts';
 import { Cols, DraftBtn, Foot, Head, invisibleAlert } from './PushNewMessage';
 
 // 알림톡 · 브랜드메시지 · 문자 · 이메일 새 메시지 공용 틀 — 푸시와 같은 5섹션(docs 3 ~ 6장 「푸시 대비 차이」).
@@ -176,7 +176,7 @@ export default function Shell<M>(p: ShellProps<M>) {
       <Section n={1} title="캠페인 명">
         <TextField id="campaign-name" placeholder="캠페인 명 (선택)" value={campaign} onChange={(e) => setCampaign(e.target.value)} />
       </Section>
-      <Section n={2} title="대상" help="메시지 발송 대상을 지정합니다. 세그먼트: 여러 유저 대상으로 그룹 발송합니다. 세그먼트를 다수 선택하는 경우 각 세그먼트를 OR 조건으로 연결합니다.">
+      <Section n={2} title="대상" help={<HelpHtml html={HELP.audience} />}>
         <TargetSection channel={kind} value={target} count={count} toast={toast} onChange={setTarget} />
         {p.extraTarget?.(msg, setM)}
       </Section>
