@@ -57,16 +57,16 @@ const HelpWrap = styled.span`
   display: inline-flex;
   color: ${color('fg-quaternary')};
   cursor: help;
-  > span { display: none; position: absolute; left: 50%; top: calc(100% + 6px); transform: translateX(-50%); z-index: 20; width: max-content; max-width: 240px; padding: 8px 12px; border-radius: ${radius.md}px; background: ${color('bg-primary-solid')}; box-shadow: ${shadow.lg}; ${text('text-xs', 'regular')}; color: ${color('text-white')}; white-space: normal; }
-  > span a { color: ${color('text-white')}; font-weight: 600; }
-  &:hover > span { display: block; }
+  > [data-tip] { display: none; position: absolute; left: 50%; top: calc(100% + 6px); transform: translateX(-50%); z-index: 20; width: max-content; max-width: 240px; padding: 8px 12px; border-radius: ${radius.md}px; background: ${color('bg-primary-solid')}; box-shadow: ${shadow.lg}; ${text('text-xs', 'regular')}; color: ${color('text-white')}; white-space: normal; }
+  > [data-tip] a { color: ${color('text-white')}; font-weight: 600; }
+  &:hover > [data-tip] { display: block; }
 `;
 
 function Help({ children }: { children: ReactNode }) {
   return (
     <HelpWrap>
       <Icon name="help" size={16} />
-      <span>{children}</span>
+      <span data-tip>{children}</span>
     </HelpWrap>
   );
 }

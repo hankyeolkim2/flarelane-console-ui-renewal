@@ -292,16 +292,16 @@ const Tabs = styled.div`
   border-bottom: 1px solid ${color('border-secondary')};
 `;
 
-const Tab = styled.button<{ on: boolean }>`
+const Tab = styled.button<{ $on: boolean }>`
   padding: 0 4px 10px;
   border: 0;
-  border-bottom: 2px solid ${(p) => (p.on ? color('fg-brand-primary_alt') : 'transparent')};
+  border-bottom: 2px solid ${(p) => (p.$on ? color('fg-brand-primary_alt') : 'transparent')};
   margin-bottom: -1px;
   background: transparent;
   ${text('text-sm', 'semibold')};
-  color: ${(p) => (p.on ? color('text-brand-secondary') : color('text-quaternary'))};
+  color: ${(p) => (p.$on ? color('text-brand-secondary') : color('text-quaternary'))};
   cursor: pointer;
-  &:hover { color: ${(p) => (p.on ? color('text-brand-secondary') : color('text-secondary'))}; }
+  &:hover { color: ${(p) => (p.$on ? color('text-brand-secondary') : color('text-secondary'))}; }
 `;
 
 const SearchField = styled.label`
@@ -386,7 +386,7 @@ export function TargetSelector({ onPick }: { onPick: (p: TargetPick) => void }) 
             ['DEVICE', '디바이스'],
           ] as [TargetTab, string][]
         ).map(([v, l]) => (
-          <Tab key={v} type="button" on={tab === v} onClick={() => { setTab(v); setHover(null); }}>
+          <Tab key={v} type="button" $on={tab === v} onClick={() => { setTab(v); setHover(null); }}>
             {l}
           </Tab>
         ))}

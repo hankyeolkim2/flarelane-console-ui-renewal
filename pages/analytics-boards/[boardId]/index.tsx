@@ -159,7 +159,7 @@ function AddReport({ boardId, count, tall }: { boardId: string; count: number; t
         <ConfirmModal
           title="이 보드의 통계 개수 제한에 도달했습니다."
           description={`보드당 최대 ${LIMITS.reportsPerBoard}개의 통계를 생성할 수 있습니다. 새 보드를 만들어 통계를 추가해 주세요.`}
-          cancelLabel="닫기"
+          cancelLabel=""
           confirmLabel="확인"
           onClose={() => setLimit(false)}
           onConfirm={() => setLimit(false)}

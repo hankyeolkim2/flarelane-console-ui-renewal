@@ -221,7 +221,6 @@ const Val = styled.div`
 `;
 
 const DropRow = styled.div`
-  padding-left: 236px;
   ${text('text-sm', 'regular')};
   color: ${color('text-tertiary')};
 `;

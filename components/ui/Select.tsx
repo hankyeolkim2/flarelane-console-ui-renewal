@@ -6,7 +6,7 @@ import { color, radius, shadow } from '@/styles/tokens';
 import { text } from '@/styles/typography';
 
 // Figma `Select` sm — 높이 36, 패딩 8·10·8·12, 열림 = border-brand. 목록 = `_Select menu item`(선택 항목 체크).
-export type Option<T extends string> = { value: T; label: string };
+export type Option<T extends string> = { value: T; label: string; disabled?: boolean };
 
 const Trigger = styled.button<{ open: boolean; width?: number | string; $placeholder: boolean }>`
   display: flex;
@@ -56,7 +56,9 @@ const OptionRow = styled.button<{ selected: boolean }>`
   }
   > span > em { flex: 1; font-style: normal; }
   > span > i { display: inline-flex; color: ${color('fg-brand-primary')}; }
-  &:hover > span { background: ${color('bg-primary_hover')}; }
+  &:hover:not(:disabled) > span { background: ${color('bg-primary_hover')}; }
+  &:disabled { cursor: not-allowed; }
+  &:disabled > span { color: ${color('text-disabled')}; }
 `;
 
 export default function Select<T extends string>({ value, options, onChange, placeholder, width, menuWidth, disabled }: { value: T | null; options: Option<T>[]; onChange: (v: T) => void; placeholder?: string; width?: number | string; menuWidth?: number; disabled?: boolean }) {
@@ -74,7 +76,7 @@ export default function Select<T extends string>({ value, options, onChange, pla
       <Menu open={open} onClose={() => setOpen(false)} anchorRef={ref} align="start" width={menuWidth ?? (typeof width === 'number' ? width : undefined)}>
         <div role="listbox">
           {options.map((o) => (
-            <OptionRow key={o.value} type="button" role="option" aria-selected={o.value === value} selected={o.value === value} onClick={() => { onChange(o.value); setOpen(false); }}>
+            <OptionRow key={o.value} type="button" role="option" disabled={o.disabled} aria-selected={o.value === value} selected={o.value === value} onClick={() => { onChange(o.value); setOpen(false); }}>
               <span>
                 <em>{o.label}</em>
                 {o.value === value && (

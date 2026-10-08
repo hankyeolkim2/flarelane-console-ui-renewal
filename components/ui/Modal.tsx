@@ -56,7 +56,7 @@ export function ConfirmModal({ title, description, confirmLabel, cancelLabel, de
         <Head>{title}</Head>
         {(description || children) && <Body>{description}{children}</Body>}
         <Foot>
-          <Button size="md" onClick={onClose}>{cancelLabel}</Button>
+          {cancelLabel && <Button size="md" onClick={onClose}>{cancelLabel}</Button>}
           <DestructivePrimary destructive={!!destructive} onClick={onConfirm}>{confirmLabel}</DestructivePrimary>
         </Foot>
       </Box>

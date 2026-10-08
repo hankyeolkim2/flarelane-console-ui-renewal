@@ -12,6 +12,8 @@ type Store = {
   deleteBoard: (id: string) => void;
   renameReport: (id: string, name: string | null) => void;
   deleteReport: (id: string) => void;
+  saveReport: (r: Report) => void; // 새로 만들기 · 고치기 공통
+  createBoardNamed: (name: string) => Board;
   toasts: Toast[];
   toast: (text: string) => void;
   dismissToast: (id: number) => void;
@@ -61,9 +63,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const saveReport = useCallback((r: Report) => {
+    setReports((list) => {
+      const exists = list.some((x) => x.id === r.id);
+      if (!exists) setBoards((bs) => bs.map((b) => (b.id === r.boardId ? { ...b, reportsCount: b.reportsCount + 1, updatedAt: now() } : b)));
+      else setBoards((bs) => bs.map((b) => (b.id === r.boardId ? { ...b, updatedAt: now() } : b)));
+      return exists ? list.map((x) => (x.id === r.id ? r : x)) : [r, ...list];
+    });
+  }, []);
+
+  const createBoardNamed = useCallback((name: string) => {
+    const b: Board = { id: `b-${Date.now().toString(36)}`, name, createdBy: ME, createdAt: now(), updatedAt: now(), reportsCount: 0 };
+    setBoards((list) => [b, ...list]);
+    return b;
+  }, []);
+
   const value = useMemo(
-    () => ({ boards, reports, createBoard, renameBoard, deleteBoard, renameReport, deleteReport, toasts, toast, dismissToast }),
-    [boards, reports, createBoard, renameBoard, deleteBoard, renameReport, deleteReport, toasts, toast, dismissToast],
+    () => ({ boards, reports, createBoard, renameBoard, deleteBoard, renameReport, deleteReport, saveReport, createBoardNamed, toasts, toast, dismissToast }),
+    [boards, reports, createBoard, renameBoard, deleteBoard, renameReport, deleteReport, saveReport, createBoardNamed, toasts, toast, dismissToast],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

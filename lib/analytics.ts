@@ -12,6 +12,7 @@ export type Report = {
   updatedAt: string; // ISO
   events: string[];
   funnel?: { counts: number[] };
+  config?: import('./editor').EditorState; // 저장된 편집 설정 (없으면 events 로 기본 설정을 만듦)
 };
 
 export type Board = {

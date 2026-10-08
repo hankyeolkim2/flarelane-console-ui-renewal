@@ -82,7 +82,7 @@ export function InsightMiniChart({ values, label }: { values: number[]; label: s
   const pts = values.map((v, i) => [(i / (n - 1)) * 100, 100 - (v / max) * 100]);
   const path = pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x},${y}`).join(' ');
   return (
-    <ChartWrap onClick={(e) => e.stopPropagation()}>
+    <ChartWrap>
       <YAxis>
         {Y.map((y) => (
           <span key={y}>{y}</span>
@@ -174,7 +174,7 @@ export function FunnelMiniChart({ steps, counts }: { steps: string[]; counts: nu
   const [hover, setHover] = useState<{ i: number; kind: 'conversion' | 'drop' } | null>(null);
   const first = counts[0] || 0;
   return (
-    <Steps onClick={(e) => e.stopPropagation()}>
+    <Steps>
       {steps.map((s, i) => {
         const prev = i > 0 ? counts[i - 1] : counts[i];
         // 막대 길이 · % = 바로 앞 단계 대비 전환율 (Figma · 스테이징: 30.0% = 6/20, 33.3% = 2/6)
