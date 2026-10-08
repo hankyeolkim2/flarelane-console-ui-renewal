@@ -328,10 +328,12 @@ function NavGroup({ item, path, collapsed }: { item: NavItem; path: string; coll
   );
 }
 
-export default function Sidebar() {
+export default function Sidebar({ defaultCollapsed = false }: { defaultCollapsed?: boolean }) {
   const router = useRouter();
   const path = router.asPath.split('?')[0];
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(defaultCollapsed);
+  // 편집 화면으로 들어가면 접힘, 나오면 펼침
+  useEffect(() => setCollapsed(defaultCollapsed), [defaultCollapsed]);
 
   return (
     <Outer collapsed={collapsed}>

@@ -2,6 +2,8 @@ import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import { Global, css } from '@emotion/react';
 import AppLayout from '@/components/layout/AppLayout';
+import Toasts from '@/components/ui/Toasts';
+import { StoreProvider } from '@/lib/store';
 import { color, cssVariables } from '@/styles/tokens';
 
 const globalStyles = css`
@@ -19,7 +21,10 @@ const globalStyles = css`
   a { color: inherit; }
 `;
 
+type PageWithLayout = AppProps['Component'] & { layout?: 'default' | 'editor' };
+
 export default function App({ Component, pageProps }: AppProps) {
+  const layout = (Component as PageWithLayout).layout ?? 'default';
   return (
     <>
       <Head>
@@ -27,9 +32,12 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <Global styles={globalStyles} />
-      <AppLayout>
-        <Component {...pageProps} />
-      </AppLayout>
+      <StoreProvider>
+        <AppLayout layout={layout}>
+          <Component {...pageProps} />
+        </AppLayout>
+        <Toasts />
+      </StoreProvider>
     </>
   );
 }

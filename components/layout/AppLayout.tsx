@@ -31,13 +31,27 @@ export const PageTitle = styled.h1`
   color: ${color('text-primary')};
 `;
 
-export default function AppLayout({ children }: { children: ReactNode }) {
+// 편집 화면(통계 편집) = 사이드바 접힘 + 본문 여백 4 · 높이 꽉 참 (Figma 「인사이트 편집」 Main p4 g4)
+const EditorMain = styled.main`
+  flex: 1;
+  min-width: 0;
+  height: 100vh;
+  padding: 4px 4px 4px 0;
+  display: flex;
+  gap: 4px;
+`;
+
+export default function AppLayout({ children, layout = 'default' }: { children: ReactNode; layout?: 'default' | 'editor' }) {
   return (
     <Shell>
-      <Sidebar />
-      <Main>
-        <Body>{children}</Body>
-      </Main>
+      <Sidebar defaultCollapsed={layout === 'editor'} />
+      {layout === 'editor' ? (
+        <EditorMain>{children}</EditorMain>
+      ) : (
+        <Main>
+          <Body>{children}</Body>
+        </Main>
+      )}
     </Shell>
   );
 }
