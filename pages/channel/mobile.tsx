@@ -49,7 +49,7 @@ export default function AppPushChannel() {
   const [invite, setInvite] = useState('');
   const [inviteError, setInviteError] = useState(false);
   return (
-    <ChannelShell current="app-push" title="앱 푸시 설정">
+    <ChannelShell current="mobile" title="앱 푸시 설정">
       <Card>
         <Alert>
           <span>

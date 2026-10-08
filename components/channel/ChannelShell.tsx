@@ -8,11 +8,11 @@ import { text } from '@/styles/typography';
 
 // Figma 채널 설정 섹션(1242:83680) 공통 — 제목 · 채널 타일 6개 · 소제목(+오른쪽 버튼) · 카드 · 키-값 표 · 숫자 타일.
 
-export type ChannelKey = 'app-push' | 'web-push' | 'kakao' | 'sms' | 'email' | 'webhook';
+export type ChannelKey = 'mobile' | 'web' | 'kakao' | 'sms' | 'email' | 'webhook';
 
 export const CHANNELS: { key: ChannelKey; label: string; icon: string; href: string }[] = [
-  { key: 'app-push', label: '앱 푸시', icon: 'smartphone', href: '/channel/app-push' },
-  { key: 'web-push', label: '웹 푸시', icon: 'web_asset', href: '/channel/web-push' },
+  { key: 'mobile', label: '앱 푸시', icon: 'smartphone', href: '/channel/mobile' },
+  { key: 'web', label: '웹 푸시', icon: 'web_asset', href: '/channel/web' },
   { key: 'kakao', label: '카카오', icon: 'kakao_chat', href: '/channel/kakao' },
   { key: 'sms', label: '문자', icon: 'sms', href: '/channel/sms' },
   { key: 'email', label: '이메일', icon: 'mail', href: '/channel/email' },
@@ -58,13 +58,13 @@ const SubHead = styled.div`
   > i { flex: 1; }
 `;
 
-export function ChannelShell({ current, title, actions, children }: { current: ChannelKey; title: string; actions?: ReactNode; children: ReactNode }) {
+export function ChannelShell({ current, title, actions, children }: { current: ChannelKey | null; title?: string; actions?: ReactNode; children?: ReactNode }) {
   return (
     <>
       <Title>채널</Title>
       <Tiles>
         {CHANNELS.map((c) => (
-          <Tile key={c.key} href={c.href} $on={c.key === current} aria-current={c.key === current ? 'page' : undefined}>
+          <Tile key={c.key} href={c.href} $on={c.key === current} aria-current={c.key === current ? 'page' : undefined} onClick={(e) => c.key === current && e.preventDefault()} style={c.key === current ? { cursor: 'default' } : undefined}>
             <span>
               <Icon name={c.key === current ? `${c.icon}_filled` : c.icon} size={24} />
             </span>
@@ -72,12 +72,14 @@ export function ChannelShell({ current, title, actions, children }: { current: C
           </Tile>
         ))}
       </Tiles>
-      <SubHead>
-        <h2>{title}</h2>
-        <i />
-        {actions}
-      </SubHead>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>{children}</div>
+      {title && (
+        <SubHead>
+          <h2>{title}</h2>
+          <i />
+          {actions}
+        </SubHead>
+      )}
+      {children && <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>{children}</div>}
     </>
   );
 }
