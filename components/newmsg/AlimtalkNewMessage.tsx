@@ -16,6 +16,8 @@ import Shell, { KakaoTestSend, kakaoZero, PreviewCard } from './Shell';
 
 // 알림톡 새 메시지 — docs 3장. 검수 완료 템플릿을 골라야 발송 가능, 템플릿의 #{변수}마다 값 입력.
 type M = { t: AlimtalkTemplate | null; vars: Record<string, string>; detail: boolean; picker: boolean };
+export type AtM = M;
+export const atInitial = (): M => ({ ...initial });
 const initial: M = { t: null, vars: {}, detail: false, picker: false };
 
 const Add = styled.button`
@@ -69,6 +71,7 @@ const Pick = styled.button<{ $on: boolean }>`
   > b { ${text('text-sm', 'semibold')}; color: ${color('text-primary')}; }
 `;
 
+export const atAsMsg = (m: M) => asMsg(m);
 const asMsg = (m: M) =>
   ({
     ...(m.t ?? { templateContent: '', buttons: [], emphasis: 'NONE', messageType: 'BA' }),
@@ -76,7 +79,7 @@ const asMsg = (m: M) =>
     interpolations: m.vars,
   }) as unknown as AlimtalkMessage;
 
-function TemplatePicker({ onClose, onPick }: { onClose: () => void; onPick: (t: AlimtalkTemplate) => void }) {
+export function TemplatePicker({ onClose, onPick }: { onClose: () => void; onPick: (t: AlimtalkTemplate) => void }) {
   const list = alimtalkTemplates.filter((t) => t.inspection === 'COM');
   const [p, setP] = useState(1);
   const [sel, setSel] = useState<AlimtalkTemplate | null>(null);
@@ -117,7 +120,7 @@ function TemplatePicker({ onClose, onPick }: { onClose: () => void; onPick: (t: 
   );
 }
 
-function Fields({ m, set }: { m: M; set: (p: Partial<M>) => void }) {
+export function AlimtalkFields({ m, set }: { m: M; set: (p: Partial<M>) => void }) {
   const pick = (t: AlimtalkTemplate) => set({ t, picker: false, vars: Object.fromEntries(varsOf(t).map((k) => [k, ''])) });
   return (
     <>
@@ -195,7 +198,7 @@ export default function AlimtalkNewMessage({ recurring, copy, edit }: { recurrin
       initial={initial}
       copy={copy && { campaign: copy.campaignName, target: copy.target, conversions: copy.conversions, ignoreCapping: copy.ignoreCapping, msg: { t: ct ?? null, vars: ct ? Object.fromEntries(varsOf(ct).map((k) => [k, copy.interpolations[k] ?? ''])) : {}, detail: false, picker: false } }}
       msgActions={(_, set) => <Button onClick={() => set({ picker: true })}>템플릿 선택</Button>}
-      renderMsg={(m, set) => <Fields m={m} set={set} />}
+      renderMsg={(m, set) => <AlimtalkFields m={m} set={set} />}
       preview={(m, test) => (
         <PreviewCard>
           <header>미리보기</header>

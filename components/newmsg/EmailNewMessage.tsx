@@ -17,6 +17,8 @@ import Shell, { kakaoZero } from './Shell';
 
 // 이메일 새 메시지 — docs 6장. 미리보기 열 없음, 본문은 템플릿 선택 → 편집(전체 화면 에디터)으로 만듦.
 type M = { html: string; templateId: string | null; sender: string | null; subject: string; modal: null | 'pick' | 'preview' | 'edit' };
+export type EmM = M;
+export const emInitial = (): M => ({ ...initial });
 const initial: M = { html: '', templateId: null, sender: null, subject: '', modal: null };
 export const summary = (html: string) => html.replace(/<style[\s\S]*?<\/style>/g, '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200);
 
@@ -210,7 +212,7 @@ export function EmailEditor({ title, html, onClose, onDone }: { title: string; h
   );
 }
 
-function Fields({ m, set }: { m: M; set: (p: Partial<M>) => void }) {
+export function EmailFields({ m, set }: { m: M; set: (p: Partial<M>) => void }) {
   return (
     <>
       {m.html ? (
@@ -260,7 +262,7 @@ export default function EmailNewMessage({ recurring, copy, edit }: { recurring: 
       draftsInRecurring
       initial={initial}
       copy={copy && { campaign: copy.campaignName, target: copy.target, conversions: copy.conversions, ignoreCapping: copy.ignoreCapping, msg: { ...initial, html: copy.body, sender: copy.senderEmail, subject: copy.title } }}
-      renderMsg={(m, set) => <Fields m={m} set={set} />}
+      renderMsg={(m, set) => <EmailFields m={m} set={set} />}
       convLocked={(m) => !!m.templateId}
       check={(m) => {
         if (!m.html || !m.subject.trim() || !m.sender) {

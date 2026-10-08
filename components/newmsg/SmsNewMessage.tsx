@@ -12,7 +12,9 @@ import Shell, { KakaoTestSend, kakaoZero, PreviewCard } from './Shell';
 // 문자 새 메시지 — docs 5장. 광고 ON 이면 머리/꼬리 문구 붙인 전체 텍스트로 바이트 · 유형 계산.
 const SENDER = '플레어레인';
 const UNSUB = '080-000-0000';
+export type SmsM = M;
 type M = { isAd: boolean; title: string; body: string; image: string };
+export const smsInitial = (): M => ({ ...initial });
 const initial: M = { isAd: true, title: '', body: '', image: '' };
 const PH = `1. SMS : 단문 메세지 (90 바이트, 띄어쓰기 포함)
 
@@ -27,7 +29,7 @@ const bytes = (s: string) => [...s].reduce((a, c) => a + (c.charCodeAt(0) < 128 
 const typeOf = (m: M): SmsMessage['type'] => (m.image ? 'MMS' : m.title || bytes(full(m)) > 90 || /\{\{|\{%/.test(m.body) ? 'LMS' : 'SMS');
 const strip = (b: string) => b.replace(/^\(광고\) \[[^\]]*\]\s*/, '').replace(/\s*무료수신거부: .*$/, '');
 
-function Fields({ m, set }: { m: M; set: (p: Partial<M>) => void }) {
+export function SmsFields({ m, set }: { m: M; set: (p: Partial<M>) => void }) {
   const file = useRef<HTMLInputElement>(null);
   const t = typeOf(m);
   return (
@@ -74,6 +76,7 @@ function Fields({ m, set }: { m: M; set: (p: Partial<M>) => void }) {
   );
 }
 
+export const smsAsMsg = (m: M) => asMsg(m);
 const asMsg = (m: M) => ({ type: typeOf(m), title: m.title || undefined, body: full(m), isAd: m.isAd, image: m.image || undefined }) as SmsMessage;
 
 export default function SmsNewMessage({ recurring, copy, edit }: { recurring: boolean; copy?: SmsMessage; edit?: EditMode }) {
@@ -84,7 +87,7 @@ export default function SmsNewMessage({ recurring, copy, edit }: { recurring: bo
       edit={edit}
       initial={initial}
       copy={copy && { campaign: copy.campaignName, target: copy.target, conversions: copy.conversions, ignoreCapping: copy.ignoreCapping, msg: { isAd: copy.isAd, title: copy.title ?? '', body: strip(copy.body), image: copy.image ?? '' } }}
-      renderMsg={(m, set) => <Fields m={m} set={set} />}
+      renderMsg={(m, set) => <SmsFields m={m} set={set} />}
       preview={(m, test) => (
         <PreviewCard>
           <header>미리보기</header>

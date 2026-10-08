@@ -16,6 +16,7 @@ export type Journey = {
   entry: { kind: 'SEGMENT'; segment: string } | { kind: 'EVENT'; event: string; target: string };
   nodes: JourneyNode[];
   handlingOnPause?: 'PROCESS' | 'EXIT';
+  editor?: import('./builder').Graph; // 빌더 편집기 JSON
 };
 export type JourneyStatus = 'active' | 'paused' | 'draft' | 'archived';
 export const statusOf = (j: Journey): JourneyStatus => (j.active ? 'active' : j.archivedAt ? 'archived' : j.lastActivatedAt ? 'paused' : 'draft');

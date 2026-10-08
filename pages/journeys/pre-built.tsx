@@ -132,7 +132,7 @@ export default function PreBuilt() {
               full
               onClick={() => {
                 const id = `jr-${Date.now().toString(36)}`;
-                journeys.unshift({ ...journeys[0], id, name: open.title, active: false, lastActivatedAt: undefined, lastPausedAt: undefined, archivedAt: undefined, createdAt: '2026.10.08', entries: 0, conversions: 0, amount: 0, nodes: flow });
+                journeys.unshift({ ...journeys[0], id, name: open.title, active: false, lastActivatedAt: undefined, lastPausedAt: undefined, archivedAt: undefined, createdAt: '2026.10.08', entries: 0, conversions: 0, amount: 0, nodes: flow, editor: undefined });
                 emitJourneys();
                 router.push(`/journeys/${id}/edit`);
               }}

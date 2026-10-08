@@ -22,7 +22,9 @@ type Item = { image: string; link: string; text: string };
 type Car = { image: string; title: string; text: string; price: string; discount: string; rate: string; extra: string; buttons: Btn[] };
 type M = { kind: Kind; picker: boolean; targeting: 'M' | 'N' | 'I'; isAd: boolean; age: boolean; image: string; imageLink: string; text: string; buttons: Btn[]; header: string; items: Item[]; intro: { on: boolean; image: string; title: string; text: string; link: string }; cars: Car[]; tab: number; more: { on: boolean; link: string } };
 
+export type FtM = M;
 const car = (): Car => ({ image: '', title: '', text: '', price: '', discount: '', rate: '', extra: '', buttons: [] });
+export const ftFresh = (k: Kind = 'FI') => fresh(k);
 const fresh = (kind: Kind, keep?: Pick<M, 'targeting' | 'isAd' | 'age'>): M => ({
   kind,
   picker: false,
@@ -180,7 +182,7 @@ const CarTabs = styled.div`
   > button[aria-selected='true'] { border-color: ${color('border-brand')}; color: ${color('text-brand-secondary')}; }
 `;
 
-function Fields({ m, set }: { m: M; set: (p: Partial<M>) => void }) {
+export function FriendtalkFields({ m, set }: { m: M; set: (p: Partial<M>) => void }) {
   const L = LIMIT[m.kind];
   const ad = (isAd: boolean) => {
     if (!isAd && (m.kind === 'FL' || m.kind === 'FA' || m.kind === 'FC' || m.targeting !== 'I')) return window.alert('해당 메시지 타입은 광고성 메시지입니다.');
@@ -350,6 +352,7 @@ function Fields({ m, set }: { m: M; set: (p: Partial<M>) => void }) {
   );
 }
 
+export const ftAsMsg = (m: M) => asMsg(m);
 const asMsg = (m: M) =>
   ({
     messageType: m.kind === 'FI' && !m.image ? 'FT' : m.kind,
@@ -362,6 +365,9 @@ const asMsg = (m: M) =>
     targeting: m.targeting,
   }) as FriendtalkMessage;
 
+export function ftCheck(m: M) {
+  return check(m);
+}
 function check(m: M) {
   const fail = (s: string) => (window.alert(s), false);
   const btns = m.kind === 'FA' || m.kind === 'FC' ? m.cars.flatMap((c) => c.buttons) : m.buttons;
@@ -409,7 +415,7 @@ export default function FriendtalkNewMessage({ recurring, copy, edit }: { recurr
           />
         </div>
       )}
-      renderMsg={(m, set) => <Fields m={m} set={set} />}
+      renderMsg={(m, set) => <FriendtalkFields m={m} set={set} />}
       preview={(m, test) => (
         <PreviewCard>
           <header>미리보기</header>
