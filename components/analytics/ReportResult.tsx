@@ -1,12 +1,34 @@
 import { useState } from 'react';
 import styled from '@emotion/styled';
 import Button from '@/components/ui/Button';
+import { fmtK, niceMax } from './MiniCharts';
 import { color, radius, shadow } from '@/styles/tokens';
 import { text } from '@/styles/typography';
 
 // Figma 「인사이트 편집」 Report card — Chart · CSV · Table, 「퍼널 편집」 Funnel · CSV · Table.
 
 export const dayLabel = (d: Date) => `${d.getMonth() + 1}.${d.getDate()}`;
+export type Gran = 'HOUR' | 'DAY' | 'MONTH';
+const ampm = (d: Date) => `${d.getHours() % 12 || 12} ${d.getHours() < 12 ? '오전' : '오후'}`; // ko `h aa`
+const yy = (d: Date) => String(d.getFullYear()).slice(2);
+// 표 머리글: 일 `M.d` · 월 `M` · 시간 `M.d h aa`
+export const headLabel = (d: Date, g: Gran) => (g === 'MONTH' ? `${d.getMonth() + 1}` : g === 'HOUR' ? `${dayLabel(d)} ${ampm(d)}` : dayLabel(d));
+// 툴팁 날짜: `yy.M.d` · 월 `yy.M` · 시간 `yy.M.d h aa`
+const tipLabel = (d: Date, g: Gran) => (g === 'MONTH' ? `${yy(d)}.${d.getMonth() + 1}` : g === 'HOUR' ? `${yy(d)}.${dayLabel(d)} ${ampm(d)}` : `${yy(d)}.${dayLabel(d)}`);
+
+// 가로축 눈금: 시간 = 하루짜리면 2시간 간격 시각, 그 이상이면 날짜가 바뀌는 칸에 날짜 / 일 = 30일 이하 3칸 간격 / 월 = 매월
+function xTicks(dates: Date[], g: Gran) {
+  const n = dates.length;
+  if (g === 'HOUR') {
+    if (n <= 24) return dates.map((d, i) => ({ i, label: ampm(d) })).filter((t) => t.i % 2 === 0);
+    const days = dates.map((d, i) => ({ i, d })).filter(({ d }) => d.getHours() === 0);
+    const every = Math.max(1, Math.ceil(days.length / 10));
+    return days.filter((_, k) => k % every === 0).map(({ i, d }) => ({ i, label: dayLabel(d) }));
+  }
+  if (g === 'MONTH') return dates.map((d, i) => ({ i, label: `${d.getMonth() + 1}` }));
+  const every = n <= 30 ? 3 : Math.ceil(n / 10);
+  return dates.map((d, i) => ({ i, label: dayLabel(d) })).filter((t) => t.i % every === 0);
+}
 
 // 계열 색 — 첫 계열 fg-brand-primary(Figma), 그 뒤는 차트 색 순서
 const SERIES = ['var(--fg-brand-primary)', 'var(--chart-clicked)', 'var(--chart-remaining)', 'var(--chart-uninstalled)', 'var(--chart-capped)'];
@@ -57,18 +79,10 @@ const GridArea = styled.div`
   > svg { position: absolute; left: 0; right: 0; top: 8px; bottom: 8px; width: 100%; height: calc(100% - 16px); overflow: visible; }
 `;
 
-const XLabels = styled.div`
-  display: flex;
-  justify-content: space-between;
-  padding-left: 40px;
-  ${text('text-sm', 'regular')};
-  color: ${color('text-quaternary')};
-`;
 
 const Tip = styled.div`
   position: absolute;
   z-index: 5;
-  transform: translate(-50%, calc(-100% - 12px));
   padding: 8px 12px;
   border-radius: ${radius.md}px;
   background: ${color('bg-primary-solid')};
@@ -77,20 +91,29 @@ const Tip = styled.div`
   white-space: nowrap;
   ${text('text-xs', 'semibold')};
   color: ${color('text-white')};
-  > small { display: block; ${text('text-xs', 'regular')}; color: ${color('text-tertiary_on-brand')}; }
+  > b { display: flex; align-items: center; gap: 6px; }
+  > b > i { display: block; width: 12px; height: 2px; border-radius: 1px; }
+  > small { display: block; margin-top: 2px; ${text('text-xs', 'regular')}; color: ${color('text-tertiary_on-brand')}; }
+  > strong { display: block; margin-top: 4px; ${text('text-sm', 'semibold')}; color: ${color('text-white')}; }
 `;
 
-const fmtK = (v: number) => (v >= 1000 ? `${Math.round(v / 100) / 10}k`.replace('.0k', 'k') : String(v));
+const XAxis = styled.div`
+  position: relative;
+  height: 20px;
+  margin-left: 40px;
+  ${text('text-sm', 'regular')};
+  color: ${color('text-quaternary')};
+  > span { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; }
+`;
 
-export function InsightChart({ series, dates, unit }: { series: { name: string; values: number[] }[]; dates: Date[]; unit: '명' | '회' }) {
-  const [hover, setHover] = useState<number | null>(null);
-  const peak = Math.max(0, ...series.flatMap((s) => s.values));
-  const max = peak === 0 ? 4000 : Math.ceil(peak / 4 / 10 ** Math.floor(Math.log10(peak / 4))) * 10 ** Math.floor(Math.log10(peak / 4)) * 4;
+export function InsightChart({ series, dates, unit, granularity }: { series: { name: string; values: number[] }[]; dates: Date[]; unit: '명' | '회'; granularity: Gran }) {
+  const [hover, setHover] = useState<{ i: number; s: number; w: number; h: number } | null>(null);
+  const max = niceMax(Math.max(0, ...series.flatMap((s) => s.values)));
   const ticks = [4, 3, 2, 1, 0].map((k) => (max / 4) * k);
   const n = dates.length;
   const x = (i: number) => (n > 1 ? (i / (n - 1)) * 100 : 50);
   const y = (v: number) => 100 - (v / max) * 100;
-  const step = Math.max(1, Math.ceil(n / 8));
+  const ticksX = xTicks(dates, granularity);
   return (
     <ChartBox>
       <Legend>
@@ -110,7 +133,14 @@ export function InsightChart({ series, dates, unit }: { series: { name: string; 
         <GridArea
           onMouseMove={(e) => {
             const r = e.currentTarget.getBoundingClientRect();
-            setHover(Math.max(0, Math.min(n - 1, Math.round(((e.clientX - r.left) / r.width) * (n - 1)))));
+            const i = Math.max(0, Math.min(n - 1, Math.round(((e.clientX - r.left) / r.width) * (n - 1))));
+            // 마우스에서 가장 가까운 계열의 점
+            const py = ((e.clientY - r.top - 8) / (r.height - 16)) * 100;
+            let s = 0;
+            series.forEach((sr, k) => {
+              if (Math.abs(y(sr.values[i]) - py) < Math.abs(y(series[s].values[i]) - py)) s = k;
+            });
+            setHover({ i, s, w: r.width, h: r.height });
           }}
           onMouseLeave={() => setHover(null)}
         >
@@ -121,23 +151,36 @@ export function InsightChart({ series, dates, unit }: { series: { name: string; 
             {series.map((s, si) => (
               <path key={s.name} d={s.values.map((v, i) => `${i ? 'L' : 'M'}${x(i)},${y(v)}`).join(' ')} fill="none" stroke={SERIES[si % SERIES.length]} strokeWidth={2} vectorEffect="non-scaling-stroke" />
             ))}
-            {hover != null && <line x1={x(hover)} x2={x(hover)} y1={0} y2={100} stroke="var(--border-primary)" vectorEffect="non-scaling-stroke" />}
+            {hover && <line x1={x(hover.i)} x2={x(hover.i)} y1={0} y2={100} stroke="var(--border-primary)" vectorEffect="non-scaling-stroke" />}
           </svg>
-          {hover != null && (
-            <Tip style={{ left: `${x(hover)}%`, top: '8px' }}>
-              {dayLabel(dates[hover])}
-              {series.map((s, si) => (
-                <small key={s.name} style={{ color: si === 0 ? undefined : undefined }}>{`${si + 1}. ${s.name} · ${s.values[hover].toLocaleString()}${unit}`}</small>
-              ))}
-            </Tip>
-          )}
+          {hover && (() => {
+            const sr = series[hover.s];
+            const v = sr.values[hover.i];
+            const px = (x(hover.i) / 100) * hover.w;
+            const py = 8 + (y(v) / 100) * (hover.h - 16);
+            const flip = px > hover.w - 200; // 오른쪽이 모자라면 왼쪽으로
+            const top = Math.max(0, Math.min(py - 36, hover.h - 76)); // 그래프 영역 안에서
+            return (
+              <>
+                <span style={{ position: 'absolute', left: px - 4, top: py - 4, width: 8, height: 8, borderRadius: 4, background: 'var(--bg-primary)', border: `2px solid ${SERIES[hover.s % SERIES.length]}`, pointerEvents: 'none' }} />
+                <Tip style={{ top, ...(flip ? { right: hover.w - px + 12 } : { left: px + 12 }) }}>
+                  <b>
+                    <i style={{ background: SERIES[hover.s % SERIES.length] }} />
+                    {`${hover.s + 1}. ${sr.name}`}
+                  </b>
+                  <small>{tipLabel(dates[hover.i], granularity)}</small>
+                  <strong>{`${v.toLocaleString('ko-KR')}${unit}`}</strong>
+                </Tip>
+              </>
+            );
+          })()}
         </GridArea>
       </Plot>
-      <XLabels>
-        {dates.filter((_, i) => i % step === 0).map((d) => (
-          <span key={d.toISOString()}>{dayLabel(d)}</span>
+      <XAxis>
+        {ticksX.map((t) => (
+          <span key={t.i} style={{ left: `${x(t.i)}%` }}>{t.label}</span>
         ))}
-      </XLabels>
+      </XAxis>
     </ChartBox>
   );
 }
@@ -163,7 +206,7 @@ const T = styled.table`
   td small { display: block; ${text('text-sm', 'regular')}; color: ${color('text-tertiary')}; }
 `;
 
-export function InsightTable({ series, dates }: { series: { name: string; values: number[] }[]; dates: Date[] }) {
+export function InsightTable({ series, dates, granularity }: { series: { name: string; values: number[] }[]; dates: Date[]; granularity: Gran }) {
   return (
     <TableWrap>
       <Scroll>
@@ -173,7 +216,7 @@ export function InsightTable({ series, dates }: { series: { name: string; values
               <th style={{ width: 220, minWidth: 220 }}>이벤트</th>
               <th style={{ width: 90, minWidth: 90 }}>평균</th>
               {dates.map((d) => (
-                <th key={d.toISOString()} style={{ width: 90, minWidth: 90 }}>{dayLabel(d)}</th>
+                <th key={d.toISOString()} style={{ width: 90, minWidth: 90 }}>{headLabel(d, granularity)}</th>
               ))}
             </tr>
           </thead>

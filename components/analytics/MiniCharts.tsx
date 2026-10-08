@@ -9,8 +9,15 @@ const days = (from: Date, n: number) => Array.from({ length: n }, (_, i) => new 
 export const last30 = days(new Date('2026-09-09T00:00:00+09:00'), 30);
 export const md = (d: Date) => `${d.getMonth() + 1}.${d.getDate()}`;
 
-// Y 눈금 = 0 ~ 4k (스테이징 · Figma 값), X = 4일 간격 라벨
-const Y = ['4k', '3k', '2k', '1k', '0'];
+// Y 눈금 5개 — 데이터 최댓값에 맞춰 1 · 2 · 2.5 · 5 × 10ⁿ 간격 (0이면 0 ~ 4k), X = 4일 간격 라벨
+export function niceMax(peak: number) {
+  if (peak <= 0) return 4000;
+  const raw = peak / 4;
+  const p = 10 ** Math.floor(Math.log10(raw));
+  const step = [1, 2, 2.5, 5, 10].map((m) => m * p).find((v) => v >= raw)!;
+  return step * 4;
+}
+export const fmtK = (v: number) => (v >= 1_000_000 ? `${+(v / 1_000_000).toFixed(1)}M` : v >= 1000 ? `${+(v / 1000).toFixed(1)}k` : String(v));
 
 const ChartWrap = styled.div`
   position: relative;
@@ -77,7 +84,8 @@ const Tip = styled.div`
 
 export function InsightMiniChart({ values, label }: { values: number[]; label: string }) {
   const [hover, setHover] = useState<number | null>(null);
-  const max = 4000;
+  const max = niceMax(Math.max(...values));
+  const Y = [4, 3, 2, 1, 0].map((k) => fmtK((max / 4) * k));
   const n = values.length;
   const pts = values.map((v, i) => [(i / (n - 1)) * 100, 100 - (v / max) * 100]);
   const path = pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x},${y}`).join(' ');

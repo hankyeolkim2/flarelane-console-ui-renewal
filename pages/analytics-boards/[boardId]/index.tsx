@@ -9,7 +9,8 @@ import { Anchor, Menu, MenuItem } from '@/components/ui/Menu';
 import { ConfirmModal } from '@/components/ui/Modal';
 import AnalyticsSearch from '@/components/analytics/AnalyticsSearch';
 import CreateMenu from '@/components/analytics/CreateMenu';
-import { FunnelMiniChart, InsightMiniChart } from '@/components/analytics/MiniCharts';
+import { FunnelMiniChart, InsightMiniChart, last30 } from '@/components/analytics/MiniCharts';
+import { funnelCounts, insightValues } from '@/lib/catalog';
 import { boardName, formatEdited, LIMITS, ME, reportName, type Report } from '@/lib/analytics';
 import { useStore } from '@/lib/store';
 import { color, radius, shadow } from '@/styles/tokens';
@@ -96,9 +97,6 @@ const NotFound = styled.p`
   color: ${color('text-tertiary')};
 `;
 
-// 2026-09-09 ~ 10-08 일별 값 (미리보기용)
-const sample = [420, 380, 510, 460, 430, 470, 520, 480, 450, 500, 530, 490, 470, 520, 560, 540, 500, 480, 510, 550, 530, 490, 520, 570, 540, 510, 530, 560, 580, 550];
-
 function ReportCard({ report, onDelete }: { report: Report; onDelete: () => void }) {
   const router = useRouter();
   const { renameReport } = useStore();
@@ -126,9 +124,9 @@ function ReportCard({ report, onDelete }: { report: Report; onDelete: () => void
         </Anchor>
       </CardHead>
       {insight ? (
-        <InsightMiniChart values={sample} label={report.events[0]} />
+        <InsightMiniChart values={insightValues(report.events[0], last30, 'DAY', 'UNIQUE_USER')} label={report.events[0]} />
       ) : (
-        <FunnelMiniChart steps={report.events} counts={report.funnel?.counts ?? report.events.map(() => 0)} />
+        <FunnelMiniChart steps={report.events} counts={report.funnel?.counts ?? funnelCounts(report.events)} />
       )}
     </Card>
   );

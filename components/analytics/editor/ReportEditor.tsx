@@ -237,7 +237,7 @@ export default function ReportEditor({ mode, boardId, report, initialType }: Pro
   // ── 결과 데이터 ──
   const dates = useMemo(() => buckets(state), [state]);
   const unit = state.measurement === 'UNIQUE_USER' ? '명' : '회';
-  const series = state.metrics.map((m) => ({ name: m.event, values: insightValues(m.event, dates.length) }));
+  const series = state.metrics.map((m) => ({ name: m.event, values: insightValues(m.event, dates, state.granularity, state.measurement) }));
   const counts = funnelCounts(state.metrics.map((m) => m.event));
   const crm = state.type === 'INSIGHT' && !crmClosed && state.range.from < CRM_START && state.metrics.some((m) => isCrm(m.event));
   const crumbs = boardId
@@ -333,9 +333,9 @@ export default function ReportEditor({ mode, boardId, report, initialType }: Pro
           )}
           {status === 'SUCCEEDED' && state.type === 'INSIGHT' && (
             <>
-              <InsightChart series={series} dates={dates} unit={unit} />
+              <InsightChart series={series} dates={dates} unit={unit} granularity={state.granularity} />
               <CsvButton onClick={() => toast(`${shownName}_${dayLabel(dates[0])}-${dayLabel(dates[dates.length - 1])}.csv`)} />
-              <InsightTable series={series} dates={dates} />
+              <InsightTable series={series} dates={dates} granularity={state.granularity} />
             </>
           )}
           {status === 'SUCCEEDED' && state.type === 'FUNNEL' && (
