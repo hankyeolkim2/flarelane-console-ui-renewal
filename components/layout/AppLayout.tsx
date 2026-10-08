@@ -36,7 +36,7 @@ const EditorMain = styled.main`
   flex: 1;
   min-width: 0;
   height: 100vh;
-  padding: 4px 4px 4px 0;
+  padding: 4px;
   display: flex;
   gap: 4px;
 `;
