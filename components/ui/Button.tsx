@@ -7,7 +7,7 @@ import { text } from '@/styles/typography';
 
 // Figma `Buttons/Button` · `Buttons/Button destructive`.
 // Figma 테두리는 안쪽(inside)이라 높이를 고정하고, 테두리 있는 종류는 좌우 패딩에서 1px 뺌.
-export type ButtonHierarchy = 'primary' | 'secondary' | 'tertiary' | 'destructive-tertiary';
+export type ButtonHierarchy = 'primary' | 'secondary' | 'tertiary' | 'destructive-tertiary' | 'destructive-secondary';
 export type ButtonSize = 'sm' | 'md';
 
 const sizes = {
@@ -38,6 +38,15 @@ const look = {
     --btn-icon: ${color('fg-quaternary')};
     &:hover:not(:disabled) { background: ${color('bg-primary_hover')}; color: ${color('text-tertiary_hover')}; --btn-icon: ${color('fg-quaternary_hover')}; }
   `,
+  // Figma `Buttons/Button destructive` Secondary — 테두리 border-error_subtle · 글자 text-error-primary
+  'destructive-secondary': `
+    background: ${color('bg-primary')};
+    color: ${color('text-error-primary')};
+    --btn-icon: ${color('fg-error-secondary')};
+    border: 1px solid ${color('border-error_subtle')};
+    box-shadow: ${secondaryShadow};
+    &:hover:not(:disabled) { background: ${color('bg-error-primary')}; color: ${color('text-error-primary_hover')}; }
+  `,
   'destructive-tertiary': `
     background: transparent;
     color: ${color('text-error-primary')};
@@ -55,7 +64,7 @@ const Base = styled.button<{ hierarchy: ButtonHierarchy; size: ButtonSize; iconO
   height: ${(p) => sizes[p.size].h}px;
   ${(p) => (p.iconOnly ? `width: ${sizes[p.size].iconOnly}px;` : '')}
   ${(p) => (p.full ? 'width: 100%;' : '')}
-  padding: 0 ${(p) => (p.iconOnly ? 0 : sizes[p.size].px - (p.hierarchy === 'secondary' ? 1 : 0))}px;
+  padding: 0 ${(p) => (p.iconOnly ? 0 : sizes[p.size].px - (p.hierarchy === 'secondary' || p.hierarchy === 'destructive-secondary' ? 1 : 0))}px;
   border: 0;
   border-radius: 8px;
   ${text('text-sm', 'semibold')};

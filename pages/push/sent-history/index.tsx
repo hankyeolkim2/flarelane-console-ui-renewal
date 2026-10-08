@@ -11,6 +11,7 @@ import Radio from '@/components/ui/Radio';
 import TextField from '@/components/ui/TextField';
 import { EmptyList, ListCard, PageTitle, SentRow } from '@/components/sent/SentList';
 import { ReasonField } from '@/components/sent/Reason';
+import { rowOf } from '@/components/sent/rows';
 import { addDays, TODAY, ymd } from '@/lib/editor';
 import { useStore } from '@/lib/store';
 import { fmt, MAX_PAGES, pct, PER, PLATFORMS, pushMessages, SOURCES, sourceLabel, won, type PushMessage, type Source } from '@/lib/sent';
@@ -71,17 +72,6 @@ const RangeBtn = styled.button`
   &:hover { background: ${color('bg-primary_hover')}; }
 `;
 
-const Skel = styled.i`
-  display: block;
-  width: 64px;
-  height: 20px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, ${color('bg-secondary')}, ${color('bg-tertiary')}, ${color('bg-secondary')});
-  background-size: 200% 100%;
-  animation: sk 1.2s linear infinite;
-  @keyframes sk { from { background-position: 200% 0; } to { background-position: 0 0; } }
-`;
-
 const Info = styled.dl`
   display: grid;
   grid-template-columns: 80px minmax(0, 1fr);
@@ -90,48 +80,6 @@ const Info = styled.dl`
   > dt { ${text('text-sm', 'medium')}; color: ${color('text-tertiary')}; }
   > dd { margin: 0; ${text('text-sm', 'medium')}; color: ${color('text-primary')}; }
 `;
-
-const total = (m: PushMessage, k: 'sent' | 'clicked' | 'conversions' | 'amount') => PLATFORMS.reduce((a, p) => a + (m.stats[p][k] ?? 0), 0);
-
-// 전환 · 구매 총액은 행이 화면에 들어오면 500~2000ms 뒤 불러옴(스테이징 지연 로드)
-function LazyConv({ m, kind }: { m: PushMessage; kind: 'conv' | 'amount' }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const [ready, setReady] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    let t: ReturnType<typeof setTimeout>;
-    const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) {
-        t = setTimeout(() => setReady(true), 500 + ((m.id.charCodeAt(0) * 37) % 1500));
-        io.disconnect();
-      }
-    });
-    io.observe(el);
-    return () => {
-      io.disconnect();
-      clearTimeout(t);
-    };
-  }, [m.id]);
-  const sent = total(m, 'sent');
-  return <span ref={ref}>{!ready ? <Skel /> : kind === 'conv' ? `${fmt(total(m, 'conversions'))} (${pct(total(m, 'conversions'), sent)})` : won(total(m, 'amount'))}</span>;
-}
-
-function PlatformIcons({ m }: { m: PushMessage }) {
-  const icons: [string, boolean][] = [
-    ['smartphone', m.stats.webMobile.sent > 0 || m.targetPlatforms.includes('webMobile')],
-    ['desktop_windows', m.stats.webDesktop.sent > 0 || m.targetPlatforms.includes('webDesktop')],
-    ['android', m.stats.android.sent > 0 || m.targetPlatforms.includes('android')],
-    ['apple', m.stats.ios.sent > 0 || m.targetPlatforms.includes('ios')],
-  ];
-  return (
-    <span style={{ display: 'flex', gap: 4, color: 'var(--fg-quaternary)' }}>
-      {icons.filter(([, on]) => on).map(([n]) => (
-        <Icon key={n} name={n} size={20} />
-      ))}
-    </span>
-  );
-}
 
 export default function PushSentHistory() {
   const router = useRouter();
@@ -252,24 +200,7 @@ export default function PushSentHistory() {
           {rows.length === 0 ? (
             <EmptyList />
           ) : (
-            rows.map((m) => {
-              const sent = total(m, 'sent');
-              const clicked = total(m, 'clicked');
-              return (
-                <SentRow
-                  key={m.id}
-                  source={m.source}
-                  href={`/push/sent-history/${m.id}`}
-                  copyHref={`/push/new-message?copyMessageId=${m.id}`}
-                  content={{ eyebrow: m.campaignName ? { text: m.campaignName, tone: 'brand' } : undefined, title: m.title, body: m.body, url: m.url, image: !!m.imageUrl }}
-                  cols={[
-                    [160, [{ label: '발송 시간', value: m.createdAt }, { label: '플랫폼', value: <PlatformIcons m={m} />, raw: true }]],
-                    [112, [{ label: '발송', value: fmt(sent) }, { label: '전환', value: <LazyConv m={m} kind="conv" /> }]],
-                    [112, [{ label: '클릭', value: `${fmt(clicked)} (${pct(clicked, sent)})` }, { label: '구매 총액', value: <LazyConv m={m} kind="amount" /> }]],
-                  ]}
-                />
-              );
-            })
+            rows.map((m) => <SentRow key={m.id} source={m.source} href={`/push/sent-history/${m.id}`} copyHref={`/push/new-message?copyMessageId=${m.id}`} {...rowOf.push(m, { label: '발송 시간', value: m.createdAt })} />)
           )}
           {/* 스테이징: 0건이면 페이지네이션 숨김 */}
           {rows.length > 0 && <Pagination page={page} pages={pages} onChange={(n) => push({ p: n })} />}
