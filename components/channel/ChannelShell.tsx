@@ -135,7 +135,7 @@ const KVRow = styled.div<{ cols: number }>`
   > dd { ${text('text-sm', 'medium')}; color: ${color('text-primary')}; word-break: break-all; }
 `;
 
-export function KV({ rows }: { rows: ([string, ReactNode] | [string, ReactNode, string, ReactNode])[] }) {
+export function KV({ rows }: { rows: ([ReactNode, ReactNode] | [ReactNode, ReactNode, ReactNode, ReactNode])[] }) {
   return (
     <dl style={{ margin: 0 }}>
       {rows.map((r, i) => (

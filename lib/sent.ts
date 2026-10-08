@@ -9,7 +9,7 @@ export const SOURCES: { value: Source; label: string }[] = [
 ];
 export const sourceLabel = (s: Source) => SOURCES.find((x) => x.value === s)!.label;
 
-export type Segment = { name: string; isDefault?: boolean; conditions?: string[] };
+export type Segment = { name: string; isDefault?: boolean; conditions?: string[] }; // 조건 = 「필드|연산자 값」
 export type Target =
   | { kind: 'segment'; include: Segment[][]; exclude?: Segment[][] }
   | { kind: 'csv'; file: string }
@@ -145,7 +145,7 @@ const dayOf = (i: number) => {
 };
 const pickSource = (i: number): Source => (i % 7 === 3 ? 'api' : i % 11 === 5 ? 'testDevice' : i % 13 === 9 ? 'system' : 'console');
 
-const VIP: Target = { kind: 'segment', include: [[{ name: 'VIP 유저', conditions: ['유저 ID = user_0001'] }]] };
+const VIP: Target = { kind: 'segment', include: [[{ name: 'VIP 유저', conditions: ['유저 ID|= user_0001'] }]] };
 const ALL: Target = { kind: 'segment', include: [[{ name: '전체 유저', isDefault: true }]] };
 const KAKAO_CONV: Conversion[] = [
   { id: 'c1', eventType: '첫 방문', filters: ['notification_id 이 중에 하나 332558aa-4f4c-4b7e-9d1c-8f0e2a6b1c3d'], hours: 72, candidate: 1, converted: 0 },

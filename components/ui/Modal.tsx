@@ -98,7 +98,7 @@ const DialogBody = styled.div`
   padding: 4px 24px 24px;
 `;
 
-export function Dialog({ title, width = 480, onClose, footer, children }: { title: string; width?: number; onClose: () => void; footer?: ReactNode; children: ReactNode }) {
+export function Dialog({ title, width = 480, onClose, footer, actions, children }: { title: string; width?: number; onClose: () => void; footer?: ReactNode; actions?: ReactNode; children: ReactNode }) {
   useEffect(() => {
     const key = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     document.addEventListener('keydown', key);
@@ -109,6 +109,7 @@ export function Dialog({ title, width = 480, onClose, footer, children }: { titl
       <Box width={width} role="dialog" aria-modal aria-label={title} onMouseDown={(e) => e.stopPropagation()}>
         <DialogHead>
           <h2>{title}</h2>
+          {actions}
           <button type="button" aria-label="닫기" onClick={onClose}>
             <Icon name="close" size={20} />
           </button>
