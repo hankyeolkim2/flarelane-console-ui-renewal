@@ -70,7 +70,7 @@ const ProjectCard = styled.button<{ collapsed: boolean }>`
   align-items: center;
   gap: 12px;
   width: 100%;
-  padding: ${(p) => (p.collapsed ? '6px' : '13px 12px')};
+  padding: ${(p) => (p.collapsed ? '6px' : '12px 11px')};
   justify-content: ${(p) => (p.collapsed ? 'center' : 'flex-start')};
   border: 1px solid ${(p) => (p.collapsed ? 'transparent' : color('border-secondary'))};
   border-radius: ${radius.xl}px;
@@ -98,7 +98,6 @@ const ProjectText = styled.span`
   flex-direction: column;
   min-width: 0;
   flex: 1;
-  padding-right: 20px;
   span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   span:first-of-type { ${text('text-xs', 'regular')}; color: ${color('text-quaternary')}; }
   span:last-of-type { ${text('text-sm', 'semibold')}; color: ${color('text-primary')}; }
@@ -153,7 +152,11 @@ const itemBase = (current: boolean) => `
   text-align: left;
   text-decoration: none;
   cursor: pointer;
-  &:hover { background: ${color('bg-primary_hover')}; color: ${color('text-secondary_hover')}; }
+  &:hover {
+    background: ${current ? color('bg-secondary_hover') : color('bg-primary_hover')};
+    color: ${color('text-secondary_hover')};
+  }
+  &:hover [data-nav-icon] { color: ${color('fg-primary')}; }
   &:focus-visible { outline: none; box-shadow: ${shadow['focus-ring']}; }
 `;
 
@@ -179,7 +182,7 @@ const Label = styled.span`
 
 const ItemIcon = styled.span<{ active: boolean }>`
   display: inline-flex;
-  color: ${(p) => (p.active ? color('fg-secondary') : color('fg-quaternary'))};
+  color: ${(p) => (p.active ? color('fg-primary') : color('fg-quaternary'))};
 `;
 
 const Chevron = styled.span<{ open: boolean }>`
@@ -205,7 +208,7 @@ const Footer = styled.div<{ collapsed: boolean }>`
   align-items: center;
   justify-content: ${(p) => (p.collapsed ? 'center' : 'flex-start')};
   gap: 10px;
-  padding: ${(p) => (p.collapsed ? '16px 0' : '16px 12px 16px 16px')};
+  padding: ${(p) => (p.collapsed ? '15px 0 16px' : '15px 12px 16px 16px')};
   border-top: 1px solid ${color('border-secondary')};
 `;
 
@@ -248,8 +251,8 @@ function NavGroup({ item, path, collapsed }: { item: NavItem; path: string; coll
     return (
       <ItemLink href={item.href} current={current ? 1 : 0} collapsed={collapsed ? 1 : 0} title={collapsed ? item.label : undefined}>
         <Label>
-          <ItemIcon active={current}>
-            <Icon name={item.icon} size={22} />
+          <ItemIcon data-nav-icon active={current}>
+            <Icon name={current ? `${item.icon}_filled` : item.icon} size={22} />
           </ItemIcon>
           {!collapsed && item.label}
         </Label>
@@ -268,8 +271,8 @@ function NavGroup({ item, path, collapsed }: { item: NavItem; path: string; coll
         onClick={() => setOpen((v) => !v)}
       >
         <Label>
-          <ItemIcon active={open || hasCurrent}>
-            <Icon name={item.icon} size={22} />
+          <ItemIcon data-nav-icon active={open || hasCurrent}>
+            <Icon name={collapsed && hasCurrent ? `${item.icon}_filled` : item.icon} size={22} />
           </ItemIcon>
           {!collapsed && item.label}
         </Label>
