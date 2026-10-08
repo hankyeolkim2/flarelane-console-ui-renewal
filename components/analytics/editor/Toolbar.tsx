@@ -7,6 +7,7 @@ import Select from '@/components/ui/Select';
 import { addDays, granularityRule, MIN_DATE, parseYmd, presetRange, rangeDays, rangeLabel, TODAY, ymd, type EditorState, type Granularity, type Preset } from '@/lib/editor';
 import { color, radius, shadow } from '@/styles/tokens';
 import { text } from '@/styles/typography';
+import { dropXs } from '@/styles/effects';
 
 // Figma Toolbar(기간 버튼 · Date presets · 단위 Select) + 스테이징 기간 · 단위 규칙.
 
@@ -32,7 +33,10 @@ const Group = styled.div`
   border: 1px solid ${color('border-primary')};
   border-radius: ${radius.md}px;
   overflow: hidden;
-  box-shadow: ${shadow.xs};
+  position: relative;
+  /* Figma Shadows/shadow-xs-skeuomorphic 렌더 결과: 바깥 드롭 + 안쪽 버튼들 위에 아래 1px 5% */
+  box-shadow: ${dropXs};
+  &::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.05); pointer-events: none; }
   > button {
     height: 34px;
     padding: 0 14px;
@@ -47,12 +51,13 @@ const Group = styled.div`
   > button:hover, > button[aria-pressed='true'] { background: ${color('bg-primary_hover')}; color: ${color('text-secondary_hover')}; }
 `;
 
-// 폭 = Figma 「Date presets」(215 = 53 · 53 · 49 · 58 + 테두리) — 정수 폭이라 뒤의 기간 버튼이 정수 픽셀에 놓임
+// 폭 = Figma 「Date presets」 213(53 · 53 · 49 · 58, 테두리는 안쪽에 겹침) → CSS 는 바깥 테두리 1px 씩 빼서 52 · 53 · 49 · 57 + 2
+// 정수 폭이라 뒤의 기간 버튼이 정수 픽셀에 놓임
 const PRESETS: { value: Preset; label: string; w: number }[] = [
-  { value: 'YESTERDAY', label: '어제', w: 53 },
+  { value: 'YESTERDAY', label: '어제', w: 52 },
   { value: 'TODAY', label: '오늘', w: 53 },
   { value: 'LAST_7D', label: '7일', w: 49 },
-  { value: 'LAST_30D', label: '30일', w: 58 },
+  { value: 'LAST_30D', label: '30일', w: 57 },
 ];
 
 // ── 기간 피커 (범위 달력 + 「기간설정」 프리셋 + 날짜 입력) ──

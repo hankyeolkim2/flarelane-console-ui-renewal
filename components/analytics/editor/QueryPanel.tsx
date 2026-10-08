@@ -134,14 +134,17 @@ const FRow = styled.div`
   gap: 6px;
 `;
 
+// 높이 36 (sm) — 테두리 포함
 const Segment = styled.div`
   display: flex;
+  box-sizing: border-box;
+  height: 36px;
   border: 1px solid ${color('border-primary')};
   border-radius: ${radius.md}px;
   overflow: hidden;
   > button {
     flex: 1;
-    height: 36px;
+    height: 34px;
     border: 0;
     background: ${color('bg-primary')};
     ${text('text-sm', 'semibold')};
