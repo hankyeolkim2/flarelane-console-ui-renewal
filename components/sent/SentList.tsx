@@ -108,12 +108,12 @@ export function Num({ n }: { n: number }) {
 }
 
 export type Stat = { label: string; value: ReactNode; raw?: boolean };
-export type RowContent = { eyebrow?: { text: string; tone: 'brand' | 'primary' }; title?: string; sub?: string; body?: string; bodyLines?: 1 | 2; url?: string; image?: boolean };
+export type RowContent = { eyebrow?: { text: string; tone: 'brand' | 'primary' }; title?: string; meta?: { text: string; danger?: boolean }; sub?: string; body?: string; bodyLines?: 1 | 2; url?: string; image?: boolean };
 
 export type RowMenuItem = { label: string; icon?: string; destructive?: boolean; onClick: () => void };
 
 // lead 를 넘기면 왼쪽 표지를 바꾸고 출처 배지는 글 맨 위로(예약된 메시지 A안). menu 를 넘기면 ⋯ 메뉴 항목을 바꿈(기본 = 복제).
-export function SentRow({ source, content, cols, href, copyHref, lead, menu, onOpen }: { source: Source; content: RowContent; cols: [number, Stat[]][]; href?: string; copyHref?: string; lead?: ReactNode; menu?: RowMenuItem[]; onOpen?: () => void }) {
+export function SentRow({ source, content, cols, href, copyHref, lead, topBadge, menu, onOpen }: { source: Source; content: RowContent; cols: [number, Stat[]][]; href?: string; copyHref?: string; lead?: ReactNode; topBadge?: ReactNode; menu?: RowMenuItem[]; onOpen?: () => void }) {
   const router = useRouter();
   const ref = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
@@ -131,11 +131,12 @@ export function SentRow({ source, content, cols, href, copyHref, lead, menu, onO
       <Content>
         {lead && (
           <span style={{ marginBottom: 0 }}>
-            <SourceBadge source={source} />
+            {topBadge ?? <SourceBadge source={source} />}
           </span>
         )}
         {content.eyebrow && <small style={{ color: content.eyebrow.tone === 'brand' ? 'var(--text-brand-secondary)' : 'var(--text-primary)' }}>{content.eyebrow.text}</small>}
         {content.title && <b>{content.title}</b>}
+        {content.meta && <p style={content.meta.danger ? { color: 'var(--text-error-primary)' } : undefined}>{content.meta.text}</p>}
         {content.sub && <em>{content.sub}</em>}
         {content.body && <p data-lines={content.bodyLines ?? 1}>{content.body}</p>}
         {(content.url || content.image) && (
@@ -162,6 +163,8 @@ export function SentRow({ source, content, cols, href, copyHref, lead, menu, onO
           </Col>
         ))}
       </Stats>
+      {items.length > 0 && (
+        <>
       <More
         ref={ref}
         type="button"
@@ -181,6 +184,8 @@ export function SentRow({ source, content, cols, href, copyHref, lead, menu, onO
           ))}
         </div>
       </Floating>
+        </>
+      )}
     </Row>
   );
 }
@@ -218,8 +223,8 @@ const StatusBox = styled.span`
   > i { width: 8px; height: 8px; border-radius: 50%; }
 `;
 
-export function StatusLead({ tone, label }: { tone: 'success' | 'warning' | 'error' | 'gray'; label: string }) {
-  const c = tone === 'success' ? 'var(--fg-success-secondary)' : tone === 'warning' ? 'var(--fg-warning-secondary)' : tone === 'error' ? 'var(--fg-error-secondary)' : 'var(--fg-quaternary)';
+export function StatusLead({ tone, label }: { tone: 'success' | 'warning' | 'error' | 'gray' | 'brand'; label: string }) {
+  const c = tone === 'brand' ? 'var(--fg-brand-secondary)' : tone === 'success' ? 'var(--fg-success-secondary)' : tone === 'warning' ? 'var(--fg-warning-secondary)' : tone === 'error' ? 'var(--fg-error-secondary)' : 'var(--fg-quaternary)';
   return (
     <StatusBox>
       <i style={{ background: c }} />

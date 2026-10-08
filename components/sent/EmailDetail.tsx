@@ -46,13 +46,14 @@ export default function EmailDetail({ m, variant = {} }: { m: EmailMessage; vari
   const failedTotal = m.failed + m.aborted;
   return (
     <>
-      <DetailHeader title={variant.title} backHref={variant.backHref ?? '/email/sent-history'} copyHref={variant.copy === false ? undefined : `/email/new-message?copyMessageId=${m.id}`} />
+      <DetailHeader title={variant.title} actions={variant.headerActions} backHref={variant.backHref ?? '/email/sent-history'} copyHref={variant.copy === false ? undefined : `/email/new-message?copyMessageId=${m.id}`} />
       <Cards>
         <Section title="정보">
           <KV
             rows={[
               ['ID', m.id],
               ['캠페인 명', m.campaignName ?? '-'],
+              ...(variant.infoRows ?? [
               [
                 variant.dateLabel ?? '발송 시간',
                 withTz(variant.date ?? m.createdAt),
@@ -61,7 +62,8 @@ export default function EmailDetail({ m, variant = {} }: { m: EmailMessage; vari
                 </span>,
                 <SourceBadge key="b" source={m.source} />,
               ],
-              ['발송 빈도 제한 무시', m.ignoreCapping ? 'TRUE' : 'FALSE'],
+                ['발송 빈도 제한 무시', m.ignoreCapping ? 'TRUE' : 'FALSE'],
+              ]),
             ]}
           />
         </Section>
@@ -109,6 +111,7 @@ export default function EmailDetail({ m, variant = {} }: { m: EmailMessage; vari
             </>
           )}
         </Section>
+        {variant.after}
         {variant.footer}
       </Cards>
       {preview && (

@@ -161,7 +161,9 @@ const Pre = styled.pre`
   color: ${color('text-primary')};
 `;
 
-export type DetailVariant = { title?: string; copy?: boolean; dateLabel?: string; date?: string; backHref?: string; footer?: ReactNode };
+type InfoRow = [ReactNode, ReactNode] | [ReactNode, ReactNode, ReactNode, ReactNode];
+// 예약 · 반복 상세에서 보낸 메시지 상세 틀을 다시 쓰기 위한 옵션 — infoRows 는 「발송 시간 | 발송 환경」 ~ 빈도 제한 행을 통째로 바꿈.
+export type DetailVariant = { title?: string; copy?: boolean; dateLabel?: string; date?: string; backHref?: string; footer?: ReactNode; after?: ReactNode; headerActions?: ReactNode; infoRows?: InfoRow[] };
 
 export default function PushDetail({ m, variant = {} }: { m: PushMessage; variant?: DetailVariant }) {
   usePolling();
@@ -194,13 +196,14 @@ export default function PushDetail({ m, variant = {} }: { m: PushMessage; varian
 
   return (
     <>
-      <DetailHeader title={variant.title} backHref={variant.backHref ?? '/push/sent-history'} copyHref={variant.copy === false ? undefined : `/push/new-message?copyMessageId=${m.id}`} />
+      <DetailHeader title={variant.title} actions={variant.headerActions} backHref={variant.backHref ?? '/push/sent-history'} copyHref={variant.copy === false ? undefined : `/push/new-message?copyMessageId=${m.id}`} />
       <Cards>
         <Section title="발송 정보">
           <KV
             rows={[
               ['ID', m.id],
               ...(m.campaignName ? [['캠페인 명', m.campaignName] as [ReactNode, ReactNode]] : []),
+              ...(variant.infoRows ?? [
               [
                 variant.dateLabel ?? '발송 시간',
                 withTz(variant.date ?? m.createdAt),
@@ -209,7 +212,8 @@ export default function PushDetail({ m, variant = {} }: { m: PushMessage; varian
                 </span>,
                 <SourceBadge key="b" source={m.source} />,
               ],
-              ...ttlRow,
+                ...ttlRow,
+              ]),
               ...(m.rateLimitPerMinute ? [['발송 속도', `분당 ${fmt(m.rateLimitPerMinute)}개 메시지 발송`] as [ReactNode, ReactNode]] : []),
               ...(typeof m.targetSelectionRate === 'number' ? [['무작위 일부 발송', `${m.targetSelectionRate * 100}%`] as [ReactNode, ReactNode]] : []),
             ]}
@@ -364,6 +368,7 @@ export default function PushDetail({ m, variant = {} }: { m: PushMessage; varian
             })}
           </Grid2>
         </Section>
+        {variant.after}
         {variant.footer}
       </Cards>
       {fail && <FailureModal labels={FAIL_LABELS.push} data={m.failure} onClose={() => setFail(false)} />}

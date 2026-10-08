@@ -29,7 +29,7 @@ export default function KakaoDetail({ channel, m, message, targetExtra, variant 
   const freqChannelOn = true; // 프로젝트 빈도 제한 설정 — 스테이징 프로젝트는 켜져 있음
   return (
     <>
-      <DetailHeader title={variant.title} backHref={variant.backHref ?? `/${channel}/sent-history`} copyHref={variant.copy === false ? undefined : `/${channel}/new-message?copyMessageId=${m.id}`} />
+      <DetailHeader title={variant.title} actions={variant.headerActions} backHref={variant.backHref ?? `/${channel}/sent-history`} copyHref={variant.copy === false ? undefined : `/${channel}/new-message?copyMessageId=${m.id}`} />
       <Cards>
         <div data-detail-section="content" style={{ display: 'contents' }}>
           <Section title="정보">
@@ -37,6 +37,7 @@ export default function KakaoDetail({ channel, m, message, targetExtra, variant 
               rows={[
                 ['ID', m.id],
                 ...(m.campaignName ? [['캠페인 명', m.campaignName] as [ReactNode, ReactNode]] : []),
+                ...(variant.infoRows ?? [
                 [
                   variant.dateLabel ?? '발송 시간',
                   withTz(variant.date ?? m.createdAt),
@@ -45,7 +46,8 @@ export default function KakaoDetail({ channel, m, message, targetExtra, variant 
                   </span>,
                   <SourceBadge key="b" source={m.source} />,
                 ],
-                ...(m.ignoreCapping !== undefined && (freqChannelOn || m.ignoreCapping) ? [['발송 빈도 제한 무시', m.ignoreCapping ? 'TRUE' : 'FALSE'] as [ReactNode, ReactNode]] : []),
+                  ...(m.ignoreCapping !== undefined && (freqChannelOn || m.ignoreCapping) ? [['발송 빈도 제한 무시', m.ignoreCapping ? 'TRUE' : 'FALSE'] as [ReactNode, ReactNode]] : []),
+                ]),
               ]}
             />
           </Section>
@@ -73,6 +75,7 @@ export default function KakaoDetail({ channel, m, message, targetExtra, variant 
             )}
           </Section>
         </div>
+        {variant.after}
         {variant.footer}
       </Cards>
       {fail && <FailureModal labels={channel === 'sms' ? FAIL_LABELS.sms : FAIL_LABELS.kakao} data={m.failure} onClose={() => setFail(false)} />}

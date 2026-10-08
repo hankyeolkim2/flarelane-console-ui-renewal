@@ -11,6 +11,8 @@ const palette = {
   warning: 'yellow',
   sky: 'sky',
   orange: 'orange',
+  indigo: 'indigo',
+  purple: 'purple',
 } as const;
 
 export type BadgeColor = keyof typeof palette;
