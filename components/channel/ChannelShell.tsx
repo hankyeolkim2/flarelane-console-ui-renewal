@@ -114,11 +114,12 @@ export function Help({ children }: { children: ReactNode }) {
   );
 }
 
-export function CardHead({ title, help, actions }: { title: string; help?: ReactNode; actions?: ReactNode }) {
+export function CardHead({ title, help, actions, badge }: { title: string; help?: ReactNode; actions?: ReactNode; badge?: ReactNode }) {
   return (
     <CardHeadBox>
       <h3>{title}</h3>
       {help && <Help>{help}</Help>}
+      {badge}
       <i />
       {actions}
     </CardHeadBox>

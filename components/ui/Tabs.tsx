@@ -95,8 +95,8 @@ export function MinimalTabs<T extends string>({ items, value, onChange, disabled
 }
 
 // Figma `Horizontal tabs` (button border, 안쪽 여백 4) — 바탕 bg-secondary_alt · r10, 탭 36 · r6, 선택 = bg-primary_alt + shadow-sm.
-const PaddedWrap = styled.div`
-  display: inline-flex;
+const PaddedWrap = styled.div<{ $full?: boolean }>`
+  display: ${(p) => (p.$full ? 'flex' : 'inline-flex')};
   gap: 4px;
   padding: 3px;
   background: ${color('bg-secondary_alt')};
@@ -104,7 +104,12 @@ const PaddedWrap = styled.div`
   border-radius: ${radius.lg}px;
 `;
 
-const PaddedTab = styled.button<{ current: boolean }>`
+const PaddedTab = styled.button<{ current: boolean; $full?: boolean }>`
+  ${(p) => (p.$full ? 'flex: 1;' : '')}
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   height: 36px;
   padding: 0 12px;
   border: 0;
@@ -116,15 +121,21 @@ const PaddedTab = styled.button<{ current: boolean }>`
   white-space: nowrap;
   cursor: pointer;
   transition: color 0.1s linear;
+  > span { display: inline-flex; color: ${color('fg-quaternary')}; }
   &:hover { color: ${color('text-secondary')}; }
   &:focus-visible { outline: none; box-shadow: ${shadow['focus-ring']}; }
 `;
 
-export function ButtonTabs<T extends string>({ items, value, onChange }: { items: TabItem<T>[]; value: T; onChange: (v: T) => void }) {
+export function ButtonTabs<T extends string>({ items, value, onChange, full = false }: { items: TabItem<T>[]; value: T; onChange: (v: T) => void; full?: boolean }) {
   return (
-    <PaddedWrap role="tablist">
+    <PaddedWrap role="tablist" $full={full}>
       {items.map((it) => (
-        <PaddedTab key={it.value} type="button" role="tab" aria-selected={it.value === value} current={it.value === value} onClick={() => it.value !== value && onChange(it.value)}>
+        <PaddedTab key={it.value} type="button" role="tab" $full={full} aria-selected={it.value === value} current={it.value === value} onClick={() => it.value !== value && onChange(it.value)}>
+          {it.icon && (
+            <span>
+              <Icon name={it.icon} size={16} />
+            </span>
+          )}
           {it.label}
         </PaddedTab>
       ))}
