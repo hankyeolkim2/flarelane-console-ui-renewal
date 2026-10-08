@@ -8,6 +8,7 @@ import IconButton from '@/components/ui/IconButton';
 import { ConfirmModal, Dialog } from '@/components/ui/Modal';
 import Radio from '@/components/ui/Radio';
 import Select from '@/components/ui/Select';
+import Toggle from '@/components/ui/Toggle';
 import { ButtonTabs } from '@/components/ui/Tabs';
 import TextField from '@/components/ui/TextField';
 import { HoverTip } from '@/components/ui/Tooltip';
@@ -106,8 +107,18 @@ export function Radios<T extends string>({ value, options, onChange, gap = 16, d
   );
 }
 
+// 토글 + 보이는 라벨
+export function LabeledToggle({ checked, onChange, label, disabled }: { checked: boolean; onChange: (v: boolean) => void; label: string; disabled?: boolean }) {
+  return (
+    <Opt $disabled={disabled} as="span">
+      <Toggle checked={checked} disabled={disabled} label={label} onChange={onChange} />
+      <span onClick={() => !disabled && onChange(!checked)}>{label}</span>
+    </Opt>
+  );
+}
+
 // ── 개인화 변수 입력칸 (한 줄 / 여러 줄 + 오른쪽 `{}`)
-const VarBox = styled.div<{ $multi: boolean; $ro: boolean }>`
+const VarBox = styled.div<{ $multi: boolean; $ro: boolean; $min: number }>`
   position: relative;
   display: flex;
   border: 1px solid ${color('border-primary')};
@@ -115,7 +126,7 @@ const VarBox = styled.div<{ $multi: boolean; $ro: boolean }>`
   background: ${(p) => (p.$ro ? color('bg-secondary') : color('bg-primary'))};
   box-shadow: ${(p) => (p.$ro ? 'none' : shadow.xs)};
   &:focus-within { border-color: ${color('border-brand')}; }
-  > input, > textarea { flex: 1; min-width: 0; border: 0; outline: none; background: transparent; padding: ${(p) => (p.$multi ? '10px 12px 48px' : '0 12px')}; height: ${(p) => (p.$multi ? 'auto' : '34px')}; min-height: ${(p) => (p.$multi ? '132px' : '0')}; resize: vertical; ${text('text-sm', 'regular')}; font-family: inherit; color: ${color('text-primary')}; }
+  > input, > textarea { flex: 1; min-width: 0; border: 0; outline: none; background: transparent; padding: ${(p) => (p.$multi ? '10px 12px 48px' : '0 12px')}; height: ${(p) => (p.$multi ? 'auto' : '34px')}; min-height: ${(p) => (p.$multi ? `${p.$min}px` : '0')}; resize: vertical; ${text('text-sm', 'regular')}; font-family: inherit; color: ${color('text-primary')}; }
   > input::placeholder, > textarea::placeholder { color: ${color('text-placeholder')}; }
   > button { display: inline-flex; align-items: center; justify-content: center; border: 0; background: ${color('bg-primary')}; color: ${color('fg-quaternary')}; cursor: pointer; }
   > button[data-single] { width: 36px; border-left: 1px solid ${color('border-primary')}; border-radius: 0 ${radius.md}px ${radius.md}px 0; }
@@ -124,7 +135,7 @@ const VarBox = styled.div<{ $multi: boolean; $ro: boolean }>`
 `;
 
 export type VarHandle = { insert: (s: string) => void };
-export const VarField = forwardRef<VarHandle, { value: string; onChange: (v: string) => void; placeholder?: string; multi?: boolean; readOnly?: boolean; maxLength?: number; ariaLabel?: string }>(function VarField({ value, onChange, placeholder, multi = false, readOnly = false, maxLength, ariaLabel }, ref) {
+export const VarField = forwardRef<VarHandle, { value: string; onChange: (v: string) => void; placeholder?: string; multi?: boolean; readOnly?: boolean; maxLength?: number; ariaLabel?: string; minHeight?: number }>(function VarField({ value, onChange, placeholder, multi = false, readOnly = false, maxLength, ariaLabel, minHeight = 132 }, ref) {
   const el = useRef<HTMLInputElement & HTMLTextAreaElement>(null);
   const [open, setOpen] = useState(false);
   const pos = useRef<[number, number]>([value.length, value.length]);
@@ -137,7 +148,7 @@ export const VarField = forwardRef<VarHandle, { value: string; onChange: (v: str
   useImperativeHandle(ref, () => api);
   const Tag = multi ? 'textarea' : 'input';
   return (
-    <VarBox $multi={multi} $ro={readOnly}>
+    <VarBox $multi={multi} $ro={readOnly} $min={minHeight}>
       <Tag
         ref={el as never}
         aria-label={ariaLabel}
