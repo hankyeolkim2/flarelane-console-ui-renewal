@@ -13,7 +13,7 @@ const Wrap = styled.nav`
   > span { display: inline-flex; color: ${color('fg-quaternary')}; flex-shrink: 0; }
 `;
 
-const Crumb = styled(Link)`
+const Crumb = styled(Link, { shouldForwardProp: (p) => !p.startsWith('$') && !['current', 'collapsed'].includes(p) })`
   ${text('text-sm', 'semibold')};
   color: ${color('text-quaternary')};
   text-decoration: none;

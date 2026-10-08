@@ -169,7 +169,7 @@ const itemBase = (current: boolean) => `
   &:focus-visible { outline: none; box-shadow: ${shadow['focus-ring']}; }
 `;
 
-const ItemLink = styled(Link)<{ current: number; collapsed: number }>`
+const ItemLink = styled(Link, { shouldForwardProp: (p) => !p.startsWith('$') && !['current', 'collapsed'].includes(p) })<{ current: number; collapsed: number }>`
   ${(p) => itemBase(!!p.current)};
   justify-content: ${(p) => (p.collapsed ? 'center' : 'flex-start')};
 `;
@@ -201,7 +201,7 @@ const Chevron = styled.span<{ open: boolean }>`
   transition: transform ${(p) => (p.open ? '0.2s ease-out' : '0.15s ease-in')};
 `;
 
-const SubLink = styled(Link)<{ current: number }>`
+const SubLink = styled(Link, { shouldForwardProp: (p) => !p.startsWith('$') && !['current', 'collapsed'].includes(p) })<{ current: number }>`
   ${(p) => itemBase(!!p.current)};
   padding-left: 46px; /* 상위 글자(38)보다 8 더 들여씀 */
   ${text('text-sm', 'medium')};

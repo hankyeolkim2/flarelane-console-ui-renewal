@@ -38,6 +38,7 @@
     "**/*.mts"
   ],
   "exclude": [
+    ".next/types",
     "node_modules"
   ]
 }

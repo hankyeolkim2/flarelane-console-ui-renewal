@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from 'react';
 import styled from '@emotion/styled';
 import Button from './Button';
+import Icon from '@/components/Icon';
 import { color, radius, shadow } from '@/styles/tokens';
 import { gradientBorder, primaryShadow } from '@/styles/effects';
 import { text } from '@/styles/typography';
@@ -78,3 +79,43 @@ const DestructivePrimary = styled.button<{ destructive: boolean }>`
   transition: background-color 0.1s linear;
   &:hover { background: ${(p) => (p.destructive ? color('bg-error-solid_hover') : color('bg-brand-solid_hover'))}; }
 `;
+
+// 입력 모달 — Figma 「도메인 등록 모달」(1330:82503): 480 · Header 제목 + X · Body · Footer 오른쪽 정렬
+const DialogHead = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 16px 12px 24px;
+  > h2 { flex: 1; margin: 0; ${text('text-lg', 'semibold')}; color: ${color('text-primary')}; }
+  > button { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 0; border: 0; border-radius: ${radius.md}px; background: transparent; color: ${color('fg-quaternary')}; cursor: pointer; }
+  > button:hover { background: ${color('bg-primary_hover')}; color: ${color('fg-quaternary_hover')}; }
+`;
+
+const DialogBody = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 4px 24px 24px;
+`;
+
+export function Dialog({ title, width = 480, onClose, footer, children }: { title: string; width?: number; onClose: () => void; footer: ReactNode; children: ReactNode }) {
+  useEffect(() => {
+    const key = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    document.addEventListener('keydown', key);
+    return () => document.removeEventListener('keydown', key);
+  }, [onClose]);
+  return (
+    <Overlay onMouseDown={onClose}>
+      <Box width={width} role="dialog" aria-modal aria-label={title} onMouseDown={(e) => e.stopPropagation()}>
+        <DialogHead>
+          <h2>{title}</h2>
+          <button type="button" aria-label="닫기" onClick={onClose}>
+            <Icon name="close" size={20} />
+          </button>
+        </DialogHead>
+        <DialogBody>{children}</DialogBody>
+        <Foot>{footer}</Foot>
+      </Box>
+    </Overlay>
+  );
+}
