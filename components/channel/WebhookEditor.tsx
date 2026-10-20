@@ -71,7 +71,7 @@ const VarBox = styled.div<{ w?: number }>`
     color: ${color('text-primary')};
   }
   > input::placeholder { color: ${color('text-placeholder')}; }
-  > input:focus { border-color: ${color('border-brand')}; border-right: 1px solid ${color('border-brand')}; }
+  > input:focus { border-color: ${color('border-brand')}; border-right: 1px solid ${color('border-brand')}; box-shadow: inset 0 0 0 1px ${color('border-brand')}; }
   > button {
     display: inline-flex;
     align-items: center;
@@ -123,6 +123,8 @@ const Code = styled.div<{ h: number; $invalid: boolean }>`
   background: ${color('bg-primary')};
   overflow: hidden;
   &:focus-within { border-color: ${(p) => (p.$invalid ? color('border-error') : color('border-brand'))}; }
+  /* 포커스 2px — 안쪽 줄 번호 칸 · 입력칸이 가장자리를 덮어 맨 위 덮개에 안쪽 1px 를 그림 */
+  &:focus-within::after { content: ''; position: absolute; inset: 0; border-radius: ${radius.md - 1}px; box-shadow: inset 0 0 0 1px ${(p) => (p.$invalid ? color('border-error') : color('border-brand'))}; pointer-events: none; }
 `;
 
 const Gutter = styled.div`

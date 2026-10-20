@@ -6,7 +6,7 @@ import { color, radius, shadow } from '@/styles/tokens';
 import { text } from '@/styles/typography';
 
 // Figma `Select` sm — 높이 36, 패딩 8·10·8·12, 열림 = border-brand. 목록 = `_Select menu item`(선택 항목 체크).
-// 목록 폭 = 셀렉트 박스 폭 이상(10-20 사용자 「팝오버 너비는 최소 셀렉트 박스보다 넓어야」) — menuWidth 가 있어도 박스보다 좁아지지 않음.
+// 목록 폭 = 셀렉트 박스 폭 · menuWidth 이상(10-20 사용자 「팝오버 너비는 최소 셀렉트 박스보다 넓어야」), 항목 글자는 한 줄 — 길면 목록이 그만큼 넓어짐(「늘어나더라도 1줄」).
 export type Option<T extends string> = { value: T; label: string; disabled?: boolean };
 
 const Trigger = styled.button<{ open: boolean; width?: number | string; $placeholder: boolean }>`
@@ -19,7 +19,7 @@ const Trigger = styled.button<{ open: boolean; width?: number | string; $placeho
   border: 1px solid ${(p) => (p.open ? color('border-brand') : color('border-primary'))};
   border-radius: ${radius.md}px;
   background: ${color('bg-primary')};
-  box-shadow: ${shadow.xs};
+  box-shadow: ${(p) => (p.open ? `inset 0 0 0 1px ${color('border-brand')}, ${shadow.xs}` : shadow.xs)}; /* 열림 · 포커스 = 2px(Figma Select) */
   text-align: left;
   cursor: pointer;
   > b {
@@ -33,7 +33,7 @@ const Trigger = styled.button<{ open: boolean; width?: number | string; $placeho
   }
   > span { display: inline-flex; color: ${color('fg-quaternary')}; }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
-  &:focus-visible { outline: none; border-color: ${color('border-brand')}; }
+  &:focus-visible { outline: none; border-color: ${color('border-brand')}; box-shadow: inset 0 0 0 1px ${color('border-brand')}, ${shadow.xs}; }
 `;
 
 const OptionRow = styled.button<{ selected: boolean }>`
@@ -55,7 +55,7 @@ const OptionRow = styled.button<{ selected: boolean }>`
     color: ${color('text-primary')};
     text-align: left;
   }
-  > span > em { flex: 1; font-style: normal; }
+  > span > em { flex: 1; min-width: 0; font-style: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* 한 줄(10-20 사용자) — 목록이 글자만큼 넓어짐 */
   > span > i { display: inline-flex; color: ${color('fg-brand-primary')}; }
   &:hover:not(:disabled) > span { background: ${color('bg-primary_hover')}; }
   &:disabled { cursor: not-allowed; }
@@ -74,7 +74,7 @@ export default function Select<T extends string>({ value, options, onChange, pla
           <Icon name="keyboard_arrow_down" size={16} />
         </span>
       </Trigger>
-      <Menu open={open} onClose={() => setOpen(false)} anchorRef={ref} align="start" width={menuWidth ?? (typeof width === 'number' ? width : undefined)} stretch>
+      <Menu open={open} onClose={() => setOpen(false)} anchorRef={ref} align="start" width={menuWidth} stretch>
         <div role="listbox">
           {options.map((o) => (
             <OptionRow key={o.value} type="button" role="option" disabled={o.disabled} aria-selected={o.value === value} selected={o.value === value} onClick={() => { onChange(o.value); setOpen(false); }}>

@@ -28,14 +28,16 @@ export const Anchor = styled.div`
   display: inline-flex;
 `;
 
-// stretch = 붙은 칸(셀렉트 박스)보다 좁아지지 않음 — 글자가 더 길면 그만큼 넓게
+// stretch(셀렉트 목록) = 붙은 칸(셀렉트 박스) · width 보다 좁아지지 않고, 글자가 더 길면 줄바꿈 없이 그만큼 넓게
 export const MenuPanel = styled.div<{ width?: number; align?: 'start' | 'end' | 'center'; offset?: number; stretch?: boolean }>`
   position: absolute;
   top: calc(100% + ${(p) => p.offset ?? 4}px);
   ${(p) => (p.align === 'start' ? 'left: 0;' : p.align === 'center' ? 'left: 50%; transform: translateX(-50%);' : 'right: 0;')}
   z-index: 30;
-  width: ${(p) => (p.width ? `${p.width}px` : 'auto')};
-  ${(p) => (p.stretch ? 'min-width: 100%;' : '')}
+  ${(p) =>
+    p.stretch
+      ? `width: max-content; min-width: ${p.width ? `max(100%, ${p.width}px)` : '100%'}; max-width: calc(100vw - 32px);`
+      : `width: ${p.width ? `${p.width}px` : 'auto'};`}
   padding: 4px 0;
   background: ${color('bg-primary')};
   border: 1px solid ${color('border-secondary_alt')};
