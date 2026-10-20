@@ -280,7 +280,7 @@ export function AlimtalkTemplateForm({ t }: { t?: AlimtalkTemplate }) {
       <Head>
         <h1>새 템플릿</h1>
       </Head>
-      <Cols>
+      <Cols $side={320}>
         <div>
           <Section n={1} title="정보">
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>

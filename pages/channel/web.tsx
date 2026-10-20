@@ -9,6 +9,7 @@ import { Dialog } from '@/components/ui/Modal';
 import Select from '@/components/ui/Select';
 import Slider from '@/components/ui/Slider';
 import TextField from '@/components/ui/TextField';
+import { MinimalTabs } from '@/components/ui/Tabs';
 import Toggle from '@/components/ui/Toggle';
 import { HoverTip } from '@/components/ui/Tooltip';
 import { Card, CardFoot, CardHead, ChannelShell, Field, Help } from '@/components/channel/ChannelShell';
@@ -28,7 +29,7 @@ const PLAN: 'STARTER' | 'TEAM' | 'BUSINESS' = 'BUSINESS';
 
 const Cols = styled.div`
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(320px, 32%, 352px);
+  grid-template-columns: minmax(0, 1fr) 352px; /* Figma 기본 설정 right = 352(미리보기 320 + 좌우 16) */
   gap: 32px;
   align-items: start;
 `;
@@ -63,21 +64,6 @@ const Row = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-`;
-
-// Figma `Horizontal tabs` (button border) — 바탕 bg-secondary_alt, 선택 = bg-primary_alt + border-primary + shadow-xs
-const SegTabs = styled.div`
-  flex: 1;
-  display: flex;
-  gap: 2px;
-  border: 1px solid ${color('border-secondary')};
-  border-radius: ${radius.md}px;
-  background: ${color('bg-secondary_alt')};
-  > button { flex: 1; height: 36px; margin: -1px 0; padding: 0 10px; border: 1px solid transparent; border-radius: ${radius.md}px; background: transparent; ${text('text-sm', 'semibold')}; color: ${color('text-quaternary')}; cursor: pointer; }
-  > button:first-of-type { margin-left: -1px; }
-  > button:last-of-type { margin-right: -1px; }
-  > button[aria-pressed='true'] { border-color: ${color('border-primary')}; background: ${color('bg-primary_alt')}; color: ${color('text-secondary')}; box-shadow: 0px 1px 2px 0px #0000000d; }
-  > button:hover:not([aria-pressed='true']) { color: ${color('text-tertiary')}; }
 `;
 
 const Panel = styled.div`
@@ -341,7 +327,7 @@ export default function WebPushChannel() {
     a.click();
     URL.revokeObjectURL(a.href);
   };
-  const os: PreviewOS = pv.tab === 'mobile' ? 'android' : pv.desktopOs;
+  const os: PreviewOS = pv.tab === 'mobile' ? 'android-chrome' : pv.desktopOs; // 웹 푸시 — 모바일 = Android Chrome
   const origin = new URL(SITE).origin;
 
   return (
@@ -396,13 +382,16 @@ export default function WebPushChannel() {
               <Help>실제 화면은 기기 · 브라우저에 따라 다르게 보일 수 있습니다.</Help>
             </Label>
             <Row>
-              <SegTabs>
-                {(['mobile', 'desktop'] as const).map((t) => (
-                  <button key={t} type="button" aria-pressed={pv.tab === t} onClick={() => setPv({ ...pv, tab: t })}>
-                    {t === 'mobile' ? '모바일' : '데스크탑'}
-                  </button>
-                ))}
-              </SegTabs>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <MinimalTabs<'mobile' | 'desktop'>
+                  items={[
+                    { value: 'mobile', label: '모바일' },
+                    { value: 'desktop', label: '데스크탑' },
+                  ]}
+                  value={pv.tab}
+                  onChange={(tab) => setPv({ ...pv, tab })}
+                />
+              </div>
               <div style={{ flex: 1 }}>
                 {pv.tab === 'mobile' ? (
                   <Select width="100%" value="android" options={[{ value: 'android', label: 'Android' }]} onChange={() => undefined} />
@@ -419,7 +408,7 @@ export default function WebPushChannel() {
                 )}
               </div>
             </Row>
-            <PushPreview os={os} title={b.siteName} body={b.welcomeBody} url={SITE} icon={b.icon.url || undefined} />
+            <PushPreview os={os} title={b.siteName} body={b.welcomeBody} url={SITE} icon={b.icon.url || undefined} siteIcon={!!b.icon.url} />
           </PreviewBox>
         </Cols>
         <Foot editing={basic.editing} onEdit={basic.edit} onCancel={basic.cancel} onSave={() => save(basic, [basic.draft.icon, basic.draft.badge])} />

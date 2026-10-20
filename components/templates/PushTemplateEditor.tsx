@@ -299,7 +299,7 @@ export function PushTemplateDetail({ t }: { t: PushTemplate }) {
             />
             <PreviewCol>
               <small>미리보기</small>
-              <PushPreview os="android" title={t.title ?? ''} body={t.body} url={t.url ?? 'https://flarelane.com'} />
+              <PushPreview os="android" title={t.title ?? ''} body={t.body} url={t.url ?? 'https://flarelane.com'} image={t.imageUrl} buttons={t.buttons?.map((b) => b.label)} />
             </PreviewCol>
           </MsgCols>
         </DSection>

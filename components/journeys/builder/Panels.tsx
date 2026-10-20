@@ -350,7 +350,7 @@ export function PushPanel({ node, readOnly, onClose, onSave, onDelete }: P) {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <Label>미리보기</Label>
-            <PushPreview os="android" title={msg.title} body={msg.body} url={msg.url || 'https://flarelane.com'} />
+            <PushPreview os="android" title={msg.title} body={msg.body} url={msg.url || 'https://flarelane.com'} image={msg.image} buttons={msg.buttons.map((b) => b.label)} />
           </div>
         </Two>
       </Group>

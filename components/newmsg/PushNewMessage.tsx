@@ -17,9 +17,10 @@ import { ConfirmModal, ConversionSection, HELP, HelpHtml, convError, drafts, edi
 import { AiModal, fromMessage, initialPushMsg, PushFields, PushPreviewPanel, RecentModal, TemplateModal, TestSend, type PushMsg } from './push';
 
 // 푸시 새 메시지 — Figma 「새 메시지 — C+A 규칙」(1081:18985) + docs/staging-behavior-new-message-templates.md 2장.
-export const Cols = styled.div`
+// 미리보기 칸 = 시안 고정 폭: 푸시 368(여백 24 → 그림 320) · 알림톡 · 브랜드 · 문자 320(좌우 16 → 그림 288)
+export const Cols = styled.div<{ $side?: number }>`
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(300px, 32%, 368px);
+  grid-template-columns: minmax(0, 1fr) ${(p) => p.$side ?? 368}px;
   gap: 16px;
   align-items: start;
   > div { display: flex; flex-direction: column; gap: 16px; min-width: 0; }

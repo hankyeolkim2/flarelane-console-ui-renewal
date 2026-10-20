@@ -12,6 +12,7 @@ import { Help } from '@/components/channel/ChannelShell';
 import DataTable from '@/components/channel/DataTable';
 import TestDeviceModal from '@/components/channel/TestDeviceModal';
 import PushPreview, { type PreviewOS } from '@/components/preview/PushPreview';
+import { MinimalTabs } from '@/components/ui/Tabs';
 import { pushMessages, sourceLabel, SOURCES, type Platform, type Source } from '@/lib/sent';
 import { pushTemplates, type PushTemplate } from '@/lib/templates';
 import { color, radius, shadow } from '@/styles/tokens';
@@ -149,28 +150,25 @@ export function PushFields({ value, onChange, locked, toast }: { value: PushMsg;
   );
 }
 
-// ── 미리보기 패널
+// ── 미리보기 패널 — Figma 「새 메시지 — 1440 (전체 펼침)」 right(359:2552): 368 · 여백 24 · 간격 16 · r12
 const Card = styled.aside`
   position: sticky;
   top: 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 15px;
+  padding: 23px;
   background: ${color('bg-primary')};
   border: 1px solid ${color('border-secondary')};
   border-radius: ${radius.xl}px;
   box-shadow: ${shadow.xs};
-  > header { display: flex; align-items: center; gap: 4px; ${text('text-sm', 'medium')}; color: ${color('text-secondary')}; }
+  > header { display: flex; align-items: center; gap: 6px; ${text('text-sm', 'medium')}; color: ${color('text-secondary')}; }
 `;
-const Seg = styled.div`
-  display: inline-flex;
-  padding: 3px;
-  border: 1px solid ${color('border-secondary')};
-  border-radius: ${radius.md}px;
-  background: ${color('bg-secondary')};
-  > button { height: 30px; padding: 0 16px; border: 0; border-radius: ${radius.sm}px; background: none; ${text('text-sm', 'semibold')}; color: ${color('text-quaternary')}; cursor: pointer; white-space: nowrap; }
-  > button[aria-selected='true'] { background: ${color('bg-primary')}; color: ${color('text-secondary')}; box-shadow: ${shadow.xs}; outline: 1px solid ${color('border-primary')}; }
+// 탭(Horizontal tabs · Button minimal · sm) + OS 셀렉트 — 사이 12
+const PRow = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
 `;
 
 const APP = [
@@ -186,7 +184,8 @@ const WEB = [
 export function PushPreviewPanel({ msg, onTest }: { msg: PushMsg; onTest: () => void }) {
   const [kind, setKind] = useState<'app' | 'web'>('app');
   const [dev, setDev] = useState<string>('android');
-  const os = (dev === 'ios' ? 'android' : dev) as PreviewOS;
+  // 앱 푸시 Android · iOS / 웹 푸시 Android(Mobile) = Android Chrome · Windows · Mac OS
+  const os: PreviewOS = kind === 'app' ? (dev === 'ios' ? 'ios' : 'android') : dev === 'windows' ? 'windows' : dev === 'macos' ? 'macos' : 'android-chrome';
   return (
     <Card>
       <header>
@@ -195,31 +194,25 @@ export function PushPreviewPanel({ msg, onTest }: { msg: PushMsg; onTest: () => 
           <HelpHtml html={HELP.preview} />
         </Help>
       </header>
-      <Row>
-        <Seg role="tablist">
-          {(['app', 'web'] as const).map((k) => (
-            <button
-              key={k}
-              type="button"
-              role="tab"
-              aria-selected={kind === k}
-              onClick={() => {
-                setKind(k);
-                setDev('android');
-              }}
-            >
-              {k === 'app' ? '앱 푸시' : '웹 푸시'}
-            </button>
-          ))}
-        </Seg>
+      <PRow>
+        <MinimalTabs<'app' | 'web'>
+          hug
+          items={[
+            { value: 'app', label: '앱 푸시' },
+            { value: 'web', label: '웹 푸시' },
+          ]}
+          value={kind}
+          onChange={(k) => {
+            setKind(k);
+            setDev('android');
+          }}
+        />
         <div style={{ flex: 1, minWidth: 0 }}>
           <Select<string> value={dev} options={(kind === 'app' ? APP : WEB).map(([v, l]) => ({ value: v, label: l }))} onChange={setDev} />
         </div>
-      </Row>
-      <div style={{ width: '100%' }}>
-        <PushPreview os={os} title={msg.title || (kind === 'web' ? 'FlareLane' : '')} body={msg.body} url={msg.url || 'https://flarelane.com'} />
-      </div>
-      <Button full iconLeading="send" onClick={onTest}>
+      </PRow>
+      <PushPreview os={os} title={msg.title || (kind === 'web' ? 'FlareLane' : '')} body={msg.body} url={msg.url || 'https://flarelane.com'} image={msg.image} buttons={msg.buttons.map((b) => b.label)} />
+      <Button size="md" full iconLeading="send" onClick={onTest}>
         테스트 기기로 발송
       </Button>
     </Card>

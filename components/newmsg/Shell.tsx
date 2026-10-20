@@ -219,7 +219,7 @@ export default function Shell<M>(p: ShellProps<M>) {
         )}
       </Head>
       {p.preview ? (
-        <Cols>
+        <Cols $side={320}>
           {left}
           {p.preview(msg, () => setModal('test'))}
         </Cols>
@@ -350,9 +350,9 @@ export const PreviewCard = styled.aside`
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 15px;
+  padding: 23px 15px; /* 시안 320 칸 · 상하 24 · 좌우 16(테두리 1 포함) → 그림 288 */
   background: ${color('bg-primary')};
   border: 1px solid ${color('border-secondary')};
   border-radius: ${radius.xl}px;
-  > header { display: flex; align-items: center; gap: 4px; ${text('text-sm', 'medium')}; color: ${color('text-secondary')}; }
+  > header { display: flex; align-items: center; gap: 6px; ${text('text-sm', 'medium')}; color: ${color('text-secondary')}; }
 `;

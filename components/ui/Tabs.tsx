@@ -47,21 +47,29 @@ export function BorderTabs<T extends string>({ items, value, onChange }: { items
   );
 }
 
-const MinimalWrap = styled.div`
-  display: flex;
+// Figma `Horizontal tabs` Button minimal — 탭 사이 2(spacing-xxs) · 좌우 12(탭 10 + 글자 여백 2) · 글자 한 줄, 양 끝 탭만 바깥 테두리와 겹침.
+// 기본 = Full width=True(탭 폭 균등), hug = Full width=False(발송 미리보기 「앱 푸시 · 웹 푸시」 — 글자 폭)
+const MinimalWrap = styled.div<{ $hug?: boolean }>`
+  display: ${(p) => (p.$hug ? 'inline-flex' : 'flex')};
+  ${(p) => (p.$hug ? 'flex-shrink: 0;' : '')}
+  gap: 2px;
   height: 36px;
   background: ${color('bg-secondary_alt')};
   border: 1px solid ${color('border-secondary')};
   border-radius: ${radius.md}px;
 `;
 
-const MinimalTab = styled.button<{ current: boolean }>`
+const MinimalTab = styled.button<{ current: boolean; $hug?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  flex: 1;
-  margin: -1px;
+  flex: ${(p) => (p.$hug ? 'none' : '1')};
+  margin: -1px 0;
+  padding: 0 12px;
+  &:first-of-type { margin-left: -1px; }
+  &:last-of-type { margin-right: -1px; }
+  white-space: nowrap;
   border: 1px solid ${(p) => (p.current ? color('border-primary') : 'transparent')};
   border-radius: ${radius.md}px;
   background: ${(p) => (p.current ? color('bg-primary_alt') : 'transparent')};
@@ -77,11 +85,11 @@ const MinimalTab = styled.button<{ current: boolean }>`
   &:focus-visible { outline: none; box-shadow: ${shadow['focus-ring']}; }
 `;
 
-export function MinimalTabs<T extends string>({ items, value, onChange, disabled }: { items: TabItem<T>[]; value: T; onChange: (v: T) => void; disabled?: (v: T) => boolean }) {
+export function MinimalTabs<T extends string>({ items, value, onChange, disabled, hug = false }: { items: TabItem<T>[]; value: T; onChange: (v: T) => void; disabled?: (v: T) => boolean; hug?: boolean }) {
   return (
-    <MinimalWrap role="tablist">
+    <MinimalWrap role="tablist" $hug={hug}>
       {items.map((it) => (
-        <MinimalTab key={it.value} type="button" role="tab" aria-selected={it.value === value} current={it.value === value} disabled={disabled?.(it.value) && it.value !== value} onClick={() => onChange(it.value)}>
+        <MinimalTab key={it.value} type="button" role="tab" aria-selected={it.value === value} current={it.value === value} $hug={hug} disabled={disabled?.(it.value) && it.value !== value} onClick={() => onChange(it.value)}>
           {it.icon && (
             <span>
               <Icon name={it.icon} size={20} />
