@@ -91,7 +91,7 @@ export default function SmsNewMessage({ recurring, copy, edit }: { recurring: bo
       preview={(m, test) => (
         <PreviewCard>
           <header>미리보기</header>
-          <SmsPreview m={asMsg(m)} />
+          <SmsPreview m={asMsg({ ...m, body: m.body || '내용이 여기 표시됩니다' })} />
           <Button full iconLeading="send" onClick={test}>
             테스트 발송
           </Button>

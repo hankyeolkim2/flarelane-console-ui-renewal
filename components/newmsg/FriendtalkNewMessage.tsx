@@ -7,7 +7,7 @@ import { Dialog } from '@/components/ui/Modal';
 import Select from '@/components/ui/Select';
 import TextField from '@/components/ui/TextField';
 import { Help } from '@/components/channel/ChannelShell';
-import { FriendtalkPreview } from '@/components/preview/KakaoPreview';
+import { BrandPreview, type BrandModel } from '@/components/preview/KakaoPreview';
 import { FRIENDTALK_TYPE, type FriendtalkMessage } from '@/lib/sent';
 import { color, radius } from '@/styles/tokens';
 import { text } from '@/styles/typography';
@@ -353,6 +353,19 @@ export function FriendtalkFields({ m, set }: { m: M; set: (p: Partial<M>) => voi
 }
 
 export const ftAsMsg = (m: M) => asMsg(m);
+// 미리보기 = 유형별 모양 그대로(리스트 항목 · 캐러셀 카드 · 인트로 · 더보기까지)
+export const ftPreview = (m: M): BrandModel => ({
+  kind: m.kind,
+  isAd: m.isAd,
+  image: m.image,
+  text: m.text,
+  buttons: m.buttons.map((b) => b.name),
+  header: m.header,
+  items: m.items,
+  intro: m.kind === 'FA' && m.intro.on ? m.intro : null,
+  cards: m.cars.map((c) => ({ image: c.image, title: c.title, text: m.kind === 'FA' ? c.extra : c.text, price: c.price, discount: c.discount, rate: c.rate, buttons: c.buttons.map((b) => b.name) })),
+  more: m.more.on,
+});
 const asMsg = (m: M) =>
   ({
     messageType: m.kind === 'FI' && !m.image ? 'FT' : m.kind,
@@ -419,7 +432,7 @@ export default function FriendtalkNewMessage({ recurring, copy, edit }: { recurr
       preview={(m, test) => (
         <PreviewCard>
           <header>미리보기</header>
-          <FriendtalkPreview m={asMsg(m)} />
+          <BrandPreview model={ftPreview(m)} />
           <Button full iconLeading="send" onClick={test}>
             테스트 발송
           </Button>

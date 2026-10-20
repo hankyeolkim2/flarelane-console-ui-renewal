@@ -120,6 +120,13 @@ export const colors = {
   'preview-macos-menubar': '#f9fafb',
   'preview-icon-placeholder': '#f3f4f6',
   'preview-image-placeholder': '#e5e7eb',
+  'preview-kakao-chat-bg': '#b2c7da',
+  'preview-kakao-bubble': '#ffffff',
+  'preview-kakao-fill': '#f3f4f6',
+  'preview-kakao-divider': '#e5e7eb',
+  'preview-kakao-on-yellow': '#111827',
+  'preview-sms-bg': '#ffffff',
+  'preview-sms-bubble': '#f3f4f6',
   // Utility (배지 등)
   'utility-neutral-50': '#f9fafb',
   'utility-neutral-100': '#f3f4f6',

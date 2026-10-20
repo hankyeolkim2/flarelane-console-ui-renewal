@@ -10,13 +10,13 @@ import TextField from '@/components/ui/TextField';
 import Toggle from '@/components/ui/Toggle';
 import { Help } from '@/components/channel/ChannelShell';
 import PushPreview from '@/components/preview/PushPreview';
-import { AlimtalkPreview, FriendtalkPreview } from '@/components/preview/KakaoPreview';
+import { AlimtalkPreview, BrandPreview } from '@/components/preview/KakaoPreview';
 import SmsPreview from '@/components/preview/SmsPreview';
 import { Thumb } from '@/components/inapp/Preview';
 import { ConversionSection, initialConv, Label, Opt, PlatformSelect, Radios, Row, VarField, type Conv } from '@/components/newmsg/parts';
 import { fromMessage, PushFields, type PushMsg } from '@/components/newmsg/push';
 import { AlimtalkFields, atAsMsg, atInitial, type AtM } from '@/components/newmsg/AlimtalkNewMessage';
-import { FriendtalkFields, ftAsMsg, ftCheck, ftFresh, type FtM } from '@/components/newmsg/FriendtalkNewMessage';
+import { FriendtalkFields, ftAsMsg, ftCheck, ftFresh, ftPreview, type FtM } from '@/components/newmsg/FriendtalkNewMessage';
 import { SmsFields, smsAsMsg, smsInitial, type SmsM } from '@/components/newmsg/SmsNewMessage';
 import { EmailFields, emInitial, type EmM } from '@/components/newmsg/EmailNewMessage';
 import { KakaoTestSend } from '@/components/newmsg/Shell';
@@ -434,7 +434,7 @@ export function FriendtalkPanel({ node, readOnly, onClose, onSave, onDelete }: P
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <Label>미리보기</Label>
-            <FriendtalkPreview m={ftAsMsg(m)} />
+            <BrandPreview model={ftPreview(m)} />
             <Button full iconLeading="send" onClick={() => setTest(true)}>
               테스트 발송
             </Button>
@@ -467,7 +467,7 @@ export function SmsPanel({ node, readOnly, onClose, onSave, onDelete }: P) {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <Label>미리보기</Label>
-            <SmsPreview m={smsAsMsg(m)} />
+            <SmsPreview m={smsAsMsg({ ...m, body: m.body || '내용이 여기 표시됩니다' })} />
             <Button full iconLeading="send" onClick={() => setTest(true)}>
               테스트 발송
             </Button>
