@@ -207,7 +207,6 @@ function Actions({ list, ro, onChange }: { list: IamAction[]; ro: boolean; onCha
             setDraft,
             <IconButton
               icon="add"
-              hierarchy="secondary"
               label="추가"
               onClick={() => {
                 const a = { ...draft, type: free.includes(draft.type) ? draft.type : free[0] };

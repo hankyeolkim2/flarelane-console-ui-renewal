@@ -170,9 +170,14 @@ export default function SearchSelect({ value, options, onChange, placeholder = '
     else if (e.key === 'Enter') { e.preventDefault(); if (shown[active]) choose(shown[active]); }
     else if (e.key === 'Escape') { e.preventDefault(); close(true); }
   };
-  const w = typeof width === 'number' ? width : undefined;
   // 기본 320(DS `Search menu` 폭) · 검색 줄 오른쪽에 「+ …」 단추가 있으면 400 — 검색 칸이 좁아지지 않게(10-20 사용자 「인풋 너비가 너무 좁아」 · 「좀 더 넓게」)
-  const mw = menuWidth ?? Math.max(w ?? 0, action ? 400 : 320);
+  // 어느 경우든 셀렉트 박스보다 좁아지지 않음 — 열 때 박스 실제 폭을 잼(10-20 사용자 「팝오버 너비는 최소 셀렉트 박스보다 넓어야」)
+  const [boxW, setBoxW] = useState(0);
+  const openMenu = () => {
+    setBoxW(anchor.current?.offsetWidth ?? 0);
+    setOpen(true);
+  };
+  const mw = Math.max(boxW, menuWidth ?? (action ? 400 : 320));
 
   return (
     <div ref={anchor} style={{ width: typeof width === 'number' ? width : width, flexShrink: 0 }}>
@@ -184,8 +189,8 @@ export default function SearchSelect({ value, options, onChange, placeholder = '
         disabled={disabled}
         aria-haspopup="listbox"
         aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
-        onKeyDown={(e) => { if (!open && (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setOpen(true); } }}
+        onClick={() => (open ? setOpen(false) : openMenu())}
+        onKeyDown={(e) => { if (!open && (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openMenu(); } }}
       >
         <b>
           {current ? current.label : value || placeholder}

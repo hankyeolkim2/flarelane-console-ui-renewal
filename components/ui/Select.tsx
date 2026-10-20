@@ -6,6 +6,7 @@ import { color, radius, shadow } from '@/styles/tokens';
 import { text } from '@/styles/typography';
 
 // Figma `Select` sm — 높이 36, 패딩 8·10·8·12, 열림 = border-brand. 목록 = `_Select menu item`(선택 항목 체크).
+// 목록 폭 = 셀렉트 박스 폭 이상(10-20 사용자 「팝오버 너비는 최소 셀렉트 박스보다 넓어야」) — menuWidth 가 있어도 박스보다 좁아지지 않음.
 export type Option<T extends string> = { value: T; label: string; disabled?: boolean };
 
 const Trigger = styled.button<{ open: boolean; width?: number | string; $placeholder: boolean }>`
@@ -73,7 +74,7 @@ export default function Select<T extends string>({ value, options, onChange, pla
           <Icon name="keyboard_arrow_down" size={16} />
         </span>
       </Trigger>
-      <Menu open={open} onClose={() => setOpen(false)} anchorRef={ref} align="start" width={menuWidth ?? (typeof width === 'number' ? width : undefined)}>
+      <Menu open={open} onClose={() => setOpen(false)} anchorRef={ref} align="start" width={menuWidth ?? (typeof width === 'number' ? width : undefined)} stretch>
         <div role="listbox">
           {options.map((o) => (
             <OptionRow key={o.value} type="button" role="option" disabled={o.disabled} aria-selected={o.value === value} selected={o.value === value} onClick={() => { onChange(o.value); setOpen(false); }}>
