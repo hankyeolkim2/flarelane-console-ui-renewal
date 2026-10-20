@@ -57,12 +57,12 @@ const Head = styled.div`
   > h1 { flex: 1; margin: 0; ${text('display-xs', 'semibold')}; color: ${color('text-primary')}; }
 `;
 
+// overflow: hidden 을 쓰면 안의 셀렉트 목록이 접힘 메뉴 안에 갇혀 잘림(10-20 사용자) → 머리 줄에 안쪽 모서리(8 - 테두리 1)를 직접 줌
 const Panel = styled.div`
   border: 1px solid ${color('border-secondary')};
   border-radius: ${radius.md}px;
-  overflow: hidden;
-  > button { display: flex; align-items: center; width: 100%; padding: 12px 16px; border: 0; background: ${color('bg-primary')}; ${text('text-sm', 'semibold')}; color: ${color('text-primary')}; cursor: pointer; text-align: left; }
-  > button[aria-expanded='true'] { background: ${color('bg-secondary')}; }
+  > button { display: flex; align-items: center; width: 100%; padding: 12px 16px; border: 0; border-radius: ${radius.md - 1}px; background: ${color('bg-primary')}; ${text('text-sm', 'semibold')}; color: ${color('text-primary')}; cursor: pointer; text-align: left; }
+  > button[aria-expanded='true'] { background: ${color('bg-secondary')}; border-radius: ${radius.md - 1}px ${radius.md - 1}px 0 0; }
   > button > i { flex: 1; }
   > button > span { display: inline-flex; color: ${color('fg-quaternary')}; }
   > div { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
@@ -615,8 +615,8 @@ export default function InAppEditor({ mode, initial }: { mode: Mode; initial: In
             </div>
             {m.conversion && (
               <>
-                <div style={{ border: '1px solid var(--border-secondary)', borderRadius: 8, overflow: 'hidden' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '0 16px', borderBottom: '1px solid var(--border-secondary)', background: 'var(--bg-secondary)' }}>
+                <div style={{ border: '1px solid var(--border-secondary)', borderRadius: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '0 16px', borderBottom: '1px solid var(--border-secondary)', borderRadius: '7px 7px 0 0', background: 'var(--bg-secondary)' }}>
                     {convEvents.map((_, i) => (
                       <button key={i} type="button" onClick={() => setConvTab(i)} style={{ padding: '10px 0', border: 0, borderBottom: `2px solid ${convTab === i ? 'var(--fg-brand-primary)' : 'transparent'}`, background: 'none', fontSize: 14, fontWeight: 600, color: convTab === i ? 'var(--text-brand-secondary)' : 'var(--text-quaternary)', cursor: 'pointer' }}>
                         {i ? `이벤트 ${i + 1}` : '이벤트'}
