@@ -4,14 +4,17 @@ import { color, radius, shadow } from '@/styles/tokens';
 import { text } from '@/styles/typography';
 
 // Figma `Input field` Type=Number counter vertical sm — 높이 36 · 오른쪽 위/아래 단추 칸(구분선 1px).
+// 테두리 · 포커스 링은 맨 위 덮개(::after)에 그림 — 단추 칸 구분선이 링 위로 올라오지 않게(10-20 사용자 지적)
 const Box = styled.div<{ $error: boolean }>`
+  position: relative;
   display: flex;
   height: 36px;
   border-radius: ${radius.md}px;
   background: ${color('bg-primary')};
-  box-shadow: inset 0 0 0 1px ${(p) => (p.$error ? color('border-error') : color('border-primary'))}, ${shadow.xs};
+  box-shadow: ${shadow.xs};
   overflow: hidden;
-  &:focus-within { box-shadow: inset 0 0 0 2px ${(p) => (p.$error ? color('border-error') : color('border-brand'))}, ${shadow.xs}; }
+  &::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px ${(p) => (p.$error ? color('border-error') : color('border-primary'))}; pointer-events: none; }
+  &:focus-within::after { box-shadow: inset 0 0 0 2px ${(p) => (p.$error ? color('border-error') : color('border-brand'))}; }
   > input { flex: 1; min-width: 0; padding: 0 4px 0 12px; border: 0; outline: none; background: transparent; ${text('text-sm', 'regular')}; color: ${color('text-primary')}; }
   > input::placeholder { color: ${color('text-placeholder')}; }
 `;
@@ -20,7 +23,6 @@ const Steps = styled.div`
   display: grid;
   grid-template-rows: 1fr 1fr;
   width: 24px;
-  margin: 1px 1px 1px 0;
   border-left: 1px solid ${color('border-primary')};
   > button { display: inline-flex; align-items: center; justify-content: center; padding: 0; border: 0; background: transparent; color: ${color('fg-quaternary')}; cursor: pointer; }
   > button + button { border-top: 1px solid ${color('border-primary')}; }

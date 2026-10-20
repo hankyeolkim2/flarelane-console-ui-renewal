@@ -328,7 +328,6 @@ function Fields({ c, set, target }: { c: Condition; set: (values: string[]) => v
         <SearchSelect
           key={i}
           width={160}
-          menuWidth={320}
           value={val || null}
           placeholder="태그 선택"
           options={tags.map((t) => ({ value: t.name, label: t.name, sub: t.desc }))}

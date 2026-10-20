@@ -32,11 +32,12 @@ const look = {
     box-shadow: ${secondaryShadow};
     &:hover:not(:disabled) { background: ${color('bg-primary_hover')}; color: ${color('text-secondary_hover')}; --btn-icon: ${color('fg-quaternary_hover')}; }
   `,
+  // Hover 바탕 = bg-hover-overlay(반투명) — 회색 판(bg-secondary) 위에서도 Hover 가 보이게(10-15)
   tertiary: `
     background: transparent;
     color: ${color('text-tertiary')};
     --btn-icon: ${color('fg-quaternary')};
-    &:hover:not(:disabled) { background: ${color('bg-primary_hover')}; color: ${color('text-tertiary_hover')}; --btn-icon: ${color('fg-quaternary_hover')}; }
+    &:hover:not(:disabled) { background: ${color('bg-hover-overlay')}; color: ${color('text-tertiary_hover')}; --btn-icon: ${color('fg-quaternary_hover')}; }
   `,
   // Figma `Buttons/Button destructive` Secondary — 테두리 border-error_subtle · 글자 text-error-primary
   'destructive-secondary': `

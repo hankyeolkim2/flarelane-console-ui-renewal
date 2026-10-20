@@ -172,7 +172,8 @@ export default function SearchSelect({ value, options, onChange, placeholder = '
     else if (e.key === 'Escape') { e.preventDefault(); close(true); }
   };
   const w = typeof width === 'number' ? width : undefined;
-  const mw = menuWidth ?? Math.max(w ?? 0, 240);
+  // 기본 320(DS `Search menu` 폭) · 검색 줄 오른쪽에 「+ …」 단추가 있으면 400 — 검색 칸이 좁아지지 않게(10-20 사용자 「인풋 너비가 너무 좁아」 · 「좀 더 넓게」)
+  const mw = menuWidth ?? Math.max(w ?? 0, action ? 400 : 320);
 
   return (
     <div ref={anchor} style={{ width: typeof width === 'number' ? width : width, flexShrink: 0 }}>

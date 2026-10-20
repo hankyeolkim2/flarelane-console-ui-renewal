@@ -38,6 +38,7 @@ export const colors = {
   'bg-quaternary': '#e5e7eb',
   'bg-disabled': '#f3f4f6',
   'bg-overlay': '#030712',
+  'bg-hover-overlay': 'rgba(25, 56, 117, 0.04)', // Tertiary 버튼 Hover 바탕 — 브랜드 600 4%(10-15 확정 · 6차 §1-1)
   'bg-brand-primary': '#eef2f9',
   'bg-brand-primary_alt': '#eef2f9',
   'bg-brand-secondary': '#c4cfe3',

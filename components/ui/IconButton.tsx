@@ -27,7 +27,7 @@ const Base = styled.button<{ size: 'xs' | 'sm'; hierarchy: 'tertiary' | 'seconda
   color: ${color('fg-quaternary')};
   cursor: pointer;
   transition: background-color 0.1s linear, color 0.1s linear;
-  &:hover:not(:disabled), &[data-hover] { background: ${color('bg-primary_hover')}; color: ${color('fg-quaternary_hover')}; }
+  &:hover:not(:disabled), &[data-hover] { background: ${(p) => (p.hierarchy === 'secondary' ? color('bg-primary_hover') : color('bg-hover-overlay'))}; color: ${color('fg-quaternary_hover')}; }
   &:focus-visible { outline: none; box-shadow: ${shadow['focus-ring']}; }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 `;
