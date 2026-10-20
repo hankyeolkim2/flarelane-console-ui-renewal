@@ -154,7 +154,7 @@ export function EmailEditor({ title, html, onClose, onDone }: { title: string; h
   const [from, setFrom] = useState<string | null>(null);
   const [to, setTo] = useState('');
   return (
-    <Editor>
+    <Editor data-cover>
       <header>
         <IconButton icon="close" label="닫기" onClick={onClose} />
         <b>{title}</b>

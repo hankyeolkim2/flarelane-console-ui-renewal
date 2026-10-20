@@ -141,7 +141,7 @@ export default function BoardSelectModal({ onClose, onSave }: { onClose: () => v
   );
 
   return (
-    <Overlay onMouseDown={onClose}>
+    <Overlay data-cover onMouseDown={onClose}>
       <Box role="dialog" aria-modal onMouseDown={(e) => e.stopPropagation()}>
         <h2>통계를 저장할 보드 선택</h2>
         <Search>

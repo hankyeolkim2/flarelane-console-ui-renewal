@@ -8,10 +8,14 @@ import { setChat, useChat } from '@/lib/chat';
 import { color } from '@/styles/tokens';
 import { text } from '@/styles/typography';
 
-// 기본 화면은 문서가 스크롤됨 — 오른쪽 스크롤바(18) 자리를 늘 비워 둬서 스크롤이 생기고 없어져도 본문 위치 · 폭이 그대로(10-20 사용자).
+// 기본 화면은 문서가 스크롤됨 — 오른쪽 스크롤바(10) 자리를 늘 비워 둬서 스크롤이 생기고 없어져도 본문 위치 · 폭이 그대로(10-20 사용자).
 // 꽉 찬 화면(캘린더 · 편집)은 문서가 스크롤되지 않으므로 자리를 비우지 않음.
+// 모달 · 서랍(data-cover)이 열려 있으면 그 자리를 없애 뒤 막이 창 끝까지 덮게 함(크롬은 비워 둔 자리에 fixed 요소를 칠하지 않음).
+// 없앤 10 만큼 body 오른쪽을 비워 본문을 그대로 두고, 오른쪽에 붙은 fixed 요소(토스트 · 채팅)는 --cover-gutter 만큼 안쪽으로.
 const stableGutter = css`
   html { scrollbar-gutter: stable; }
+  html:has([data-cover]) { scrollbar-gutter: auto; --cover-gutter: 10px; }
+  html:has([data-cover]) body { padding-right: var(--cover-gutter); }
 `;
 
 // 페이지 = 사이드바 + 본문(최대 1200 가운데 정렬, 좌우 32 · 위 32).

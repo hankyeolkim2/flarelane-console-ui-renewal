@@ -116,7 +116,7 @@ export default function PreBuilt() {
       {section('커머스', PREBUILT.commerce)}
       {open && (
         <>
-          <div style={{ position: 'fixed', inset: 0, zIndex: 44, background: 'rgba(0,4,22,0.2)' }} onClick={() => setOpen(null)} />
+          <div data-cover style={{ position: 'fixed', inset: 0, zIndex: 44, background: 'rgba(0,4,22,0.2)' }} onClick={() => setOpen(null)} />
           <Drawer>
             <header>
               <div>

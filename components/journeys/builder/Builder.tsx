@@ -129,7 +129,7 @@ export default function Builder({ journey }: { journey?: Journey }) {
   };
 
   const body = (
-    <Full $full={full}>
+    <Full $full={full} data-cover={full || undefined}>
       <header>
         <IconButton icon="arrow_back" label="뒤로" onClick={() => router.push('/journeys')} />
         <input id="journey-name" aria-label="여정 이름" placeholder="새 여정 이름 입력" value={name} readOnly={readOnly} onChange={(e) => setName(e.target.value)} />

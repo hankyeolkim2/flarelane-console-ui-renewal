@@ -287,7 +287,7 @@ export default function JourneyList() {
       </div>
       {drawer && (
         <>
-          <Dim onClick={() => setDrawer(null)} />
+          <Dim data-cover onClick={() => setDrawer(null)} />
           <Drawer>
             <header>
               <h2>{drawer.name}</h2>

@@ -71,7 +71,6 @@ const List = styled.ul`
   list-style: none;
   max-height: 284px;
   overflow-y: auto;
-  scrollbar-width: thin;
 `;
 
 const Item = styled.li<{ $active: boolean; $disabled: boolean }>`

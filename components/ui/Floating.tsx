@@ -71,7 +71,7 @@ export default function Floating({ anchorRef, open, onClose, width, placement = 
 
   if (!open || typeof document === 'undefined') return null;
   return createPortal(
-    <Panel ref={panel} style={{ width, top: pos?.top ?? -9999, left: pos?.left ?? -9999 }} onMouseDown={(e) => e.stopPropagation()}>
+    <Panel ref={panel} data-floating style={{ width, top: pos?.top ?? -9999, left: pos?.left ?? -9999 }} onMouseDown={(e) => e.stopPropagation()}>
       {children}
     </Panel>,
     document.body,

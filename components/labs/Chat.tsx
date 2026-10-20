@@ -18,7 +18,7 @@ const MAX = 8000;
 
 const Launcher = styled.div`
   position: fixed;
-  right: 24px;
+  right: calc(24px + var(--cover-gutter, 0px));
   bottom: 24px;
   z-index: 40;
   display: flex;
@@ -32,7 +32,7 @@ const Panel = styled.aside<{ $exp: boolean }>`
   position: fixed;
   top: 4px;
   bottom: 4px;
-  right: 4px;
+  right: calc(4px + var(--cover-gutter, 0px));
   ${(p) => (p.$exp ? 'left: 72px;' : `width: ${PANEL_W}px;`)}
   z-index: 40;
   display: flex;

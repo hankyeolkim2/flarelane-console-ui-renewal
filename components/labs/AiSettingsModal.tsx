@@ -90,7 +90,7 @@ export default function AiSettingsModal({ onClose }: { onClose: () => void }) {
     }, 400);
   };
   return (
-    <Back onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+    <Back data-cover onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <Box role="dialog" aria-label="AI 설정">
         <header>
           <span>

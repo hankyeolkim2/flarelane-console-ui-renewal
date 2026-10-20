@@ -52,7 +52,7 @@ export function ConfirmModal({ title, description, confirmLabel, cancelLabel, de
     return () => document.removeEventListener('keydown', key);
   }, [onClose]);
   return (
-    <Overlay onMouseDown={onClose}>
+    <Overlay data-cover onMouseDown={onClose}>
       <Box width={400} role="dialog" aria-modal onMouseDown={(e) => e.stopPropagation()}>
         <Head>{title}</Head>
         {(description || children) && <Body>{description}{children}</Body>}
@@ -105,7 +105,7 @@ export function Dialog({ title, width = 480, onClose, footer, actions, children 
     return () => document.removeEventListener('keydown', key);
   }, [onClose]);
   return (
-    <Overlay onMouseDown={onClose}>
+    <Overlay data-cover onMouseDown={onClose}>
       <Box width={width} role="dialog" aria-modal aria-label={title} onMouseDown={(e) => e.stopPropagation()}>
         <DialogHead>
           <h2>{title}</h2>
