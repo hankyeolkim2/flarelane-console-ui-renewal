@@ -1,11 +1,18 @@
 import { useEffect, type ReactNode } from 'react';
 import { useRouter } from 'next/router';
 import styled from '@emotion/styled';
+import { Global, css } from '@emotion/react';
 import Sidebar from './Sidebar';
 import ChatRoot, { PANEL_W } from '@/components/labs/Chat';
 import { setChat, useChat } from '@/lib/chat';
 import { color } from '@/styles/tokens';
 import { text } from '@/styles/typography';
+
+// 기본 화면은 문서가 스크롤됨 — 오른쪽 스크롤바(18) 자리를 늘 비워 둬서 스크롤이 생기고 없어져도 본문 위치 · 폭이 그대로(10-20 사용자).
+// 꽉 찬 화면(캘린더 · 편집)은 문서가 스크롤되지 않으므로 자리를 비우지 않음.
+const stableGutter = css`
+  html { scrollbar-gutter: stable; }
+`;
 
 // 페이지 = 사이드바 + 본문(최대 1200 가운데 정렬, 좌우 32 · 위 32).
 const Shell = styled.div`
@@ -73,6 +80,7 @@ export default function AppLayout({ children, layout = 'default' }: { children: 
         <FullMain $chat={docked}>{children}</FullMain>
       ) : (
         <Main $chat={docked}>
+          <Global styles={stableGutter} />
           <Body>{children}</Body>
         </Main>
       )}
