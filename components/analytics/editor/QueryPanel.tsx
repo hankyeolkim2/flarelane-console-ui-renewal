@@ -300,20 +300,27 @@ function Filters({ event, filters, setFilters, pending, setPending }: { event: s
 // 2개 이상일 때만 끌 수 있음.
 function useSortable<T extends { id: string }>(items: T[], onChange: (next: T[]) => void) {
   const listRef = useRef<HTMLDivElement>(null);
-  const [drag, setDrag] = useState<{ id: string; startY: number; dy: number } | null>(null);
+  const [drag, setDrag] = useState<{ id: string; dy: number } | null>(null);
   const canDrag = items.length >= 2;
+  // 창 이벤트 처리기가 늘 최신 목록을 보게 함
+  const latest = useRef({ items, onChange });
+  latest.current = { items, onChange };
 
-  useEffect(() => {
-    if (!drag) return;
-    const move = (e: MouseEvent) => {
+  // 집기 — 창 mousemove/mouseup 을 바로 붙임(effect 로 미루면 빠른 끌기에서 mouseup 을 놓쳐 집힌 채 남음)
+  const pick = (id: string, startY: number, firstY: number) => {
+    let base = startY;
+    let waitFor: T[] | null = null; // 자리를 바꾼 뒤 다시 그려지기 전엔 한 번 더 바꾸지 않음
+    const move = (y: number) => {
+      const { items: cur, onChange: change } = latest.current;
+      if (waitFor === cur) return setDrag({ id, dy: y - base });
+      waitFor = null;
       const list = listRef.current;
       if (!list) return;
       const cards = [...list.children] as HTMLElement[];
-      const from = items.findIndex((m) => m.id === drag.id);
-      const y = e.clientY;
+      const from = cur.findIndex((m) => m.id === id);
       let to = from;
       cards.forEach((c, i) => {
-        if (i === from || i >= items.length) return;
+        if (i === from || i >= cur.length) return;
         const r = c.getBoundingClientRect();
         const mid = r.top + r.height / 2;
         if (i > from && y > mid) to = Math.max(to, i);
@@ -321,24 +328,58 @@ function useSortable<T extends { id: string }>(items: T[], onChange: (next: T[])
       });
       if (to !== from) {
         const h = cards[from].getBoundingClientRect().height + 8;
-        const next = [...items];
+        const next = [...cur];
         const [m] = next.splice(from, 1);
         next.splice(to, 0, m);
-        onChange(next);
-        const startY = drag.startY + (to > from ? h * (to - from) : -h * (from - to));
-        setDrag((d) => d && { ...d, startY, dy: y - startY });
-      } else setDrag((d) => d && { ...d, dy: y - d.startY });
+        change(next);
+        waitFor = cur;
+        base += to > from ? h * (to - from) : -h * (from - to);
+      }
+      setDrag({ id, dy: y - base });
     };
-    const up = () => setDrag(null);
-    document.body.style.cursor = 'grabbing';
-    window.addEventListener('mousemove', move);
-    window.addEventListener('mouseup', up);
-    return () => {
+    const onMove = (e: MouseEvent) => move(e.clientY);
+    const onUp = () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
       document.body.style.cursor = '';
-      window.removeEventListener('mousemove', move);
-      window.removeEventListener('mouseup', up);
+      setDrag(null);
+      // 끈 뒤 따라오는 click 이 블록 클릭(이벤트 선택 열기)으로 이어지지 않게 한 번만 막음
+      setTimeout(() => window.removeEventListener('click', swallowClick, true), 0);
     };
-  }, [drag, items, onChange]);
+    window.addEventListener('click', swallowClick, true);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    document.body.style.cursor = 'grabbing';
+    setDrag({ id, dy: 0 });
+    if (firstY !== startY) move(firstY);
+  };
+
+  // 손잡이 = 누르자마자 집음. 블록 줄 나머지(번호 · 이름 · 칩) = 4px 넘게 움직이면 집고, 아니면 평소 클릭.
+  // 버튼 · 입력칸에서 누른 건 끌기로 보지 않음.
+  const press = (id: string, e: React.MouseEvent) => {
+    if (!canDrag || e.button !== 0) return;
+    const t = e.target as HTMLElement;
+    const onHandle = !!t.closest('[data-drag-handle]');
+    if (!onHandle && t.closest('button, input, textarea, [data-own-click]')) return;
+    e.preventDefault();
+    const sx = e.clientX;
+    const sy = e.clientY;
+    if (onHandle) {
+      e.stopPropagation();
+      return pick(id, sy, sy);
+    }
+    const mv = (ev: MouseEvent) => {
+      if (Math.abs(ev.clientX - sx) < 4 && Math.abs(ev.clientY - sy) < 4) return;
+      done();
+      pick(id, sy, ev.clientY);
+    };
+    const done = () => {
+      window.removeEventListener('mousemove', mv);
+      window.removeEventListener('mouseup', done);
+    };
+    window.addEventListener('mousemove', mv);
+    window.addEventListener('mouseup', done);
+  };
 
   return {
     listRef,
@@ -347,13 +388,15 @@ function useSortable<T extends { id: string }>(items: T[], onChange: (next: T[])
     item: (id: string) => ({
       picked: drag?.id === id,
       style: drag?.id === id ? { transform: `translateY(${drag.dy}px)` } : undefined,
-      onDragStart: (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (canDrag) setDrag({ id, startY: e.clientY, dy: 0 });
-      },
+      onDragStart: (e: React.MouseEvent) => press(id, e),
     }),
   };
+}
+
+function swallowClick(e: MouseEvent) {
+  e.stopPropagation();
+  e.preventDefault();
+  window.removeEventListener('click', swallowClick, true);
 }
 
 type SortProps = { canDrag: boolean; sorting: boolean; picked: boolean; style?: React.CSSProperties; onDragStart: (e: React.MouseEvent) => void };
@@ -376,9 +419,9 @@ function MetricBlock({ metric, index, sort, onChangeEvent, onFilters, onRemove }
   return (
     <SortItem picked={sort.picked}>
       <Card lifted={sort.picked} style={sort.style}>
-        <Block ref={ref} clickable onClick={() => setOpen(true)}>
+        <Block ref={ref} clickable onClick={() => setOpen(true)} onMouseDown={sort.onDragStart}>
           {sort.canDrag && (
-            <Handle data-drag-handle picked={sort.picked} onMouseDown={sort.onDragStart} onClick={(e) => e.stopPropagation()}>
+            <Handle data-drag-handle picked={sort.picked} onClick={(e) => e.stopPropagation()}>
               <Icon name="drag_indicator" size={16} />
             </Handle>
           )}
@@ -469,9 +512,9 @@ function SplitRow({ block, sort, onRemove }: { block: SplitBlock; sort: SortProp
   return (
     <SortItem picked={sort.picked}>
       <Card lifted={sort.picked} style={sort.style}>
-        <Block clickable={false}>
+        <Block clickable={false} onMouseDown={sort.onDragStart} style={sort.canDrag ? { cursor: sort.picked ? 'grabbing' : 'grab' } : undefined}>
           {sort.canDrag && (
-            <Handle data-drag-handle picked={sort.picked} onMouseDown={sort.onDragStart}>
+            <Handle data-drag-handle picked={sort.picked}>
               <Icon name="drag_indicator" size={16} />
             </Handle>
           )}
