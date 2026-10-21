@@ -19,7 +19,7 @@ const Area = styled.textarea`
   resize: vertical;
   outline: none;
   &::placeholder { color: ${color('text-placeholder')}; }
-  &:focus { border-color: ${color('border-brand')}; box-shadow: inset 0 0 0 1px ${color('border-brand')}, ${shadow.xs}; }
+  &:focus { border-color: ${color('border-brand')}; }
 `;
 
 const Label = styled.label`

@@ -131,7 +131,7 @@ const Paths = styled.textarea`
   color: ${color('text-primary')};
   resize: vertical;
   outline: none;
-  &:focus { border-color: ${color('border-brand')}; box-shadow: inset 0 0 0 1px ${color('border-brand')}, 0px 1px 2px 0px #0000000d; }
+  &:focus { border-color: ${color('border-brand')}; }
   &:read-only { background: ${color('bg-secondary')}; box-shadow: none; resize: none; }
 `;
 

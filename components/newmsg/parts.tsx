@@ -141,7 +141,7 @@ const VarBox = styled.div<{ $multi: boolean; $ro: boolean; $min: number }>`
   border-radius: ${radius.md}px;
   background: ${(p) => (p.$ro ? color('bg-secondary') : color('bg-primary'))};
   box-shadow: ${(p) => (p.$ro ? 'none' : shadow.xs)};
-  &:focus-within { border-color: ${color('border-brand')}; box-shadow: inset 0 0 0 1px ${color('border-brand')}, ${shadow.xs}; }
+  &:focus-within { border-color: ${color('border-brand')}; }
   > input, > textarea { flex: 1; min-width: 0; border: 0; outline: none; background: transparent; padding: ${(p) => (p.$multi ? '10px 12px 48px' : '0 12px')}; height: ${(p) => (p.$multi ? 'auto' : '34px')}; min-height: ${(p) => (p.$multi ? `${p.$min}px` : '0')}; resize: vertical; ${text('text-sm', 'regular')}; font-family: inherit; color: ${color('text-primary')}; }
   > input::placeholder, > textarea::placeholder { color: ${color('text-placeholder')}; }
   > button { display: inline-flex; align-items: center; justify-content: center; border: 0; background: ${color('bg-primary')}; color: ${color('fg-quaternary')}; cursor: pointer; }
@@ -217,7 +217,7 @@ const ChipBox = styled.div`
   border: 1px solid ${color('border-primary')};
   border-radius: ${radius.md}px;
   box-shadow: ${shadow.xs};
-  &:focus-within { border-color: ${color('border-brand')}; box-shadow: inset 0 0 0 1px ${color('border-brand')}, ${shadow.xs}; }
+  &:focus-within { border-color: ${color('border-brand')}; }
   > span { display: inline-flex; align-items: center; gap: 4px; padding: 2px 4px 2px 8px; border: 1px solid ${color('border-secondary')}; border-radius: ${radius.sm}px; ${text('text-sm', 'medium')}; color: ${color('text-secondary')}; }
   > span > button { display: inline-flex; padding: 0; border: 0; background: none; color: ${color('fg-quaternary')}; cursor: pointer; }
   > input { flex: 1; min-width: 120px; border: 0; outline: none; ${text('text-sm', 'regular')}; }

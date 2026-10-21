@@ -36,7 +36,7 @@ const Trigger = styled.button<{ $placeholder: boolean; $error: boolean }>`
   > b > small { margin-left: 6px; ${text('text-sm', 'regular')}; color: ${color('text-tertiary')}; }
   > span { display: inline-flex; color: ${color('fg-quaternary')}; transition: transform 0.15s; }
   &[aria-expanded='true'] > span { transform: rotate(180deg); }
-  &:focus-visible { outline: none; border-color: ${color('border-brand')}; box-shadow: inset 0 0 0 1px ${color('border-brand')}, ${shadow.xs}; }
+  &:focus-visible { outline: none; border-color: ${color('border-brand')}; }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 `;
 
@@ -59,7 +59,8 @@ const SearchBox = styled.label`
   background: ${color('bg-primary')};
   box-shadow: inset 0 0 0 1px ${color('border-primary')}, ${shadow.xs};
   cursor: text;
-  /* 메뉴 안 검색 줄은 포커스 링 없음(10-21 시험) — 열면 포커스가 여기로 와서 커서가 보이고, ↑↓ 는 항목 바탕 강조로 위치를 알림 */
+  /* 메뉴 안 검색 줄 포커스 = 테두리 1px 브랜드(10-21 시험, 모든 입력칸과 같음) — 셀렉트 박스는 열려도 기본 테두리 */
+  &:focus-within { box-shadow: inset 0 0 0 1px ${color('border-brand')}, ${shadow.xs}; }
   > span { display: inline-flex; color: ${color('fg-quaternary')}; }
   > input { flex: 1; min-width: 0; height: 100%; border: 0; outline: none; background: transparent; ${text('text-sm', 'regular')}; color: ${color('text-primary')}; }
   > input::placeholder { color: ${color('text-placeholder')}; }
