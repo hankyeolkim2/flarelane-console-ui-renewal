@@ -143,7 +143,7 @@ const DateInput = styled.input<{ error: boolean }>`
   ${text('text-sm', 'regular')};
   color: ${color('text-primary')};
   outline: none;
-  &:focus { border-color: ${(p) => (p.error ? color('border-error') : color('border-brand'))}; }
+  &:focus { border-color: ${(p) => (p.error ? color('border-error') : color('border-brand'))}; box-shadow: inset 0 0 0 1px ${(p) => (p.error ? color('border-error') : color('border-brand'))}, ${shadow.xs}; }
   & + & { margin-top: 6px; }
 `;
 

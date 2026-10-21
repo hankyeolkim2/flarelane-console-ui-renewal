@@ -19,7 +19,7 @@ const Trigger = styled.button<{ open: boolean; width?: number | string; $placeho
   border: 1px solid ${(p) => (p.open ? color('border-brand') : color('border-primary'))};
   border-radius: ${radius.md}px;
   background: ${color('bg-primary')};
-  box-shadow: ${shadow.xs}; /* 열림 · 포커스 = 테두리 1px 브랜드(10-21 시험 — 이전 2px) */
+  box-shadow: ${(p) => (p.open ? `inset 0 0 0 1px ${color('border-brand')}, ${shadow.xs}` : shadow.xs)}; /* 열림 · 포커스 = 2px(Figma Select) */
   text-align: left;
   cursor: pointer;
   > b {
@@ -33,7 +33,7 @@ const Trigger = styled.button<{ open: boolean; width?: number | string; $placeho
   }
   > span { display: inline-flex; color: ${color('fg-quaternary')}; }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
-  &:focus-visible { outline: none; border-color: ${color('border-brand')}; }
+  &:focus-visible { outline: none; border-color: ${color('border-brand')}; box-shadow: inset 0 0 0 1px ${color('border-brand')}, ${shadow.xs}; }
 `;
 
 const OptionRow = styled.button<{ selected: boolean }>`

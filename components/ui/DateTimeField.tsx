@@ -22,7 +22,7 @@ const DateBtn = styled.button<{ $placeholder: boolean }>`
   cursor: pointer;
   > span { display: inline-flex; color: ${color('fg-quaternary')}; }
   > b { ${(p) => (p.$placeholder ? text('text-sm', 'regular') : text('text-sm', 'medium'))}; color: ${(p) => (p.$placeholder ? color('text-placeholder') : color('text-primary'))}; }
-  &[aria-expanded='true'], &:focus-visible { outline: none; border-color: ${color('border-brand')}; }
+  &[aria-expanded='true'], &:focus-visible { outline: none; border-color: ${color('border-brand')}; box-shadow: inset 0 0 0 1px ${color('border-brand')}, ${shadow.xs}; }
 `;
 
 const Cal = styled.div`

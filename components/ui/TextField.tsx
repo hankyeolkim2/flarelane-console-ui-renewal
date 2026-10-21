@@ -18,8 +18,8 @@ const Box = styled.label<{ $error: boolean; $disabled: boolean; $readOnly: boole
   box-shadow: ${(p) => (p.$readOnly ? 'none' : shadow.xs)};
   opacity: ${(p) => (p.$disabled ? 0.5 : 1)};
   cursor: ${(p) => (p.$disabled ? 'not-allowed' : 'text')};
-  /* 포커스 = 테두리 1px 브랜드(10-21 시험 — 이전 2px) */
-  &:focus-within { border-color: ${(p) => (p.$error ? color('border-error') : color('border-brand'))}; }
+  /* 포커스 = 2px(Figma Input field Focused) — 테두리 1 + 안쪽 1, 글자 위치는 그대로 */
+  &:focus-within { border-color: ${(p) => (p.$error ? color('border-error') : color('border-brand'))}; box-shadow: inset 0 0 0 1px ${(p) => (p.$error ? color('border-error') : color('border-brand'))}${(p) => (p.$readOnly ? '' : `, ${shadow.xs}`)}; }
   > span { display: inline-flex; color: ${color('fg-quaternary')}; }
   > input { flex: 1; min-width: 0; height: 100%; border: 0; outline: none; background: transparent; ${text('text-sm', 'regular')}; color: ${color('text-primary')}; }
   > input::placeholder { color: ${color('text-placeholder')}; }

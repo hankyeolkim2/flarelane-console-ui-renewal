@@ -14,7 +14,7 @@ const Box = styled.div<{ $error: boolean }>`
   box-shadow: ${shadow.xs};
   overflow: hidden;
   &::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px ${(p) => (p.$error ? color('border-error') : color('border-primary'))}; pointer-events: none; }
-  &:focus-within::after { box-shadow: inset 0 0 0 1px ${(p) => (p.$error ? color('border-error') : color('border-brand'))}; } /* 포커스 1px 브랜드(10-21 시험) */
+  &:focus-within::after { box-shadow: inset 0 0 0 2px ${(p) => (p.$error ? color('border-error') : color('border-brand'))}; }
   > input { flex: 1; min-width: 0; padding: 0 4px 0 12px; border: 0; outline: none; background: transparent; ${text('text-sm', 'regular')}; color: ${color('text-primary')}; }
   > input::placeholder { color: ${color('text-placeholder')}; }
 `;
