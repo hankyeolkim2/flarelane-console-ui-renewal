@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import styled from '@emotion/styled';
 import Icon from '@/components/Icon';
-import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import Floating from '@/components/ui/Floating';
 import { HoverTip } from '@/components/ui/Tooltip';
@@ -64,11 +63,22 @@ function Help({ children }: { children: ReactNode }) {
   );
 }
 
+// 집은 블록 = utility-brand-300 테두리 + shadow-lg (Figma 「split by 추가」 10.21 신규 DS 시안 · 스테이징과 같은 단)
 const Card = styled.div<{ lifted?: boolean }>`
-  border: 1px solid ${color('border-secondary')};
+  border: 1px solid ${(p) => (p.lifted ? color('utility-brand-300') : color('border-secondary'))};
   border-radius: ${radius.md}px;
   background: ${color('bg-primary')};
   ${(p) => (p.lifted ? `box-shadow: ${shadow.lg}; position: relative; z-index: 2; cursor: grabbing;` : '')}
+`;
+
+// 끄는 동안 블록이 놓일 자리
+const Slot = styled.div`
+  position: absolute;
+  inset: 0;
+  border: 1px dashed ${color('utility-brand-200')};
+  border-radius: ${radius.md}px;
+  background: ${color('bg-brand-primary')};
+  pointer-events: none;
 `;
 
 const Block = styled.div<{ clickable: boolean }>`
@@ -83,16 +93,26 @@ const Block = styled.div<{ clickable: boolean }>`
   > b[data-placeholder] { ${text('text-sm', 'regular')}; color: ${color('text-placeholder')}; }
 `;
 
-const Handle = styled.span<{ visible: boolean }>`
+// 손잡이 — 평소엔 자리를 차지하지 않아 번호 · 유형 칩이 맨 왼쪽(다른 영역과 세로축 맞춤).
+// 호버하면 폭 16이 열리며 뒤 내용이 오른쪽으로 밀림(PO 요청). 손잡이 위 · 끄는 중엔 칩 배경.
+const Handle = styled.span<{ visible: boolean; picked?: boolean }>`
   display: inline-flex;
-  width: 16px;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  width: ${(p) => (p.visible ? 16 : 0)}px;
+  height: 20px;
+  margin-right: ${(p) => (p.visible ? 0 : -8)}px;
+  overflow: hidden;
+  border-radius: ${radius.xs}px;
+  background: ${(p) => (p.picked ? color('bg-secondary_hover') : 'transparent')};
   color: ${color('fg-quaternary')};
-  opacity: ${(p) => (p.visible ? 1 : 0)};
-  cursor: grab;
+  cursor: ${(p) => (p.picked ? 'grabbing' : 'grab')};
+  transition: width 0.12s ease-out, margin-right 0.12s ease-out;
+  &:hover { background: ${color('bg-secondary_hover')}; }
 `;
 
-const No = styled.span`
+const No = styled.span<{ picked?: boolean }>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -100,9 +120,9 @@ const No = styled.span`
   width: 20px;
   height: 20px;
   border-radius: ${radius.xs}px;
-  background: ${color('bg-secondary')};
+  background: ${(p) => (p.picked ? color('bg-brand-solid') : color('bg-secondary'))};
   ${text('text-xs', 'semibold')};
-  color: ${color('text-secondary')};
+  color: ${(p) => (p.picked ? color('text-white') : color('text-secondary'))};
 `;
 
 const Kind = styled.span`
@@ -202,7 +222,7 @@ function FilterRow({ event, filter, autoOpen, onChange, onRemove, onAbandon }: {
   const label = joinValues(filter.values);
   return (
     <FRow>
-      <ValueTrigger ref={propRef} type="button" placeholder="속성 선택" onClick={() => setOpen('property')} style={{ flex: '0 0 106px' }}>
+      <ValueTrigger ref={propRef} type="button" placeholder="속성 선택" aria-haspopup="listbox" aria-expanded={open === 'property'} onClick={() => setOpen('property')} style={{ flex: '0 0 106px' }}>
         <b data-ph="속성 선택">{filter.property ?? ''}</b>
         <span><Icon name="keyboard_arrow_down" size={16} /></span>
       </ValueTrigger>
@@ -218,7 +238,7 @@ function FilterRow({ event, filter, autoOpen, onChange, onRemove, onAbandon }: {
         />
       </Floating>
       <Select<Operator> width={90} menuWidth={160} value={filter.operator} options={OPERATORS} onChange={(o) => onChange({ ...filter, operator: o })} />
-      <ValueTrigger ref={valRef} type="button" placeholder="값 선택" title={label || undefined} onClick={() => setOpen(filter.property ? 'value' : 'property')}>
+      <ValueTrigger ref={valRef} type="button" placeholder="값 선택" title={label || undefined} aria-haspopup="listbox" aria-expanded={open === 'value'} onClick={() => setOpen(filter.property ? 'value' : 'property')}>
         <b data-ph="값 선택">{label}</b>
         <span><Icon name="keyboard_arrow_down" size={16} /></span>
       </ValueTrigger>
@@ -266,67 +286,25 @@ function Filters({ event, filters, setFilters, pending, setPending }: { event: s
   );
 }
 
-// ── 분석 지표 블록 (드래그 순서 변경 · 이벤트 교체 · 필터) ──
-function MetricBlock({ metric, index, canDrag, dragging, onDragStart, onChangeEvent, onFilters, onRemove, dragStyle }: { metric: Metric; index: number; canDrag: boolean; dragging: boolean; onDragStart: (e: React.MouseEvent) => void; onChangeEvent: (ev: string) => void; onFilters: (f: Filter[]) => void; onRemove: () => void; dragStyle?: React.CSSProperties }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [open, setOpen] = useState(false);
-  const [hover, setHover] = useState(false);
-  const [pending, setPending] = useState<string | null>(null);
-  return (
-    <Card lifted={dragging} style={dragStyle} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-      <Block ref={ref} clickable onClick={() => setOpen(true)}>
-        <Handle visible={canDrag && (hover || dragging)} onMouseDown={(e) => { e.stopPropagation(); if (canDrag) onDragStart(e); }} onClick={(e) => e.stopPropagation()}>
-          {canDrag && <Icon name="drag_indicator" size={16} />}
-        </Handle>
-        <No>{index + 1}</No>
-        <b>{metric.event}</b>
-        <span data-own-click style={{ display: 'flex', gap: 0 }} onClick={(e) => e.stopPropagation()}>
-          <IconButton
-            icon="filter_alt"
-            size="xs"
-            label="필터 추가"
-            onClick={() => {
-              const f: Filter = { id: uid('f'), property: null, operator: 'EQ', values: [] };
-              onFilters([...metric.filters, f]);
-              setPending(f.id);
-            }}
-          />
-          <IconButton icon="close" size="xs" label="삭제" onClick={onRemove} />
-        </span>
-      </Block>
-      <Filters event={metric.event} filters={metric.filters} setFilters={onFilters} pending={pending} setPending={setPending} />
-      <Floating anchorRef={ref} open={open} width={680} onClose={() => setOpen(false)}>
-        <EventSelector
-          current={metric.event}
-          onPick={(ev) => {
-            setOpen(false);
-            if (ev !== metric.event) onChangeEvent(ev);
-          }}
-        />
-      </Floating>
-    </Card>
-  );
-}
-
-function Metrics({ metrics, onChange }: { metrics: Metric[]; onChange: (m: Metric[]) => void }) {
-  const [adding, setAdding] = useState(false);
-  const addRef = useRef<HTMLDivElement>(null);
+// ── 블록 순서 변경 (분석 지표 · 데이터 그룹 공용) ──
+// 잡은 블록이 포인터를 따라가고, 다른 블록 가운데를 지나면 자리를 바꿈. 바뀐 자리에는 놓일 자리(Slot)가 남음.
+// 2개 이상일 때만 끌 수 있음.
+function useSortable<T extends { id: string }>(items: T[], onChange: (next: T[]) => void) {
   const listRef = useRef<HTMLDivElement>(null);
   const [drag, setDrag] = useState<{ id: string; startY: number; dy: number } | null>(null);
-  const canDrag = metrics.length >= 2;
+  const canDrag = items.length >= 2;
 
-  // 마우스 드래그: 잡은 블록이 포인터를 따라가고, 블록 가운데를 지나면 자리를 바꿈
   useEffect(() => {
     if (!drag) return;
     const move = (e: MouseEvent) => {
       const list = listRef.current;
       if (!list) return;
       const cards = [...list.children] as HTMLElement[];
-      const from = metrics.findIndex((m) => m.id === drag.id);
+      const from = items.findIndex((m) => m.id === drag.id);
       const y = e.clientY;
       let to = from;
       cards.forEach((c, i) => {
-        if (i === from) return;
+        if (i === from || i >= items.length) return;
         const r = c.getBoundingClientRect();
         const mid = r.top + r.height / 2;
         if (i > from && y > mid) to = Math.max(to, i);
@@ -334,11 +312,12 @@ function Metrics({ metrics, onChange }: { metrics: Metric[]; onChange: (m: Metri
       });
       if (to !== from) {
         const h = cards[from].getBoundingClientRect().height + 8;
-        const next = [...metrics];
+        const next = [...items];
         const [m] = next.splice(from, 1);
         next.splice(to, 0, m);
         onChange(next);
-        setDrag((d) => d && { ...d, startY: d.startY + (to > from ? h * (to - from) : -h * (from - to)), dy: y - (d.startY + (to > from ? h * (to - from) : -h * (from - to))) });
+        const startY = drag.startY + (to > from ? h * (to - from) : -h * (from - to));
+        setDrag((d) => d && { ...d, startY, dy: y - startY });
       } else setDrag((d) => d && { ...d, dy: y - d.startY });
     };
     const up = () => setDrag(null);
@@ -350,21 +329,101 @@ function Metrics({ metrics, onChange }: { metrics: Metric[]; onChange: (m: Metri
       window.removeEventListener('mousemove', move);
       window.removeEventListener('mouseup', up);
     };
-  }, [drag, metrics, onChange]);
+  }, [drag, items, onChange]);
+
+  return {
+    listRef,
+    canDrag,
+    sorting: !!drag,
+    item: (id: string) => ({
+      picked: drag?.id === id,
+      style: drag?.id === id ? { transform: `translateY(${drag.dy}px)` } : undefined,
+      onDragStart: (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (canDrag) setDrag({ id, startY: e.clientY, dy: 0 });
+      },
+    }),
+  };
+}
+
+type SortProps = { canDrag: boolean; sorting: boolean; picked: boolean; style?: React.CSSProperties; onDragStart: (e: React.MouseEvent) => void };
+
+// 집은 블록의 원래 칸 = 놓일 자리. 블록은 그 위로 떠서 포인터를 따라감.
+function SortItem({ picked, children }: { picked: boolean; children: ReactNode }) {
+  return (
+    <div style={{ position: 'relative' }}>
+      {picked && <Slot />}
+      {children}
+    </div>
+  );
+}
+
+// 호버 상태는 끄는 동안 다른 블록이 반응하지 않게 sorting 중엔 무시
+function useHover(sorting: boolean) {
+  const [hover, setHover] = useState(false);
+  return { hover: hover && !sorting, bind: { onMouseEnter: () => setHover(true), onMouseLeave: () => setHover(false) } };
+}
+
+// ── 분석 지표 블록 (드래그 순서 변경 · 이벤트 교체 · 필터) ──
+function MetricBlock({ metric, index, sort, onChangeEvent, onFilters, onRemove }: { metric: Metric; index: number; sort: SortProps; onChangeEvent: (ev: string) => void; onFilters: (f: Filter[]) => void; onRemove: () => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+  const { hover, bind } = useHover(sort.sorting);
+  const [pending, setPending] = useState<string | null>(null);
+  return (
+    <SortItem picked={sort.picked}>
+      <Card lifted={sort.picked} style={sort.style} {...bind}>
+        <Block ref={ref} clickable onClick={() => setOpen(true)}>
+          <Handle visible={sort.canDrag && (hover || sort.picked)} picked={sort.picked} onMouseDown={sort.onDragStart} onClick={(e) => e.stopPropagation()}>
+            <Icon name="drag_indicator" size={16} />
+          </Handle>
+          <No picked={sort.picked}>{index + 1}</No>
+          <b>{metric.event}</b>
+          <span data-own-click style={{ display: 'flex', gap: 0 }} onClick={(e) => e.stopPropagation()}>
+            <IconButton
+              icon="filter_alt"
+              size="xs"
+              label="필터 추가"
+              onClick={() => {
+                const f: Filter = { id: uid('f'), property: null, operator: 'EQ', values: [] };
+                onFilters([...metric.filters, f]);
+                setPending(f.id);
+              }}
+            />
+            <IconButton icon="close" size="xs" label="삭제" onClick={onRemove} />
+          </span>
+        </Block>
+        <Filters event={metric.event} filters={metric.filters} setFilters={onFilters} pending={pending} setPending={setPending} />
+        <Floating anchorRef={ref} open={open} width={680} onClose={() => setOpen(false)}>
+          <EventSelector
+            current={metric.event}
+            onPick={(ev) => {
+              setOpen(false);
+              if (ev !== metric.event) onChangeEvent(ev);
+            }}
+          />
+        </Floating>
+      </Card>
+    </SortItem>
+  );
+}
+
+function Metrics({ metrics, onChange }: { metrics: Metric[]; onChange: (m: Metric[]) => void }) {
+  const [adding, setAdding] = useState(false);
+  const addRef = useRef<HTMLDivElement>(null);
+  const sortable = useSortable(metrics, onChange);
 
   const full = metrics.length + (adding ? 1 : 0) >= MAX_METRICS;
   return (
     <>
-      <div ref={listRef} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div ref={sortable.listRef} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {metrics.map((m, i) => (
           <MetricBlock
             key={m.id}
             metric={m}
             index={i}
-            canDrag={canDrag}
-            dragging={drag?.id === m.id}
-            dragStyle={drag?.id === m.id ? { transform: `translateY(${drag.dy}px)` } : { transition: 'transform 0.16s cubic-bezier(0.2,0,0,1)' }}
-            onDragStart={(e) => { e.preventDefault(); setDrag({ id: m.id, startY: e.clientY, dy: 0 }); }}
+            sort={{ canDrag: sortable.canDrag, sorting: sortable.sorting, ...sortable.item(m.id) }}
             onChangeEvent={(ev) => onChange(metrics.map((x) => (x.id === m.id ? { ...x, event: ev, filters: [] } : x)))}
             onFilters={(f) => onChange(metrics.map((x) => (x.id === m.id ? { ...x, filters: f } : x)))}
             onRemove={() => onChange(metrics.filter((x) => x.id !== m.id))}
@@ -373,7 +432,6 @@ function Metrics({ metrics, onChange }: { metrics: Metric[]; onChange: (m: Metri
         {adding && (
           <Card>
             <Block ref={addRef} clickable={false}>
-              <Handle visible={false} />
               <No>{metrics.length + 1}</No>
               <b data-placeholder>이벤트 선택</b>
               <IconButton icon="close" size="xs" label="삭제" onClick={() => setAdding(false)} />
@@ -389,9 +447,67 @@ function Metrics({ metrics, onChange }: { metrics: Metric[]; onChange: (m: Metri
           </Card>
         )}
       </div>
-      <Button hierarchy="tertiary" iconLeading="add" full disabled={full || !!drag} onClick={() => setAdding(true)}>
+      <Button hierarchy="tertiary" iconLeading="add" full disabled={full || sortable.sorting} onClick={() => setAdding(true)}>
         이벤트 추가
       </Button>
+    </>
+  );
+}
+
+// ── 데이터 그룹 (스테이징은 「준비중」 — 순서 변경 시안 확인용으로 블록을 미리 둠) ──
+type SplitBlock = { id: string; kind: '세그먼트' | '유저' | '기기'; label: string };
+const SPLIT_SEED: SplitBlock[] = [
+  { id: 'sp1', kind: '세그먼트', label: 'VIP 고객' },
+  { id: 'sp2', kind: '기기', label: '플랫폼' },
+];
+
+function SplitRow({ block, sort, onRemove }: { block: SplitBlock; sort: SortProps; onRemove: () => void }) {
+  const { hover, bind } = useHover(sort.sorting);
+  return (
+    <SortItem picked={sort.picked}>
+      <Card lifted={sort.picked} style={sort.style} {...bind}>
+        <Block clickable={false}>
+          <Handle visible={sort.canDrag && (hover || sort.picked)} picked={sort.picked} onMouseDown={sort.onDragStart}>
+            <Icon name="drag_indicator" size={16} />
+          </Handle>
+          <Kind>{block.kind}</Kind>
+          <b>{block.label}</b>
+          <IconButton icon="close" size="xs" label="삭제" onClick={onRemove} />
+        </Block>
+      </Card>
+    </SortItem>
+  );
+}
+
+function DataGroups() {
+  const [blocks, setBlocks] = useState<SplitBlock[]>(SPLIT_SEED);
+  const [adding, setAdding] = useState(false);
+  const addRef = useRef<HTMLDivElement>(null);
+  const sortable = useSortable(blocks, setBlocks);
+  return (
+    <>
+      {blocks.length > 0 && (
+        <div ref={sortable.listRef} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {blocks.map((b) => (
+            <SplitRow key={b.id} block={b} sort={{ canDrag: sortable.canDrag, sorting: sortable.sorting, ...sortable.item(b.id) }} onRemove={() => setBlocks(blocks.filter((x) => x.id !== b.id))} />
+          ))}
+        </div>
+      )}
+      <div ref={addRef}>
+        <Button hierarchy="tertiary" iconLeading="add" full disabled={sortable.sorting} onClick={() => setAdding(true)}>
+          속성 추가
+        </Button>
+      </div>
+      <Floating anchorRef={addRef} open={adding} width={680} onClose={() => setAdding(false)}>
+        <TargetSelector
+          onPick={(p) => {
+            setAdding(false);
+            if (p.kind === 'EVENT') return;
+            const label = p.kind === 'SEGMENT' ? segments.find((s) => s.id === p.segmentId)?.name ?? '' : p.property;
+            setBlocks([...blocks, { id: uid('sp'), kind: p.kind === 'SEGMENT' ? '세그먼트' : p.kind === 'USER' ? '유저' : '기기', label }]);
+          }}
+        />
+      </Floating>
     </>
   );
 }
@@ -628,10 +744,8 @@ export default function QueryPanel({ state, onChange }: { state: EditorState; on
           <Head>
             <h3>데이터 그룹</h3>
             <Help>지표를 특정 속성 기준으로 그룹화해 시각화합니다.</Help>
-            <i />
-            <Badge color="gray">준비중</Badge>
           </Head>
-          <Select value={null} options={[]} onChange={() => {}} placeholder="속성 선택" disabled />
+          <DataGroups />
         </Sec>
       </Sections>
     </Panel>
