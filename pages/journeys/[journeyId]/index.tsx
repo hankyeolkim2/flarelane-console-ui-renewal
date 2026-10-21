@@ -4,6 +4,7 @@ import styled from '@emotion/styled';
 import Icon from '@/components/Icon';
 import { RangePicker } from '@/components/analytics/editor/Toolbar';
 import Button from '@/components/ui/Button';
+import { DateTimePicker } from '@/components/ui/DatePicker';
 import Floating from '@/components/ui/Floating';
 import IconButton from '@/components/ui/IconButton';
 import { MenuItem } from '@/components/ui/Menu';
@@ -123,7 +124,11 @@ function ScheduleModal({ active, onClose, onSave }: { active: boolean; onClose: 
             예약하기
           </Opt>
         </div>
-        {start === 'at' && <TextField type="datetime-local" min="2026-10-08T00:00" value={sd} onChange={(e) => setSd(e.target.value)} style={{ marginTop: 8 }} />}
+        {start === 'at' && (
+          <div style={{ marginTop: 8 }}>
+            <DateTimePicker ariaLabel="여정 시작일" min="2026-10-08" value={sd} onChange={setSd} />
+          </div>
+        )}
         {sErr && <Err>시작일은 현재 시간 이후로 선택해주세요.</Err>}
       </div>
       <div>
@@ -140,7 +145,9 @@ function ScheduleModal({ active, onClose, onSave }: { active: boolean; onClose: 
         </div>
         {end === 'at' && (
           <>
-            <TextField type="datetime-local" value={ed} onChange={(e) => setEd(e.target.value)} style={{ marginTop: 8 }} />
+            <div style={{ marginTop: 8 }}>
+              <DateTimePicker ariaLabel="여정 종료일" value={ed} onChange={setEd} />
+            </div>
             {eErr && <Err>종료일은 시작일 이후로 선택해주세요.</Err>}
             <b style={{ display: 'block', margin: '12px 0 6px', fontSize: 14, fontWeight: 500 }}>발송 대기 중인 메시지</b>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

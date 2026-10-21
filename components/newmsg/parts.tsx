@@ -4,6 +4,7 @@ import Icon from '@/components/Icon';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import Checkbox from '@/components/ui/Checkbox';
+import DatePicker from '@/components/ui/DatePicker';
 import IconButton from '@/components/ui/IconButton';
 import { ConfirmModal, Dialog } from '@/components/ui/Modal';
 import Radio from '@/components/ui/Radio';
@@ -672,7 +673,7 @@ export type SendState = {
   tz: string;
   recurring: RecurringConfig;
   ignoreCapping: boolean;
-  ttl: { n: number; unit: 'DAY' | 'HOUR' | 'MINUTE' | 'UNTIL' };
+  ttl: { n: number; unit: 'DAY' | 'HOUR' | 'MINUTE' | 'UNTIL'; until?: string };
 };
 export const initialSend = (recurring: boolean): SendState => ({
   mode: recurring ? 'recurring' : 'now',
@@ -718,9 +719,7 @@ export function SendSection({ value, onChange, ttl, capping, plan = 'ENTERPRISE'
             </div>
             {value.ttl.unit === 'UNTIL' && (
               <>
-                <div style={{ width: 160 }}>
-                  <TextField type="date" value="2026-10-08" onChange={() => undefined} />
-                </div>
+                <DatePicker width={160} min="2026-10-08" value={value.ttl.until ?? '2026-10-08'} onChange={(until) => set({ ttl: { ...value.ttl, until } })} ariaLabel="알림 만료 날짜" />
                 <small>23 : 59 Asia/Seoul</small>
               </>
             )}
@@ -759,9 +758,7 @@ export function SendSection({ value, onChange, ttl, capping, plan = 'ENTERPRISE'
           {value.mode === 'at' && (
             <Row style={{ paddingLeft: 24, flexWrap: 'wrap' }}>
               <small>날짜</small>
-              <div style={{ width: 160 }}>
-                <TextField type="date" min="2026-10-08" value={value.date} onChange={(e) => set({ date: e.target.value })} />
-              </div>
+              <DatePicker width={160} min="2026-10-08" value={value.date} onChange={(date) => set({ date })} ariaLabel="예약 발송 날짜" />
               <small>시간</small>
               <Num2 v={value.hour} max={23} onChange={(hour) => set({ hour })} />
               <small>:</small>
@@ -822,17 +819,13 @@ export function SendSection({ value, onChange, ttl, capping, plan = 'ENTERPRISE'
               )}
               <Row>
                 <small>발송 시작일</small>
-                <div style={{ width: 160 }}>
-                  <TextField type="date" min="2026-10-08" value={(r.start.startDate ?? '2026.10.08').replace(/\./g, '-')} onChange={(e) => setR({ start: { type: 'ON_DATE', startDate: e.target.value.replace(/-/g, '.') } })} />
-                </div>
+                <DatePicker width={160} min="2026-10-08" value={(r.start.startDate ?? '2026.10.08').replace(/\./g, '-')} onChange={(v) => setR({ start: { type: 'ON_DATE', startDate: v.replace(/-/g, '.') } })} ariaLabel="발송 시작일" />
               </Row>
               <Row style={{ flexWrap: 'wrap' }}>
                 <small>발송 종료일</small>
                 <Radios<string> value={r.end.type} options={[{ value: 'NEVER', label: '무기한' }, { value: 'ON_DATE', label: '기간 선택' }]} onChange={(t) => setR({ end: t === 'NEVER' ? { type: 'NEVER' } : { type: 'ON_DATE', endDate: '2026.10.09' } })} />
                 {r.end.type === 'ON_DATE' && (
-                  <div style={{ width: 160 }}>
-                    <TextField type="date" value={(r.end.endDate ?? '').replace(/\./g, '-')} onChange={(e) => setR({ end: { type: 'ON_DATE', endDate: e.target.value.replace(/-/g, '.') } })} />
-                  </div>
+                  <DatePicker width={160} value={(r.end.endDate ?? '').replace(/\./g, '-')} onChange={(v) => setR({ end: { type: 'ON_DATE', endDate: v.replace(/-/g, '.') } })} ariaLabel="발송 종료일" />
                 )}
               </Row>
               <div>

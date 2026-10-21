@@ -4,13 +4,14 @@ import styled from '@emotion/styled';
 import { color, radius, shadow } from '@/styles/tokens';
 
 // 화면 위에 띄우는 팝오버(fixed) — 스테이징 팝오버 공통: 기본 bottom-end, 바깥 클릭으로 닫힘.
-const Panel = styled.div`
+// look="calendar" = Figma `_Date picker menu`(r16 · border-secondary_alt · shadow-xl)
+const Panel = styled.div<{ $calendar: boolean }>`
   position: fixed;
   z-index: 60;
   background: ${color('bg-primary')};
-  border: 1px solid ${color('border-secondary')};
-  border-radius: ${radius.xl}px;
-  box-shadow: ${shadow.lg};
+  border: 1px solid ${(p) => (p.$calendar ? color('border-secondary_alt') : color('border-secondary'))};
+  border-radius: ${(p) => (p.$calendar ? radius['2xl'] : radius.xl)}px;
+  box-shadow: ${(p) => (p.$calendar ? shadow.xl : shadow.lg)};
   overflow: hidden;
 `;
 
@@ -21,10 +22,11 @@ type Props = {
   width: number;
   placement?: 'bottom-end' | 'bottom-start';
   offset?: number;
+  look?: 'menu' | 'calendar';
   children: ReactNode;
 };
 
-export default function Floating({ anchorRef, open, onClose, width, placement = 'bottom-end', offset = 6, children }: Props) {
+export default function Floating({ anchorRef, open, onClose, width, placement = 'bottom-end', offset = 6, look = 'menu', children }: Props) {
   const panel = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   const closeRef = useRef(onClose);
@@ -71,7 +73,7 @@ export default function Floating({ anchorRef, open, onClose, width, placement = 
 
   if (!open || typeof document === 'undefined') return null;
   return createPortal(
-    <Panel ref={panel} data-floating style={{ width, top: pos?.top ?? -9999, left: pos?.left ?? -9999 }} onMouseDown={(e) => e.stopPropagation()}>
+    <Panel ref={panel} data-floating $calendar={look === 'calendar'} style={{ width, top: pos?.top ?? -9999, left: pos?.left ?? -9999 }} onMouseDown={(e) => e.stopPropagation()}>
       {children}
     </Panel>,
     document.body,

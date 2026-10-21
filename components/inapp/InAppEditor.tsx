@@ -5,6 +5,7 @@ import Icon from '@/components/Icon';
 import { RangePicker } from '@/components/analytics/editor/Toolbar';
 import Button from '@/components/ui/Button';
 import Checkbox from '@/components/ui/Checkbox';
+import { DateTimePicker } from '@/components/ui/DatePicker';
 import Floating from '@/components/ui/Floating';
 import IconButton from '@/components/ui/IconButton';
 import Radio from '@/components/ui/Radio';
@@ -566,10 +567,10 @@ export default function InAppEditor({ mode, initial }: { mode: Mode; initial: In
                 (ro ? (
                   <span style={{ fontSize: 14 }}>{`${m.start} ~ ${m.end} Asia/Seoul`}</span>
                 ) : (
-                  <Row>
-                    <TextField type="datetime-local" value={(m.start ?? '').replace(/\./g, '-').replace(' ', 'T').slice(0, 16)} onChange={(e) => set({ start: e.target.value })} />
+                  <Row style={{ flexWrap: 'wrap' }}>
+                    <DateTimePicker ariaLabel="노출 시작일" value={(m.start ?? '').replace(/\./g, '-').replace(' ', 'T').slice(0, 16)} onChange={(start) => set({ start })} />
                     <small>~</small>
-                    <TextField type="datetime-local" value={(m.end ?? '').replace(/\./g, '-').replace(' ', 'T').slice(0, 16)} onChange={(e) => set({ end: e.target.value })} />
+                    <DateTimePicker ariaLabel="노출 종료일" value={(m.end ?? '').replace(/\./g, '-').replace(' ', 'T').slice(0, 16)} onChange={(end) => set({ end })} />
                     <small>Asia/Seoul</small>
                   </Row>
                 ))}
