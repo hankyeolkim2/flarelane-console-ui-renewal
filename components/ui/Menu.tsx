@@ -6,18 +6,23 @@ import { text } from '@/styles/typography';
 
 // Figma `Dropdown menu` · `_Dropdown menu list item` (Inset icon=True).
 
-// 바깥 클릭 · Esc 로 닫기
+// 바깥 클릭 · Esc 로 닫기 — 바깥 클릭은 캡처 단계(모달 상자 등 mousedown 전파를 막는 곳 안에서도 닫히게, 10-21)
 export function useDismiss(ref: RefObject<HTMLElement | null>, open: boolean, onClose: () => void) {
   useEffect(() => {
     if (!open) return;
     const down = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
+      const t = e.target as Node;
+      if (!ref.current || ref.current.contains(t)) return;
+      // 메뉴 안에서 연 팝오버(뒤에 붙은 portal)를 누른 건 바깥이 아님
+      const other = t instanceof Element ? t.closest('[data-floating]') : null;
+      if (other && ref.current.compareDocumentPosition(other) & Node.DOCUMENT_POSITION_FOLLOWING) return;
+      onClose();
     };
     const key = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    document.addEventListener('mousedown', down);
+    document.addEventListener('mousedown', down, true);
     document.addEventListener('keydown', key);
     return () => {
-      document.removeEventListener('mousedown', down);
+      document.removeEventListener('mousedown', down, true);
       document.removeEventListener('keydown', key);
     };
   }, [ref, open, onClose]);

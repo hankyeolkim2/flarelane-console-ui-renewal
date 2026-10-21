@@ -55,18 +55,22 @@ export default function Floating({ anchorRef, open, onClose, width, placement = 
     };
   }, [open, anchorRef, width, placement, offset]);
 
+  // 바깥 클릭은 캡처 단계에서 받음 — 모달 상자처럼 mousedown 전파를 막는 곳 안을 눌러도 닫히게(10-21, 개인화 변수 모달에서 안 닫히던 버그).
+  // 단, 이 팝오버 안에서 연 다른 팝오버(뒤에 붙은 portal, 예: 달력)를 누른 건 바깥이 아님
   useEffect(() => {
     if (!open) return;
     const down = (e: MouseEvent) => {
       const t = e.target as Node;
       if (panel.current?.contains(t) || anchorRef.current?.contains(t)) return;
+      const other = t instanceof Element ? t.closest('[data-floating]') : null;
+      if (other && panel.current && panel.current.compareDocumentPosition(other) & Node.DOCUMENT_POSITION_FOLLOWING) return;
       closeRef.current();
     };
     const key = (e: KeyboardEvent) => e.key === 'Escape' && closeRef.current();
-    document.addEventListener('mousedown', down);
+    document.addEventListener('mousedown', down, true);
     document.addEventListener('keydown', key);
     return () => {
-      document.removeEventListener('mousedown', down);
+      document.removeEventListener('mousedown', down, true);
       document.removeEventListener('keydown', key);
     };
   }, [open, anchorRef]);
