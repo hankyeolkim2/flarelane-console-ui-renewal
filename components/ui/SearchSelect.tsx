@@ -59,7 +59,7 @@ const SearchBox = styled.label`
   background: ${color('bg-primary')};
   box-shadow: inset 0 0 0 1px ${color('border-primary')}, ${shadow.xs};
   cursor: text;
-  &:focus-within { box-shadow: inset 0 0 0 2px ${color('border-brand')}, ${shadow.xs}; }
+  /* 메뉴 안 검색 줄은 포커스 링 없음(10-21 시험) — 열면 포커스가 여기로 와서 커서가 보이고, ↑↓ 는 항목 바탕 강조로 위치를 알림 */
   > span { display: inline-flex; color: ${color('fg-quaternary')}; }
   > input { flex: 1; min-width: 0; height: 100%; border: 0; outline: none; background: transparent; ${text('text-sm', 'regular')}; color: ${color('text-primary')}; }
   > input::placeholder { color: ${color('text-placeholder')}; }
@@ -69,7 +69,7 @@ const List = styled.ul`
   margin: 0;
   padding: 4px;
   list-style: none;
-  max-height: 284px;
+  max-height: 272px; /* 검색 메뉴 목록 최대 272(7줄) — 10-21 드롭다운 폭 확정안 */
   overflow-y: auto;
 `;
 
