@@ -218,7 +218,7 @@ export function RangePicker({ range, onConfirm, onCancel }: { range: { from: str
             </button>
           </CalHead>
           {/* 날짜 칸 = DS `_Calendar cell` — 시작 · 끝 원 옆까지 기간 띠가 차고(Connector), 줄 끝 · 달 경계에서 끊김(10-21 사용자 「네이비 날짜도 회색 배경이 라운드 나머지까지」) */}
-          <MonthGrid month={month} range={{ from, to }} min={ymd(MIN_DATE)} max={ymd(TODAY)} weekStart="sun" hideOutside onPick={(s) => pickDay(parseYmd(s))} />
+          <MonthGrid month={month} range={{ from, to }} min={ymd(MIN_DATE)} max={ymd(TODAY)} hideOutside onPick={(s) => pickDay(parseYmd(s))} />
         </Cal>
         <Side>
           <div>

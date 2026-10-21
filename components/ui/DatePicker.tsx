@@ -11,9 +11,9 @@ import { color, radius, shadow } from '@/styles/tokens';
 import { text } from '@/styles/typography';
 
 // 달력 — Figma `_Date picker menu`(308:21686 · Single date 308:22023) · `_Calendar cell`(308:22251) · 6차 적용 안내 §6.
-// 한 달 = 월요일 시작 · 6주(앞뒤 달 날짜는 Disabled 모양) · 칸 40 원형 · 줄 사이 4. 값은 모두 'YYYY-MM-DD'.
+// 한 달 = 일요일 시작(현 콘솔과 같음 — 10-21 사용자, 6차 문서 · Figma 의 월요일 시작 대신) · 6주(앞뒤 달 날짜는 Disabled 모양) · 칸 40 원형 · 줄 사이 4. 값은 모두 'YYYY-MM-DD'.
 
-const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일'];
+const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 export const monthLabel = (m: Date) => `${m.getFullYear()}년 ${m.getMonth() + 1}월`;
 export const firstOfMonth = (d: Date) => new Date(d.getFullYear(), d.getMonth(), 1);
 export const addMonths = (m: Date, n: number) => new Date(m.getFullYear(), m.getMonth() + n, 1);
@@ -70,22 +70,20 @@ export type MonthGridProps = {
   range?: { from: string; to: string }; // 기간(시작 · 끝 = Selected, 사이 = Active)
   min?: string;
   max?: string;
-  weekStart?: 'mon' | 'sun'; // 기본 월요일(6차) — 분석 보드 기간 피커만 일요일(기존 배치 유지)
   hideOutside?: boolean; // 앞뒤 달 날짜를 비워 둠(분석 보드 기간 피커) — 기본은 Disabled 모양으로 보임
   onPick: (s: string) => void;
 };
 
-export function MonthGrid({ month, selected, range, min, max, weekStart = 'mon', hideOutside = false, onPick }: MonthGridProps) {
-  const lead = weekStart === 'sun' ? month.getDay() : (month.getDay() + 6) % 7;
+export function MonthGrid({ month, selected, range, min, max, hideOutside = false, onPick }: MonthGridProps) {
+  const lead = month.getDay(); // 일요일 시작
   const last = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
   const today = ymd(TODAY);
   const count = hideOutside ? Math.ceil((lead + last) / 7) * 7 : 42;
   const cells = Array.from({ length: count }, (_, i) => new Date(month.getFullYear(), month.getMonth(), i - lead + 1));
   const ranged = !!range?.from && !!range?.to && range.from !== range.to;
-  const weekdays = weekStart === 'sun' ? ['일', ...WEEKDAYS.slice(0, 6)] : WEEKDAYS;
   return (
     <Days role="grid" aria-label={monthLabel(month)}>
-      {weekdays.map((w) => (
+      {WEEKDAYS.map((w) => (
         <em key={w}>{w}</em>
       ))}
       {cells.map((d, i) => {

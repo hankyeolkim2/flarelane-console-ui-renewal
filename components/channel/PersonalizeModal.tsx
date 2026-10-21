@@ -3,14 +3,30 @@ import styled from '@emotion/styled';
 import Button from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Modal';
 import SearchSelect from '@/components/ui/SearchSelect';
-import TextField from '@/components/ui/TextField';
 import { Field } from './ChannelShell';
 import { liquid, VARIABLES } from '@/lib/liquid';
-import { color } from '@/styles/tokens';
+import { color, radius, shadow } from '@/styles/tokens';
 import { text } from '@/styles/typography';
 
 // 개인화 변수 모달(`{}` 버튼) — 변수 선택 = 셀렉트 박스 + 메뉴 안 검색(스테이징과 같음, 10-21 확인: 이름 · 설명 부분 일치, 직접입력 없음)
 // 박스 폭 = 대체 문구 칸과 같은 전체 폭(10-21 사용자). 변수나 대체 문구가 비면 확인 비활성. 확인 → `{{ 변수 | default: "대체문구" }}` 를 돌려줌.
+// 대체 문구 = 여러 줄(현 콘솔과 같음, 10-21 사용자) — 높이 132 = 새 메시지 내용 칸과 같음, 포커스 2px
+const Area = styled.textarea`
+  width: 100%;
+  min-height: 132px;
+  padding: 9px 13px;
+  border: 1px solid ${color('border-primary')};
+  border-radius: ${radius.md}px;
+  box-shadow: ${shadow.xs};
+  ${text('text-sm', 'regular')};
+  font-family: inherit;
+  color: ${color('text-primary')};
+  resize: vertical;
+  outline: none;
+  &::placeholder { color: ${color('text-placeholder')}; }
+  &:focus { border-color: ${color('border-brand')}; box-shadow: inset 0 0 0 1px ${color('border-brand')}, ${shadow.xs}; }
+`;
+
 const Guide = styled.a`
   margin-right: auto;
   align-self: center;
@@ -47,7 +63,7 @@ export default function PersonalizeModal({ onClose, onConfirm }: { onClose: () =
       </Field>
       <Field>
         <label htmlFor="pv-fallback">대체 문구</label>
-        <TextField id="pv-fallback" placeholder="값이 없을 때 사용할 문구 입력" value={fallback} onChange={(e) => setFallback(e.target.value)} />
+        <Area id="pv-fallback" placeholder="값이 없을 때 사용할 문구 입력" value={fallback} onChange={(e) => setFallback(e.target.value)} />
       </Field>
     </Dialog>
   );
