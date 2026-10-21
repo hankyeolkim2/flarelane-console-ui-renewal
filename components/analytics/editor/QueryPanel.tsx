@@ -69,6 +69,15 @@ const Card = styled.div<{ lifted?: boolean }>`
   border-radius: ${radius.md}px;
   background: ${color('bg-primary')};
   ${(p) => (p.lifted ? `box-shadow: ${shadow.lg}; position: relative; z-index: 2; cursor: grabbing;` : '')}
+  &:hover [data-drag-handle] { width: 16px; margin-right: 0; }
+`;
+
+// 블록 목록 — 끄는 동안엔 지나가는 블록이 호버로 반응하지 않음(스테이징과 같음)
+const SortList = styled.div<{ sorting: boolean }>`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  ${(p) => (p.sorting ? '> * { pointer-events: none; }' : '')}
 `;
 
 // 끄는 동안 블록이 놓일 자리
@@ -94,15 +103,15 @@ const Block = styled.div<{ clickable: boolean }>`
 `;
 
 // 손잡이 — 평소엔 자리를 차지하지 않아 번호 · 유형 칩이 맨 왼쪽(다른 영역과 세로축 맞춤).
-// 호버하면 폭 16이 열리며 뒤 내용이 오른쪽으로 밀림(PO 요청). 손잡이 위 · 끄는 중엔 칩 배경.
-const Handle = styled.span<{ visible: boolean; picked?: boolean }>`
+// 블록 호버(Card :hover)하면 폭 16이 열리며 뒤 내용이 오른쪽으로 밀림(PO 요청). 손잡이 위 · 끄는 중엔 칩 배경.
+const Handle = styled.span<{ picked?: boolean }>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: ${(p) => (p.visible ? 16 : 0)}px;
+  width: ${(p) => (p.picked ? 16 : 0)}px;
   height: 20px;
-  margin-right: ${(p) => (p.visible ? 0 : -8)}px;
+  margin-right: ${(p) => (p.picked ? 0 : -8)}px;
   overflow: hidden;
   border-radius: ${radius.xs}px;
   background: ${(p) => (p.picked ? color('bg-secondary_hover') : 'transparent')};
@@ -359,25 +368,20 @@ function SortItem({ picked, children }: { picked: boolean; children: ReactNode }
   );
 }
 
-// 호버 상태는 끄는 동안 다른 블록이 반응하지 않게 sorting 중엔 무시
-function useHover(sorting: boolean) {
-  const [hover, setHover] = useState(false);
-  return { hover: hover && !sorting, bind: { onMouseEnter: () => setHover(true), onMouseLeave: () => setHover(false) } };
-}
-
 // ── 분석 지표 블록 (드래그 순서 변경 · 이벤트 교체 · 필터) ──
 function MetricBlock({ metric, index, sort, onChangeEvent, onFilters, onRemove }: { metric: Metric; index: number; sort: SortProps; onChangeEvent: (ev: string) => void; onFilters: (f: Filter[]) => void; onRemove: () => void }) {
   const ref = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
-  const { hover, bind } = useHover(sort.sorting);
   const [pending, setPending] = useState<string | null>(null);
   return (
     <SortItem picked={sort.picked}>
-      <Card lifted={sort.picked} style={sort.style} {...bind}>
+      <Card lifted={sort.picked} style={sort.style}>
         <Block ref={ref} clickable onClick={() => setOpen(true)}>
-          <Handle visible={sort.canDrag && (hover || sort.picked)} picked={sort.picked} onMouseDown={sort.onDragStart} onClick={(e) => e.stopPropagation()}>
-            <Icon name="drag_indicator" size={16} />
-          </Handle>
+          {sort.canDrag && (
+            <Handle data-drag-handle picked={sort.picked} onMouseDown={sort.onDragStart} onClick={(e) => e.stopPropagation()}>
+              <Icon name="drag_indicator" size={16} />
+            </Handle>
+          )}
           <No picked={sort.picked}>{index + 1}</No>
           <b>{metric.event}</b>
           <span data-own-click style={{ display: 'flex', gap: 0 }} onClick={(e) => e.stopPropagation()}>
@@ -417,7 +421,7 @@ function Metrics({ metrics, onChange }: { metrics: Metric[]; onChange: (m: Metri
   const full = metrics.length + (adding ? 1 : 0) >= MAX_METRICS;
   return (
     <>
-      <div ref={sortable.listRef} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <SortList ref={sortable.listRef} sorting={sortable.sorting}>
         {metrics.map((m, i) => (
           <MetricBlock
             key={m.id}
@@ -446,7 +450,7 @@ function Metrics({ metrics, onChange }: { metrics: Metric[]; onChange: (m: Metri
             </Floating>
           </Card>
         )}
-      </div>
+      </SortList>
       <Button hierarchy="tertiary" iconLeading="add" full disabled={full || sortable.sorting} onClick={() => setAdding(true)}>
         이벤트 추가
       </Button>
@@ -462,14 +466,15 @@ const SPLIT_SEED: SplitBlock[] = [
 ];
 
 function SplitRow({ block, sort, onRemove }: { block: SplitBlock; sort: SortProps; onRemove: () => void }) {
-  const { hover, bind } = useHover(sort.sorting);
   return (
     <SortItem picked={sort.picked}>
-      <Card lifted={sort.picked} style={sort.style} {...bind}>
+      <Card lifted={sort.picked} style={sort.style}>
         <Block clickable={false}>
-          <Handle visible={sort.canDrag && (hover || sort.picked)} picked={sort.picked} onMouseDown={sort.onDragStart}>
-            <Icon name="drag_indicator" size={16} />
-          </Handle>
+          {sort.canDrag && (
+            <Handle data-drag-handle picked={sort.picked} onMouseDown={sort.onDragStart}>
+              <Icon name="drag_indicator" size={16} />
+            </Handle>
+          )}
           <Kind>{block.kind}</Kind>
           <b>{block.label}</b>
           <IconButton icon="close" size="xs" label="삭제" onClick={onRemove} />
@@ -487,11 +492,11 @@ function DataGroups() {
   return (
     <>
       {blocks.length > 0 && (
-        <div ref={sortable.listRef} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <SortList ref={sortable.listRef} sorting={sortable.sorting}>
           {blocks.map((b) => (
             <SplitRow key={b.id} block={b} sort={{ canDrag: sortable.canDrag, sorting: sortable.sorting, ...sortable.item(b.id) }} onRemove={() => setBlocks(blocks.filter((x) => x.id !== b.id))} />
           ))}
-        </div>
+        </SortList>
       )}
       <div ref={addRef}>
         <Button hierarchy="tertiary" iconLeading="add" full disabled={sortable.sorting} onClick={() => setAdding(true)}>
