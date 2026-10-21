@@ -17,27 +17,36 @@ const Overlay = styled.div`
   background: rgba(3, 7, 18, 0.7);
 `;
 
+// 화면보다 길면 위아래 32 를 남기고 본문만 스크롤 — 머리 · 아래 버튼 줄은 고정(10-21, 최근 발송 메시지 20줄이 화면 밖으로 잘리던 문제)
 const Box = styled.div<{ width: number }>`
+  display: flex;
+  flex-direction: column;
   width: ${(p) => p.width}px;
   max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 64px);
+  overflow: hidden;
   background: ${color('bg-primary')};
   border-radius: ${radius['2xl']}px;
   box-shadow: ${shadow.xl};
 `;
 
 const Head = styled.div`
+  flex-shrink: 0;
   padding: 20px 24px 12px;
   ${text('text-lg', 'semibold')};
   color: ${color('text-primary')};
 `;
 
 const Body = styled.div`
+  min-height: 0;
+  overflow-y: auto;
   padding: 4px 24px 24px;
   ${text('text-sm', 'regular')};
   color: ${color('text-tertiary')};
 `;
 
 const Foot = styled.div`
+  flex-shrink: 0;
   display: flex;
   justify-content: flex-end;
   gap: 12px;
@@ -82,6 +91,7 @@ const DestructivePrimary = styled.button<{ destructive: boolean }>`
 
 // 입력 모달 — Figma 「도메인 등록 모달」(1330:82503): 480 · Header 제목 + X · Body · Footer 오른쪽 정렬
 const DialogHead = styled.div`
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -95,7 +105,10 @@ const DialogBody = styled.div`
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-height: 0;
+  overflow-y: auto;
   padding: 4px 24px 24px;
+  > * { flex-shrink: 0; } /* 표 등 안쪽 상자가 줄어들며 잘리지 않고, 본문이 스크롤되게 */
 `;
 
 export function Dialog({ title, width = 480, onClose, footer, actions, children }: { title: string; width?: number; onClose: () => void; footer?: ReactNode; actions?: ReactNode; children: ReactNode }) {
