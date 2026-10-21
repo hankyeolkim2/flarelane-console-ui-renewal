@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import styled from '@emotion/styled';
 import Icon from '@/components/Icon';
-import { RangePicker } from '@/components/analytics/editor/Toolbar';
+import { DateRangeMenu } from '@/components/ui/DatePicker';
 import Button from '@/components/ui/Button';
 import Checkbox from '@/components/ui/Checkbox';
 import Floating from '@/components/ui/Floating';
@@ -156,12 +156,12 @@ export default function PushSentHistory() {
               <div>
                 <RangeBtn ref={rangeRef} type="button" onClick={() => setRangeOpen((v) => !v)}>
                   <span>
-                    <Icon name="calendar_today" size={20} />
+                    <Icon name="calendar_month" size={20} />
                   </span>
                   {`${range.gte} – ${range.lte}`}
                 </RangeBtn>
-                <Floating anchorRef={rangeRef} open={rangeOpen} onClose={() => setRangeOpen(false)} width={548} placement="bottom-start">
-                  <RangePicker
+                <Floating anchorRef={rangeRef} open={rangeOpen} onClose={() => setRangeOpen(false)} width={808} offset={8} look="calendar" placement="bottom-start">
+                  <DateRangeMenu
                     range={{ from: range.gte, to: range.lte }}
                     onCancel={() => setRangeOpen(false)}
                     onConfirm={(r) => {

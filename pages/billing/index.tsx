@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import styled from '@emotion/styled';
 import Icon from '@/components/Icon';
-import { RangePicker } from '@/components/analytics/editor/Toolbar';
+import { DateRangeMenu } from '@/components/ui/DatePicker';
 import Button from '@/components/ui/Button';
 import ButtonGroup from '@/components/ui/ButtonGroup';
 import Floating from '@/components/ui/Floating';
@@ -237,12 +237,12 @@ export default function Billing() {
               <Select<'days' | 'weeks' | 'months'> width={96} value={interval} options={[{ value: 'days', label: '일' }, { value: 'weeks', label: '주' }, { value: 'months', label: '달' }]} onChange={setInterval_} />
               <RangeBtn ref={usageRef} type="button" onClick={() => setOpen(open === 'usage' ? null : 'usage')}>
                 <span>
-                  <Icon name="calendar_today" size={20} />
+                  <Icon name="calendar_month" size={20} />
                 </span>
-                {`${range.from} ~ ${range.to}`}
+                {`${range.from} – ${range.to}`}
               </RangeBtn>
-              <Floating anchorRef={usageRef} open={open === 'usage'} onClose={() => setOpen(null)} width={548}>
-                <RangePicker range={range} onCancel={() => setOpen(null)} onConfirm={(r) => { setOpen(null); setRange(r); }} />
+              <Floating anchorRef={usageRef} open={open === 'usage'} onClose={() => setOpen(null)} width={808} offset={8} look="calendar">
+                <DateRangeMenu range={range} onCancel={() => setOpen(null)} onConfirm={(r) => { setOpen(null); setRange(r); }} />
               </Floating>
             </>
           }
@@ -329,12 +329,12 @@ export default function Billing() {
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <RangeBtn ref={payRef} type="button" onClick={() => setOpen(open === 'pay' ? null : 'pay')}>
               <span>
-                <Icon name="calendar_today" size={20} />
+                <Icon name="calendar_month" size={20} />
               </span>
               {`${payRange.from} ~ ${payRange.to}`}
             </RangeBtn>
-            <Floating anchorRef={payRef} open={open === 'pay'} onClose={() => setOpen(null)} width={548}>
-              <RangePicker range={payRange} onCancel={() => setOpen(null)} onConfirm={(r) => { setOpen(null); setPayRange(r); setPage(1); }} />
+            <Floating anchorRef={payRef} open={open === 'pay'} onClose={() => setOpen(null)} width={808} offset={8} look="calendar">
+              <DateRangeMenu range={payRange} onCancel={() => setOpen(null)} onConfirm={(r) => { setOpen(null); setPayRange(r); setPage(1); }} />
             </Floating>
           </div>
         )}

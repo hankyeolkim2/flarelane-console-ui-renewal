@@ -2,7 +2,7 @@ import { useEffect, useReducer, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import styled from '@emotion/styled';
 import Icon from '@/components/Icon';
-import { RangePicker } from '@/components/analytics/editor/Toolbar';
+import { DateRangeMenu } from '@/components/ui/DatePicker';
 import Button from '@/components/ui/Button';
 import { DateTimePicker } from '@/components/ui/DatePicker';
 import Floating from '@/components/ui/Floating';
@@ -257,12 +257,12 @@ export default function JourneyDetail() {
             <>
               <RangeBtn ref={rangeRef} type="button" onClick={() => setRangeOpen((v) => !v)}>
                 <span>
-                  <Icon name="calendar_today" size={20} />
+                  <Icon name="calendar_month" size={20} />
                 </span>
                 {`${range.from} – ${range.to}`}
               </RangeBtn>
-              <Floating anchorRef={rangeRef} open={rangeOpen} onClose={() => setRangeOpen(false)} width={548}>
-                <RangePicker range={range} onCancel={() => setRangeOpen(false)} onConfirm={(r) => { setRangeOpen(false); setRange(r); }} />
+              <Floating anchorRef={rangeRef} open={rangeOpen} onClose={() => setRangeOpen(false)} width={808} offset={8} look="calendar">
+                <DateRangeMenu range={range} onCancel={() => setRangeOpen(false)} onConfirm={(r) => { setRangeOpen(false); setRange(r); }} />
               </Floating>
             </>
           }

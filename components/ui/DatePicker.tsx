@@ -6,7 +6,7 @@ import Floating from './Floating';
 import IconButton from './IconButton';
 import NumberField from './NumberField';
 import TextField from './TextField';
-import { parseYmd, TODAY, ymd } from '@/lib/editor';
+import { addDays, MIN_DATE, parseYmd, TODAY, ymd } from '@/lib/editor';
 import { color, radius, shadow } from '@/styles/tokens';
 import { text } from '@/styles/typography';
 
@@ -70,23 +70,28 @@ export type MonthGridProps = {
   range?: { from: string; to: string }; // 기간(시작 · 끝 = Selected, 사이 = Active)
   min?: string;
   max?: string;
+  weekStart?: 'mon' | 'sun'; // 기본 월요일(6차) — 분석 보드 기간 피커만 일요일(기존 배치 유지)
+  hideOutside?: boolean; // 앞뒤 달 날짜를 비워 둠(분석 보드 기간 피커) — 기본은 Disabled 모양으로 보임
   onPick: (s: string) => void;
 };
 
-export function MonthGrid({ month, selected, range, min, max, onPick }: MonthGridProps) {
-  const lead = (month.getDay() + 6) % 7; // 월요일 시작
+export function MonthGrid({ month, selected, range, min, max, weekStart = 'mon', hideOutside = false, onPick }: MonthGridProps) {
+  const lead = weekStart === 'sun' ? month.getDay() : (month.getDay() + 6) % 7;
   const last = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
   const today = ymd(TODAY);
-  const cells = Array.from({ length: 42 }, (_, i) => new Date(month.getFullYear(), month.getMonth(), i - lead + 1));
+  const count = hideOutside ? Math.ceil((lead + last) / 7) * 7 : 42;
+  const cells = Array.from({ length: count }, (_, i) => new Date(month.getFullYear(), month.getMonth(), i - lead + 1));
   const ranged = !!range?.from && !!range?.to && range.from !== range.to;
+  const weekdays = weekStart === 'sun' ? ['일', ...WEEKDAYS.slice(0, 6)] : WEEKDAYS;
   return (
     <Days role="grid" aria-label={monthLabel(month)}>
-      {WEEKDAYS.map((w) => (
+      {weekdays.map((w) => (
         <em key={w}>{w}</em>
       ))}
       {cells.map((d, i) => {
         const s = ymd(d);
         const inMonth = d.getMonth() === month.getMonth();
+        if (hideOutside && !inMonth) return <Slot key={s} />;
         const disabled = !inMonth || (!!min && s < min) || (!!max && s > max);
         const edge = selected ? s === selected : !!range && (s === range.from || s === range.to);
         const between = inMonth && ranged && s > range!.from && s < range!.to;
@@ -116,12 +121,12 @@ const MonthBar = styled.div`
   > b { ${text('text-sm', 'semibold')}; color: ${color('fg-secondary')}; }
   > [data-hidden] { visibility: hidden; }
 `;
-export function MonthNav({ month, onMove, hidePrev, hideNext }: { month: Date; onMove: (n: number) => void; hidePrev?: boolean; hideNext?: boolean }) {
+export function MonthNav({ month, onMove, hidePrev, hideNext, prevDisabled, nextDisabled }: { month: Date; onMove: (n: number) => void; hidePrev?: boolean; hideNext?: boolean; prevDisabled?: boolean; nextDisabled?: boolean }) {
   return (
     <MonthBar>
-      <IconButton icon="chevron_left" label="이전 달" data-hidden={hidePrev || undefined} tabIndex={hidePrev ? -1 : undefined} onClick={() => onMove(-1)} />
+      <IconButton icon="chevron_left" label="이전 달" data-hidden={hidePrev || undefined} tabIndex={hidePrev ? -1 : undefined} disabled={prevDisabled} onClick={() => onMove(-1)} />
       <b>{monthLabel(month)}</b>
-      <IconButton icon="chevron_right" label="다음 달" data-hidden={hideNext || undefined} tabIndex={hideNext ? -1 : undefined} onClick={() => onMove(1)} />
+      <IconButton icon="chevron_right" label="다음 달" data-hidden={hideNext || undefined} tabIndex={hideNext ? -1 : undefined} disabled={nextDisabled} onClick={() => onMove(1)} />
     </MonthBar>
   );
 }
@@ -146,11 +151,12 @@ const Field = styled.button<{ $placeholder: boolean }>`
   &[aria-expanded='true'], &:focus-visible { outline: none; border-color: ${color('border-brand')}; box-shadow: inset 0 0 0 1px ${color('border-brand')}, ${shadow.xs}; }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 `;
+// 좌우 23 = Figma 24 − 테두리 1(Figma 는 선이 자리를 안 차지함) — 날짜 7칸(280)이 딱 맞게
 const Body = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 20px 24px;
+  padding: 20px 23px;
 `;
 const Row = styled.div`
   display: flex;
@@ -237,6 +243,166 @@ export default function DatePicker({ value, onChange, min, max, placeholder = '�
         </div>
       </Floating>
     </div>
+  );
+}
+
+// ---------- 기간 — `_Date picker menu` Dual dates(308:21686 · 시안 975:44503 · 6차 §6-1) ----------
+// 808 = 왼쪽 프리셋 152(오른쪽 선) + 두 달 328 · 328(왼쪽 달 오른쪽 선) / 아래 시작 · 끝 입력(각 최대 200, 사이 「–」) + 취소 · 확인, 위 선.
+// 프리셋 = 오늘 · 어제 · 최근 7일 · 30일 · 90일 · 1년(항목 36 · r6 · 선택 = bg-secondary + text-secondary_hover). 고를 수 있는 날 = 1년 전 ~ 오늘(기존 RangePicker 와 같음)
+const PRESETS: { label: string; range: () => [Date, Date] }[] = [
+  { label: '오늘', range: () => [TODAY, TODAY] },
+  { label: '어제', range: () => [addDays(TODAY, -1), addDays(TODAY, -1)] },
+  { label: '최근 7일', range: () => [addDays(TODAY, -7), TODAY] },
+  { label: '최근 30일', range: () => [addDays(TODAY, -30), TODAY] },
+  { label: '최근 90일', range: () => [addDays(TODAY, -90), TODAY] },
+  { label: '최근 1년', range: () => [addDays(TODAY, -365), TODAY] },
+];
+const Dual = styled.div`
+  display: flex;
+`;
+const Presets = styled.div`
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 152px;
+  padding: 12px;
+  border-right: 1px solid ${color('border-secondary')};
+`;
+const Preset = styled.button<{ $on: boolean }>`
+  width: 100%;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: ${radius.sm}px;
+  background: ${(p) => (p.$on ? color('bg-secondary') : 'transparent')};
+  ${text('text-sm', 'medium')};
+  color: ${(p) => (p.$on ? color('text-secondary_hover') : color('text-secondary'))};
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+  &:hover { background: ${(p) => (p.$on ? color('bg-secondary') : color('bg-primary_hover'))}; color: ${color('text-secondary_hover')}; }
+  &:focus-visible { outline: none; box-shadow: ${shadow['focus-ring']}; }
+`;
+const Trailing = styled.div`
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+`;
+const Months = styled.div`
+  display: flex;
+  > div { display: flex; flex-direction: column; gap: 8px; padding: 20px 23px; }
+  > div:first-of-type { width: 328px; border-right: 1px solid ${color('border-secondary')}; }
+  > div:last-of-type { flex: 1; min-width: 0; }
+`;
+const RangeBottom = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  border-top: 1px solid ${color('border-secondary')};
+`;
+const RangeInputs = styled.div`
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  > label { flex: 1; max-width: 200px; }
+  > span { ${text('text-md', 'regular')}; color: ${color('text-quaternary')}; }
+  > p { flex-basis: 100%; margin: 0; ${text('text-sm', 'regular')}; color: ${color('text-error-primary')}; }
+`;
+
+export function DateRangeMenu({ range, onConfirm, onCancel }: { range: { from: string; to: string }; onConfirm: (r: { from: string; to: string }) => void; onCancel: () => void }) {
+  const min = ymd(MIN_DATE);
+  const max = ymd(TODAY);
+  const [from, setFrom] = useState(range.from);
+  const [to, setTo] = useState(range.to);
+  const [picking, setPicking] = useState(false); // 시작만 고른 상태
+  const [fromText, setFromText] = useState(range.from);
+  const [toText, setToText] = useState(range.to);
+  // 오른쪽 달 = 끝 날짜의 달(오늘 달을 넘지 않음), 왼쪽 = 그 앞 달
+  const [right, setRight] = useState(() => firstOfMonth(validYmd(range.to) ? parseYmd(range.to) : TODAY));
+  const left = addMonths(right, -1);
+  const clamp = (s: string) => (s > max ? max : s < min ? min : s);
+  const sync = (f: string, t: string) => {
+    setFrom(f);
+    setTo(t);
+    setFromText(f);
+    setToText(t);
+  };
+  const pick = (s: string) => {
+    if (!picking) {
+      sync(s, '');
+      setPicking(true);
+    } else {
+      if (s < from) sync(s, from);
+      else sync(from, s);
+      setPicking(false);
+    }
+  };
+  const errFmt = (fromText.length === 10 && !validYmd(fromText)) || (toText.length === 10 && !validYmd(toText));
+  const errOrder = !errFmt && validYmd(fromText) && validYmd(toText) && fromText > toText;
+  const incomplete = (fromText.length > 0 && fromText.length < 10) || (toText.length > 0 && toText.length < 10);
+  const canConfirm = !!from && !!to && !picking && !errFmt && !errOrder && !incomplete;
+  const active = PRESETS.find((p) => {
+    const [a, b] = p.range();
+    return ymd(a) === from && ymd(b) === to;
+  });
+  const typed = (which: 'from' | 'to', raw: string) => {
+    const v = autoDash(raw);
+    (which === 'from' ? setFromText : setToText)(v);
+    if (!validYmd(v)) return;
+    const c = clamp(v);
+    if (which === 'from') { setFrom(c); setFromText(c); } else { setTo(c); setToText(c); setPicking(false); }
+  };
+
+  return (
+    <Dual role="dialog" aria-label="기간 선택">
+      <Presets>
+        {PRESETS.map((p) => (
+          <Preset
+            key={p.label}
+            type="button"
+            $on={active?.label === p.label}
+            onClick={() => {
+              const [a, b] = p.range();
+              sync(ymd(a), ymd(b));
+              setPicking(false);
+              setRight(firstOfMonth(b));
+            }}
+          >
+            {p.label}
+          </Preset>
+        ))}
+      </Presets>
+      <Trailing>
+        <Months>
+          <div>
+            <MonthNav month={left} hideNext prevDisabled={left <= firstOfMonth(MIN_DATE)} onMove={(n) => setRight(addMonths(right, n))} />
+            <MonthGrid month={left} range={{ from, to }} min={min} max={max} onPick={pick} />
+          </div>
+          <div>
+            <MonthNav month={right} hidePrev nextDisabled={right >= firstOfMonth(TODAY)} onMove={(n) => setRight(addMonths(right, n))} />
+            <MonthGrid month={right} range={{ from, to }} min={min} max={max} onPick={pick} />
+          </div>
+        </Months>
+        <RangeBottom>
+          <RangeInputs>
+            <TextField value={fromText} placeholder="YYYY-MM-DD" aria-label="시작일" error={errFmt || errOrder} maxLength={10} onChange={(e) => typed('from', e.target.value)} />
+            <span>–</span>
+            <TextField value={toText} placeholder="YYYY-MM-DD" aria-label="종료일" error={errFmt || errOrder} maxLength={10} onChange={(e) => typed('to', e.target.value)} />
+            {errFmt && <p>날짜 형식이 올바르지 않습니다</p>}
+            {errOrder && <p>시작일이 종료일보다 늦을 수 없습니다</p>}
+          </RangeInputs>
+          <Button onClick={onCancel}>취소</Button>
+          <Button hierarchy="primary" disabled={!canConfirm} onClick={() => onConfirm({ from, to })}>
+            확인
+          </Button>
+        </RangeBottom>
+      </Trailing>
+    </Dual>
   );
 }
 

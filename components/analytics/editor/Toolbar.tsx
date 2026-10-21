@@ -1,7 +1,8 @@
-import { useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import styled from '@emotion/styled';
 import Icon from '@/components/Icon';
 import Button from '@/components/ui/Button';
+import { MonthGrid } from '@/components/ui/DatePicker';
 import Floating from '@/components/ui/Floating';
 import Select from '@/components/ui/Select';
 import { addDays, granularityRule, MIN_DATE, parseYmd, presetRange, rangeDays, rangeLabel, TODAY, ymd, type EditorState, type Granularity, type Preset } from '@/lib/editor';
@@ -85,28 +86,6 @@ const CalHead = styled.div`
   > button { display: inline-flex; width: 32px; height: 32px; align-items: center; justify-content: center; border: 0; border-radius: ${radius.md}px; background: transparent; color: ${color('fg-quaternary')}; cursor: pointer; }
   > button:hover:not(:disabled) { background: ${color('bg-primary_hover')}; }
   > button:disabled { opacity: 0.4; cursor: not-allowed; }
-`;
-
-const Days = styled.div`
-  display: grid;
-  grid-template-columns: repeat(7, 40px);
-  row-gap: 4px;
-  > span { display: flex; align-items: center; justify-content: center; height: 40px; ${text('text-sm', 'medium')}; color: ${color('text-secondary')}; }
-`;
-
-const Day = styled.button<{ edge: boolean; inRange: boolean; today: boolean }>`
-  position: relative;
-  height: 40px;
-  border: 0;
-  border-radius: ${(p) => (p.edge ? '9999px' : p.inRange ? '0' : '9999px')};
-  background: ${(p) => (p.edge ? color('bg-brand-solid') : p.inRange ? color('bg-secondary') : 'transparent')};
-  ${text('text-sm', 'regular')};
-  color: ${(p) => (p.edge ? color('text-white') : color('text-secondary'))};
-  font-weight: ${(p) => (p.today || p.edge ? 500 : 400)};
-  cursor: pointer;
-  &:hover:not(:disabled) { ${(p) => (p.edge ? '' : `background: ${color('bg-primary_hover')};`)} }
-  &:disabled { color: ${color('text-disabled')}; cursor: not-allowed; }
-  ${(p) => (p.today && !p.edge ? `&::after { content: ''; position: absolute; left: 50%; bottom: 6px; width: 5px; height: 5px; margin-left: -2.5px; border-radius: 50%; background: ${color('bg-brand-solid')}; }` : '')}
 `;
 
 const Side = styled.div`
@@ -202,12 +181,6 @@ export function RangePicker({ range, onConfirm, onCancel }: { range: { from: str
     setToText(t);
   };
 
-  const cells = useMemo(() => {
-    const first = new Date(month);
-    const start = addDays(first, -first.getDay());
-    return Array.from({ length: 42 }, (_, i) => addDays(start, i)).filter((d, i) => i < 35 || d.getMonth() === month.getMonth());
-  }, [month]);
-
   const errFmt = (fromText && !validYmd(fromText) && fromText.length === 10) || (toText && !validYmd(toText) && toText.length === 10);
   const errOrder = !errFmt && validYmd(fromText) && validYmd(toText) && fromText > toText;
   const incomplete = (fromText.length > 0 && fromText.length < 10) || (toText.length > 0 && toText.length < 10);
@@ -244,25 +217,8 @@ export function RangePicker({ range, onConfirm, onCancel }: { range: { from: str
               <Icon name="chevron_right" size={20} />
             </button>
           </CalHead>
-          <Days>
-            {['일', '월', '화', '수', '목', '금', '토'].map((d) => (
-              <span key={d}>{d}</span>
-            ))}
-            {cells.map((d) => {
-              const s = ymd(d);
-              const other = d.getMonth() !== month.getMonth();
-              const disabled = d > TODAY || d < MIN_DATE;
-              const edge = s === from || s === to;
-              const inRange = !!from && !!to && s > from && s < to;
-              return other ? (
-                <span key={s} />
-              ) : (
-                <Day key={s} type="button" disabled={disabled} edge={edge} inRange={inRange} today={s === ymd(TODAY)} onClick={() => pickDay(d)}>
-                  {d.getDate()}
-                </Day>
-              );
-            })}
-          </Days>
+          {/* 날짜 칸 = DS `_Calendar cell` — 시작 · 끝 원 옆까지 기간 띠가 차고(Connector), 줄 끝 · 달 경계에서 끊김(10-21 사용자 「네이비 날짜도 회색 배경이 라운드 나머지까지」) */}
+          <MonthGrid month={month} range={{ from, to }} min={ymd(MIN_DATE)} max={ymd(TODAY)} weekStart="sun" hideOutside onPick={(s) => pickDay(parseYmd(s))} />
         </Cal>
         <Side>
           <div>

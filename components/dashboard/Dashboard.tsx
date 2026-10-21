@@ -2,7 +2,7 @@ import { useMemo, useRef, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/router';
 import styled from '@emotion/styled';
 import Icon from '@/components/Icon';
-import { RangePicker } from '@/components/analytics/editor/Toolbar';
+import { DateRangeMenu } from '@/components/ui/DatePicker';
 import Button from '@/components/ui/Button';
 import Floating from '@/components/ui/Floating';
 import { Help } from '@/components/channel/ChannelShell';
@@ -223,12 +223,12 @@ export function DashboardHeader({ range, onRange }: { range: { from: string; to:
       <i />
       <RangeBtn ref={ref} type="button" onClick={() => setOpen((v) => !v)}>
         <span>
-          <Icon name="calendar_today" size={20} />
+          <Icon name="calendar_month" size={20} />
         </span>
-        {`${range.from} ~ ${range.to}`}
+        {`${range.from} – ${range.to}`}
       </RangeBtn>
-      <Floating anchorRef={ref} open={open} onClose={() => setOpen(false)} width={548}>
-        <RangePicker
+      <Floating anchorRef={ref} open={open} onClose={() => setOpen(false)} width={808} offset={8} look="calendar">
+        <DateRangeMenu
           range={range}
           onCancel={() => setOpen(false)}
           onConfirm={(r) => {

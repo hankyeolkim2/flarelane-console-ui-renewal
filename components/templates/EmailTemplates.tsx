@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import styled from '@emotion/styled';
 import Icon from '@/components/Icon';
-import { RangePicker } from '@/components/analytics/editor/Toolbar';
+import { DateRangeMenu } from '@/components/ui/DatePicker';
 import Button from '@/components/ui/Button';
 import Floating from '@/components/ui/Floating';
 import IconButton from '@/components/ui/IconButton';
@@ -147,12 +147,12 @@ export function EmailTemplateList() {
         <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-secondary)' }}>데이터 기간 필터</span>
         <RangeBtn ref={rref} type="button" onClick={() => setRo((x) => !x)}>
           <span>
-            <Icon name="calendar_today" size={20} />
+            <Icon name="calendar_month" size={20} />
           </span>
           {`${range.from} – ${range.to}`}
         </RangeBtn>
-        <Floating anchorRef={rref} open={ro} onClose={() => setRo(false)} width={548}>
-          <RangePicker range={range} onCancel={() => setRo(false)} onConfirm={(r) => (setRange(r), setRo(false))} />
+        <Floating anchorRef={rref} open={ro} onClose={() => setRo(false)} width={808} offset={8} look="calendar">
+          <DateRangeMenu range={range} onCancel={() => setRo(false)} onConfirm={(r) => (setRange(r), setRo(false))} />
         </Floating>
         <Button hierarchy="primary" iconLeading="add" onClick={() => router.push('/email/templates/new')}>
           새 템플릿
