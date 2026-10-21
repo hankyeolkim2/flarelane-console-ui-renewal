@@ -6,12 +6,13 @@ import Floating from './Floating';
 import IconButton from './IconButton';
 import NumberField from './NumberField';
 import TextField from './TextField';
-import { addDays, MIN_DATE, parseYmd, TODAY, ymd } from '@/lib/editor';
+import { addDays, parseYmd, TODAY, ymd } from '@/lib/editor';
 import { color, radius, shadow } from '@/styles/tokens';
 import { text } from '@/styles/typography';
 
 // 달력 — Figma `_Date picker menu`(308:21686 · Single date 308:22023) · `_Calendar cell`(308:22251) · 6차 적용 안내 §6.
-// 한 달 = 일요일 시작(현 콘솔과 같음 — 10-21 사용자, 6차 문서 · Figma 의 월요일 시작 대신) · 6주(앞뒤 달 날짜는 Disabled 모양) · 칸 40 원형 · 줄 사이 4. 값은 모두 'YYYY-MM-DD'.
+// 한 달 = 일요일 시작(현 콘솔과 같음 — 10-21 사용자, 6차 문서 · Figma 의 월요일 시작 대신) · 6주 · 칸 40 원형 · 줄 사이 4. 값은 모두 'YYYY-MM-DD'.
+// 동작은 현 콘솔(react-datepicker)과 같게(10-21 스테이징 확인): 앞뒤 달 날짜도 고를 수 있음(흐리게만) · 막힌 달 쪽 이동 단추는 숨김 · 오늘 단추 · 날짜 입력 없음.
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 export const monthLabel = (m: Date) => `${m.getFullYear()}년 ${m.getMonth() + 1}월`;
@@ -54,7 +55,7 @@ const Cell = styled.button<{ $kind: Kind }>`
     font-weight: 500;
   }
   &:disabled { cursor: default; }
-  &:disabled > span { opacity: 0.5; }
+  &:disabled > span, &[data-outside] > span { opacity: 0.5; }
   &:focus-visible { outline: none; box-shadow: ${shadow['focus-ring']}; z-index: 1; }
 `;
 const Days = styled.div`
@@ -70,7 +71,7 @@ export type MonthGridProps = {
   range?: { from: string; to: string }; // 기간(시작 · 끝 = Selected, 사이 = Active)
   min?: string;
   max?: string;
-  hideOutside?: boolean; // 앞뒤 달 날짜를 비워 둠(분석 보드 기간 피커) — 기본은 Disabled 모양으로 보임
+  hideOutside?: boolean; // 앞뒤 달 날짜를 비워 둠(분석 보드 기간 피커) — 기본은 흐리게 보이고 고를 수 있음(현 콘솔과 같음)
   onPick: (s: string) => void;
 };
 
@@ -90,7 +91,7 @@ export function MonthGrid({ month, selected, range, min, max, hideOutside = fals
         const s = ymd(d);
         const inMonth = d.getMonth() === month.getMonth();
         if (hideOutside && !inMonth) return <Slot key={s} />;
-        const disabled = !inMonth || (!!min && s < min) || (!!max && s > max);
+        const disabled = (!!min && s < min) || (!!max && s > max);
         const edge = selected ? s === selected : !!range && (s === range.from || s === range.to);
         const between = inMonth && ranged && s > range!.from && s < range!.to;
         const kind: Kind = inMonth && edge ? 'selected' : between ? 'active' : inMonth && s === today ? 'today' : 'default';
@@ -101,7 +102,7 @@ export function MonthGrid({ month, selected, range, min, max, hideOutside = fals
         return (
           <Slot key={s}>
             {(left || right) && <i style={{ left: left ? 0 : 20, right: right ? 0 : 20 }} />}
-            <Cell type="button" $kind={kind} disabled={disabled} aria-pressed={kind === 'selected'} aria-label={s} onClick={() => onPick(s)}>
+            <Cell type="button" $kind={kind} disabled={disabled} data-outside={!inMonth || undefined} aria-pressed={kind === 'selected'} aria-label={s} onClick={() => onPick(s)}>
               <span>{day}</span>
             </Cell>
           </Slot>
@@ -111,7 +112,8 @@ export function MonthGrid({ month, selected, range, min, max, hideOutside = fals
   );
 }
 
-// 달 이동 줄 — `Button utility` 32(아이콘 20) · 가운데 「2026년 8월」 Text sm/SemiBold fg-secondary. hidePrev/hideNext = 두 달 나란히일 때 안쪽 단추 숨김(자리는 유지)
+// 달 이동 줄 — `Button utility` 32(아이콘 20) · 가운데 「2026년 8월」 Text sm/SemiBold fg-secondary.
+// hidePrev/hideNext = 두 달 나란히일 때 안쪽 단추 · 고를 날이 더 없는 쪽 단추 숨김(자리는 유지, 현 콘솔도 단추가 사라짐)
 const MonthBar = styled.div`
   display: flex;
   align-items: center;
@@ -119,12 +121,12 @@ const MonthBar = styled.div`
   > b { ${text('text-sm', 'semibold')}; color: ${color('fg-secondary')}; }
   > [data-hidden] { visibility: hidden; }
 `;
-export function MonthNav({ month, onMove, hidePrev, hideNext, prevDisabled, nextDisabled }: { month: Date; onMove: (n: number) => void; hidePrev?: boolean; hideNext?: boolean; prevDisabled?: boolean; nextDisabled?: boolean }) {
+export function MonthNav({ month, onMove, hidePrev, hideNext }: { month: Date; onMove: (n: number) => void; hidePrev?: boolean; hideNext?: boolean }) {
   return (
     <MonthBar>
-      <IconButton icon="chevron_left" label="이전 달" data-hidden={hidePrev || undefined} tabIndex={hidePrev ? -1 : undefined} disabled={prevDisabled} onClick={() => onMove(-1)} />
+      <IconButton icon="chevron_left" label="이전 달" data-hidden={hidePrev || undefined} tabIndex={hidePrev ? -1 : undefined} onClick={() => onMove(-1)} />
       <b>{monthLabel(month)}</b>
-      <IconButton icon="chevron_right" label="다음 달" data-hidden={hideNext || undefined} tabIndex={hideNext ? -1 : undefined} disabled={nextDisabled} onClick={() => onMove(1)} />
+      <IconButton icon="chevron_right" label="다음 달" data-hidden={hideNext || undefined} tabIndex={hideNext ? -1 : undefined} onClick={() => onMove(1)} />
     </MonthBar>
   );
 }
@@ -156,18 +158,6 @@ const Body = styled.div`
   gap: 12px;
   padding: 20px 23px;
 `;
-const Row = styled.div`
-  display: flex;
-  gap: 12px;
-  > :first-of-type { flex: 1; min-width: 0; }
-`;
-const Bottom = styled.div`
-  display: flex;
-  gap: 12px;
-  padding: 16px;
-  border-top: 1px solid ${color('border-secondary')};
-  > * { flex: 1; }
-`;
 
 type Props = {
   value: string; // 'YYYY-MM-DD' 또는 ''
@@ -180,26 +170,16 @@ type Props = {
   ariaLabel?: string;
 };
 
+// 현 콘솔과 같음: 날짜를 누르면 바로 적용하고 닫힘(취소 · 확인 · 오늘 · 날짜 입력 없음)
 export default function DatePicker({ value, onChange, min, max, placeholder = '날짜 선택', width = '100%', disabled = false, ariaLabel }: Props) {
   const [open, setOpen] = useState(false);
-  const [pick, setPick] = useState(value);
-  const [typed, setTyped] = useState(value);
   const [month, setMonth] = useState(() => firstOfMonth(validYmd(value) ? parseYmd(value) : TODAY));
   const anchor = useRef<HTMLDivElement>(null);
-  const allowed = (s: string) => validYmd(s) && (!min || s >= min) && (!max || s <= max);
 
   const show = () => {
-    setPick(value);
-    setTyped(value);
     setMonth(firstOfMonth(validYmd(value) ? parseYmd(value) : TODAY));
     setOpen(true);
   };
-  const choose = (s: string) => {
-    setPick(s);
-    setTyped(s);
-    setMonth(firstOfMonth(parseYmd(s)));
-  };
-  const today = ymd(TODAY);
 
   return (
     <div ref={anchor} style={{ width, flexShrink: 0 }}>
@@ -210,35 +190,24 @@ export default function DatePicker({ value, onChange, min, max, placeholder = '�
         <b>{value || placeholder}</b>
       </Field>
       <Floating anchorRef={anchor} open={open} onClose={() => setOpen(false)} width={328} placement="bottom-start" offset={8} look="calendar">
-        <div role="dialog" aria-label="날짜 선택">
-          <Body>
-            <MonthNav month={month} onMove={(n) => setMonth(addMonths(month, n))} />
-            <Row>
-              <TextField
-                value={typed}
-                placeholder="YYYY-MM-DD"
-                aria-label="날짜 입력"
-                onChange={(e) => {
-                  const v = autoDash(e.target.value);
-                  setTyped(v);
-                  if (allowed(v)) choose(v);
-                }}
-              />
-              <Button disabled={!allowed(today)} onClick={() => choose(today)}>
-                오늘
-              </Button>
-            </Row>
-            <MonthGrid month={month} selected={pick} min={min} max={max} onPick={choose} />
-          </Body>
-          <Bottom>
-            <Button full onClick={() => setOpen(false)}>
-              취소
-            </Button>
-            <Button full hierarchy="primary" disabled={!allowed(pick)} onClick={() => { onChange(pick); setOpen(false); }}>
-              확인
-            </Button>
-          </Bottom>
-        </div>
+        <Body role="dialog" aria-label="날짜 선택">
+          <MonthNav
+            month={month}
+            hidePrev={!!min && month <= firstOfMonth(parseYmd(min))}
+            hideNext={!!max && month >= firstOfMonth(parseYmd(max))}
+            onMove={(n) => setMonth(addMonths(month, n))}
+          />
+          <MonthGrid
+            month={month}
+            selected={value}
+            min={min}
+            max={max}
+            onPick={(s) => {
+              onChange(s);
+              setOpen(false);
+            }}
+          />
+        </Body>
       </Floating>
     </div>
   );
@@ -246,7 +215,8 @@ export default function DatePicker({ value, onChange, min, max, placeholder = '�
 
 // ---------- 기간 — `_Date picker menu` Dual dates(308:21686 · 시안 975:44503 · 6차 §6-1) ----------
 // 808 = 왼쪽 프리셋 152(오른쪽 선) + 두 달 328 · 328(왼쪽 달 오른쪽 선) / 아래 시작 · 끝 입력(각 최대 200, 사이 「–」) + 취소 · 확인, 위 선.
-// 프리셋 = 오늘 · 어제 · 최근 7일 · 30일 · 90일 · 1년(항목 36 · r6 · 선택 = bg-secondary + text-secondary_hover). 고를 수 있는 날 = 1년 전 ~ 오늘(기존 RangePicker 와 같음)
+// 프리셋 = 오늘 · 어제 · 최근 7일 · 30일 · 90일 · 1년(항목 36 · r6 · 선택 = bg-secondary + text-secondary_hover) + 맨 아래 「Asia/Seoul」.
+// 고를 수 있는 날 = 오늘까지(지난 날은 끝없이) — 현 콘솔과 같음(10-21 스테이징 보낸 메시지 · 대시보드 확인). 입력 칸 = yyyy-MM-dd · 10자
 const PRESETS: { label: string; range: () => [Date, Date] }[] = [
   { label: '오늘', range: () => [TODAY, TODAY] },
   { label: '어제', range: () => [addDays(TODAY, -1), addDays(TODAY, -1)] },
@@ -266,6 +236,7 @@ const Presets = styled.div`
   width: 152px;
   padding: 12px;
   border-right: 1px solid ${color('border-secondary')};
+  > small { margin-top: auto; padding: 8px 12px 0; ${text('text-xs', 'regular')}; color: ${color('text-quaternary')}; }
 `;
 const Preset = styled.button<{ $on: boolean }>`
   width: 100%;
@@ -313,7 +284,6 @@ const RangeInputs = styled.div`
 `;
 
 export function DateRangeMenu({ range, onConfirm, onCancel }: { range: { from: string; to: string }; onConfirm: (r: { from: string; to: string }) => void; onCancel: () => void }) {
-  const min = ymd(MIN_DATE);
   const max = ymd(TODAY);
   const [from, setFrom] = useState(range.from);
   const [to, setTo] = useState(range.to);
@@ -323,7 +293,7 @@ export function DateRangeMenu({ range, onConfirm, onCancel }: { range: { from: s
   // 오른쪽 달 = 끝 날짜의 달(오늘 달을 넘지 않음), 왼쪽 = 그 앞 달
   const [right, setRight] = useState(() => firstOfMonth(validYmd(range.to) ? parseYmd(range.to) : TODAY));
   const left = addMonths(right, -1);
-  const clamp = (s: string) => (s > max ? max : s < min ? min : s);
+  const clamp = (s: string) => (s > max ? max : s);
   const sync = (f: string, t: string) => {
     setFrom(f);
     setTo(t);
@@ -374,23 +344,24 @@ export function DateRangeMenu({ range, onConfirm, onCancel }: { range: { from: s
             {p.label}
           </Preset>
         ))}
+        <small>Asia/Seoul</small>
       </Presets>
       <Trailing>
         <Months>
           <div>
-            <MonthNav month={left} hideNext prevDisabled={left <= firstOfMonth(MIN_DATE)} onMove={(n) => setRight(addMonths(right, n))} />
-            <MonthGrid month={left} range={{ from, to }} min={min} max={max} onPick={pick} />
+            <MonthNav month={left} hideNext onMove={(n) => setRight(addMonths(right, n))} />
+            <MonthGrid month={left} range={{ from, to }} max={max} onPick={pick} />
           </div>
           <div>
-            <MonthNav month={right} hidePrev nextDisabled={right >= firstOfMonth(TODAY)} onMove={(n) => setRight(addMonths(right, n))} />
-            <MonthGrid month={right} range={{ from, to }} min={min} max={max} onPick={pick} />
+            <MonthNav month={right} hidePrev hideNext={right >= firstOfMonth(TODAY)} onMove={(n) => setRight(addMonths(right, n))} />
+            <MonthGrid month={right} range={{ from, to }} max={max} onPick={pick} />
           </div>
         </Months>
         <RangeBottom>
           <RangeInputs>
-            <TextField value={fromText} placeholder="YYYY-MM-DD" aria-label="시작일" error={errFmt || errOrder} maxLength={10} onChange={(e) => typed('from', e.target.value)} />
+            <TextField value={fromText} placeholder="yyyy-MM-dd" aria-label="시작일" error={errFmt || errOrder} maxLength={10} onChange={(e) => typed('from', e.target.value)} />
             <span>–</span>
-            <TextField value={toText} placeholder="YYYY-MM-DD" aria-label="종료일" error={errFmt || errOrder} maxLength={10} onChange={(e) => typed('to', e.target.value)} />
+            <TextField value={toText} placeholder="yyyy-MM-dd" aria-label="종료일" error={errFmt || errOrder} maxLength={10} onChange={(e) => typed('to', e.target.value)} />
             {errFmt && <p>날짜 형식이 올바르지 않습니다</p>}
             {errOrder && <p>시작일이 종료일보다 늦을 수 없습니다</p>}
           </RangeInputs>

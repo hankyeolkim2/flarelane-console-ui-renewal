@@ -229,7 +229,7 @@ export default function PushNewMessage({ recurring = false, copy, edit }: { recu
       title: '발송 설정',
       rows: [
         ['발송 시간', sendSummary(f.send)],
-        ['알림 만료 기간', f.send.ttl.unit === 'UNTIL' ? '2026.10.08 23:59:00 까지' : `${f.send.ttl.n} ${{ DAY: '일', HOUR: '시간', MINUTE: '분' }[f.send.ttl.unit]}`],
+        ['알림 만료 기간', f.send.ttl.unit === 'UNTIL' ? `${(f.send.ttl.until ?? '2026-10-08').replace(/-/g, '.')} ${String(f.send.ttl.hour ?? 23).padStart(2, '0')}:${String(f.send.ttl.minute ?? 59).padStart(2, '0')}:00 까지` : `${f.send.ttl.n} ${{ DAY: '일', HOUR: '시간', MINUTE: '분' }[f.send.ttl.unit]}`],
         ['발송 빈도 제한 무시', f.send.ignoreCapping ? 'TRUE' : 'FALSE'],
         ...recurringRows(f.send),
       ],

@@ -673,7 +673,7 @@ export type SendState = {
   tz: string;
   recurring: RecurringConfig;
   ignoreCapping: boolean;
-  ttl: { n: number; unit: 'DAY' | 'HOUR' | 'MINUTE' | 'UNTIL'; until?: string };
+  ttl: { n: number; unit: 'DAY' | 'HOUR' | 'MINUTE' | 'UNTIL'; until?: string; hour?: number; minute?: number }; // 「까지」 = 날짜 + 시 : 분(기본 23 : 59)
 };
 export const initialSend = (recurring: boolean): SendState => ({
   mode: recurring ? 'recurring' : 'now',
@@ -708,8 +708,16 @@ export function SendSection({ value, onChange, ttl, capping, plan = 'ENTERPRISE'
             알림 만료 기간
             <Help>발송 성공하였으나 기기가 오프라인 상태 등 알림 노출이 불가한 경우 다음 기간 내 노출을 계속 시도하고 초과 시 알림이 만료됩니다.</Help>
           </Label>
+          {/* 「까지」 = [날짜] [시] : [분] [까지] Asia/Seoul — 숫자 칸 자리에 날짜 · 시간(현 콘솔과 같은 순서, 지난 날도 고를 수 있음) */}
           <Row>
-            {value.ttl.unit !== 'UNTIL' && (
+            {value.ttl.unit === 'UNTIL' ? (
+              <>
+                <DatePicker width={160} value={value.ttl.until ?? '2026-10-08'} onChange={(until) => set({ ttl: { ...value.ttl, until } })} ariaLabel="알림 만료 날짜" />
+                <Num2 v={value.ttl.hour ?? 23} max={23} onChange={(hour) => set({ ttl: { ...value.ttl, hour } })} />
+                <small>:</small>
+                <Num2 v={value.ttl.minute ?? 59} max={59} onChange={(minute) => set({ ttl: { ...value.ttl, minute } })} />
+              </>
+            ) : (
               <div style={{ width: 96 }}>
                 <TextField type="number" min={1} max={{ DAY: 28, HOUR: 672, MINUTE: 40320 }[value.ttl.unit]} value={String(value.ttl.n)} onChange={(e) => set({ ttl: { ...value.ttl, n: Math.max(1, Number(e.target.value) || 1) } })} />
               </div>
@@ -717,12 +725,7 @@ export function SendSection({ value, onChange, ttl, capping, plan = 'ENTERPRISE'
             <div style={{ width: 120 }}>
               <Select<SendState['ttl']['unit']> value={value.ttl.unit} options={[{ value: 'DAY', label: '일' }, { value: 'HOUR', label: '시간' }, { value: 'MINUTE', label: '분' }, { value: 'UNTIL', label: '까지' }]} onChange={(unit) => set({ ttl: { ...value.ttl, unit } })} />
             </div>
-            {value.ttl.unit === 'UNTIL' && (
-              <>
-                <DatePicker width={160} min="2026-10-08" value={value.ttl.until ?? '2026-10-08'} onChange={(until) => set({ ttl: { ...value.ttl, until } })} ariaLabel="알림 만료 날짜" />
-                <small>23 : 59 Asia/Seoul</small>
-              </>
-            )}
+            {value.ttl.unit === 'UNTIL' && <small>Asia/Seoul</small>}
           </Row>
         </div>
       )}
@@ -758,7 +761,7 @@ export function SendSection({ value, onChange, ttl, capping, plan = 'ENTERPRISE'
           {value.mode === 'at' && (
             <Row style={{ paddingLeft: 24, flexWrap: 'wrap' }}>
               <small>날짜</small>
-              <DatePicker width={160} min="2026-10-08" value={value.date} onChange={(date) => set({ date })} ariaLabel="예약 발송 날짜" />
+              <DatePicker width={160} value={value.date} onChange={(date) => set({ date })} ariaLabel="예약 발송 날짜" />
               <small>시간</small>
               <Num2 v={value.hour} max={23} onChange={(hour) => set({ hour })} />
               <small>:</small>
@@ -825,7 +828,7 @@ export function SendSection({ value, onChange, ttl, capping, plan = 'ENTERPRISE'
                 <small>발송 종료일</small>
                 <Radios<string> value={r.end.type} options={[{ value: 'NEVER', label: '무기한' }, { value: 'ON_DATE', label: '기간 선택' }]} onChange={(t) => setR({ end: t === 'NEVER' ? { type: 'NEVER' } : { type: 'ON_DATE', endDate: '2026.10.09' } })} />
                 {r.end.type === 'ON_DATE' && (
-                  <DatePicker width={160} value={(r.end.endDate ?? '').replace(/\./g, '-')} onChange={(v) => setR({ end: { type: 'ON_DATE', endDate: v.replace(/-/g, '.') } })} ariaLabel="발송 종료일" />
+                  <DatePicker width={160} min="2026-10-08" value={(r.end.endDate ?? '').replace(/\./g, '-')} onChange={(v) => setR({ end: { type: 'ON_DATE', endDate: v.replace(/-/g, '.') } })} ariaLabel="발송 종료일" />
                 )}
               </Row>
               <div>
