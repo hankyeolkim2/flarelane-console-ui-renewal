@@ -7,6 +7,7 @@ import Checkbox from '@/components/ui/Checkbox';
 import IconButton from '@/components/ui/IconButton';
 import { ConfirmModal, Dialog } from '@/components/ui/Modal';
 import Radio from '@/components/ui/Radio';
+import SearchSelect from '@/components/ui/SearchSelect';
 import Select from '@/components/ui/Select';
 import Toggle from '@/components/ui/Toggle';
 import { ButtonTabs } from '@/components/ui/Tabs';
@@ -17,7 +18,7 @@ import DataTable from '@/components/channel/DataTable';
 import PersonalizeModal from '@/components/channel/PersonalizeModal';
 import { segments } from '@/lib/audience';
 import type { Target } from '@/lib/sent';
-import { events } from '@/lib/catalog';
+import { events, propertyValues } from '@/lib/catalog';
 import { fmtDate, fmtTime, nextDates, periodText, type RecurringConfig } from '@/lib/recurring';
 import { color, radius, shadow } from '@/styles/tokens';
 import { text } from '@/styles/typography';
@@ -556,7 +557,20 @@ const Tabs = styled.div`
   > span { display: inline-flex; align-items: center; gap: 4px; }
   > span > button:first-of-type { padding: 12px 0; border: 0; border-bottom: 2px solid transparent; background: none; ${text('text-sm', 'semibold')}; color: ${color('text-quaternary')}; cursor: pointer; }
   > span > button[aria-selected='true'] { border-bottom-color: ${color('fg-brand-primary')}; color: ${color('text-brand-secondary')}; }
-  > span > button + button { display: inline-flex; padding: 0; border: 0; background: none; color: ${color('fg-quaternary')}; cursor: pointer; }
+  /* 탭 삭제 x — 호버 바탕 20×20(아이콘 16 + 사방 2, 음수 여백이라 자리 그대로) = Tertiary 아이콘 버튼과 같은 bg-hover-overlay · 아이콘 진하게 */
+  > span > button + button {
+    display: inline-flex;
+    margin: -2px;
+    padding: 2px;
+    border: 0;
+    border-radius: ${radius.xs}px;
+    background: none;
+    color: ${color('fg-quaternary')};
+    cursor: pointer;
+    transition: background-color 0.1s linear, color 0.1s linear;
+    &:hover { background: ${color('bg-hover-overlay')}; color: ${color('fg-quaternary_hover')}; }
+    &:focus-visible { outline: none; box-shadow: ${shadow['focus-ring']}; }
+  }
 `;
 
 export function ConversionSection({ value, onChange, sendOnly, readOnly }: { value: Conv; onChange: (v: Conv) => void; sendOnly: boolean; readOnly?: boolean }) {
@@ -601,15 +615,12 @@ export function ConversionSection({ value, onChange, sendOnly, readOnly }: { val
               </div>
               {it.filters.map((f, i) => (
                 <Row key={i}>
-                  <div style={{ width: 240 }}>
-                    <Select<string> disabled={readOnly} value={f[0] || null} placeholder="속성 선택" options={props.map((p) => ({ value: p, label: p }))} onChange={(k) => setIt({ filters: it.filters.map((x, j) => (j === i ? [k, x[1], x[2]] : x)) })} />
-                  </div>
+                  {/* 속성 · 값 = 검색 + 「직접입력」(스테이징과 같음, 10-21 확인) */}
+                  <SearchSelect width={240} disabled={readOnly} value={f[0] || null} placeholder="속성 선택" creatable options={props.map((p) => ({ value: p, label: p }))} emptyText="이 이벤트에 속성이 없습니다. 직접 입력하세요." onChange={(k) => setIt({ filters: it.filters.map((x, j) => (j === i ? [k, x[1], x[2]] : x)) })} />
                   <div style={{ width: 112 }}>
                     <Select<string> disabled={readOnly} value={f[1]} options={[['EQ', '='], ['NOT_EQ', '≠'], ['GT', '>'], ['GTE', '≥'], ['LT', '<'], ['LTE', '≤'], ['INCLUDES', '이 중에 하나']].map(([v, l]) => ({ value: v, label: l }))} onChange={(o) => setIt({ filters: it.filters.map((x, j) => (j === i ? [x[0], o, x[2]] : x)) })} />
                   </div>
-                  <div style={{ width: 200 }}>
-                    <TextField readOnly={readOnly} placeholder="값 선택" value={f[2]} onChange={(e) => setIt({ filters: it.filters.map((x, j) => (j === i ? [x[0], x[1], e.target.value] : x)) })} />
-                  </div>
+                  <SearchSelect width={200} disabled={readOnly} value={f[2] || null} placeholder="값 선택" creatable options={(propertyValues[f[0]] ?? []).map((v) => ({ value: v, label: v }))} emptyText="최근 값이 없습니다. 직접 입력하세요." onChange={(v) => setIt({ filters: it.filters.map((x, j) => (j === i ? [x[0], x[1], v] : x)) })} />
                   {!readOnly && <IconButton icon="remove" label="삭제" onClick={() => setIt({ filters: it.filters.filter((_, j) => j !== i) })} />}
                 </Row>
               ))}

@@ -6,26 +6,44 @@ export const RECENT_DAYS = 30;
 
 export type EventItem = { name: string; recent: number; properties: string[] };
 
+// 속성: soob · banner_impression-v1(없음)만 스테이징 값, 나머지는 [임시] 더미(10-21 사용자 「프로토타입은 더미 데이터 있어도 되니 적당히 채워줘」)
 export const events: EventItem[] = [
-  { name: '1', recent: 0, properties: [] },
-  { name: '12345', recent: 0, properties: [] },
-  { name: 'add_to_cart', recent: 0, properties: [] },
-  { name: 'app_opened', recent: 0, properties: [] },
+  { name: '1', recent: 0, properties: ['label', 'value'] },
+  { name: '12345', recent: 0, properties: ['order_id', 'amount', 'currency'] },
+  { name: 'add_to_cart', recent: 0, properties: ['product_id', 'product_name', 'category', 'price', 'quantity'] },
+  { name: 'app_opened', recent: 0, properties: ['app_version', 'os', 'launch_source'] },
   { name: 'banner_impression-v1', recent: 0, properties: [] },
-  { name: 'begin_checkout', recent: 0, properties: [] },
-  { name: 'blacklist', recent: 0, properties: [] },
-  { name: 'brown', recent: 0, properties: [] },
-  { name: 'cat', recent: 0, properties: [] },
-  { name: 'claude_track_test', recent: 0, properties: [] },
-  { name: 'deferred', recent: 6, properties: [] },
-  { name: 'email.delivered', recent: 2, properties: [] },
+  { name: 'begin_checkout', recent: 0, properties: ['cart_id', 'item_count', 'total_price', 'coupon_code'] },
+  { name: 'blacklist', recent: 0, properties: ['reason', 'channel'] },
+  { name: 'brown', recent: 0, properties: ['color', 'size'] },
+  { name: 'cat', recent: 0, properties: ['breed', 'age'] },
+  { name: 'claude_track_test', recent: 0, properties: ['test_id', 'variant'] },
+  { name: 'deferred', recent: 6, properties: ['link_id', 'campaign', 'source'] },
+  { name: 'email.delivered', recent: 2, properties: ['campaign_id', 'template_id', 'email_domain'] },
   { name: 'soob', recent: 20, properties: ['w6', 'w7'] },
 ];
 
-// [임시] 속성값
+// [임시] 속성값 — w6 · w7 외에는 더미
 export const propertyValues: Record<string, string[]> = {
   w6: ['x', 'y', 'z'],
   w7: ['k'],
+  label: ['banner', 'popup'],
+  currency: ['KRW', 'USD', 'JPY'],
+  product_name: ['가을 스니커즈', '울 니트', '데님 재킷'],
+  category: ['신발', '상의', '아우터', '가방'],
+  quantity: ['1', '2', '3'],
+  os: ['Android', 'iOS'],
+  launch_source: ['push', 'direct', 'deeplink'],
+  coupon_code: ['FALL15', 'WELCOME10'],
+  reason: ['spam', 'unsubscribed'],
+  channel: ['push', 'sms', 'email'],
+  color: ['brown', 'black', 'beige'],
+  size: ['S', 'M', 'L'],
+  breed: ['korean_short', 'persian'],
+  variant: ['A', 'B'],
+  campaign: ['autumn_sale', 'welcome'],
+  source: ['instagram', 'kakao', 'naver'],
+  email_domain: ['gmail.com', 'naver.com', 'example.com'],
 };
 
 // [임시] 세그먼트
