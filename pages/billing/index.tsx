@@ -235,7 +235,7 @@ export default function Billing() {
           actions={
             <>
               <Select<'days' | 'weeks' | 'months'> width={96} value={interval} options={[{ value: 'days', label: '일' }, { value: 'weeks', label: '주' }, { value: 'months', label: '달' }]} onChange={setInterval_} />
-              <RangeBtn ref={usageRef} type="button" onClick={() => setOpen(open === 'usage' ? null : 'usage')}>
+              <RangeBtn ref={usageRef} type="button" aria-haspopup="dialog" aria-expanded={open === 'usage'} onClick={() => setOpen(open === 'usage' ? null : 'usage')}>
                 <span>
                   <Icon name="calendar_month" size={20} />
                 </span>
@@ -327,7 +327,7 @@ export default function Billing() {
         <ButtonTabs<'month' | 'point'> full items={[{ value: 'month', label: '월 결제 내역' }, { value: 'point', label: '포인트 결제 내역' }]} value={tab} onChange={setTab} />
         {tab === 'month' && (
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <RangeBtn ref={payRef} type="button" onClick={() => setOpen(open === 'pay' ? null : 'pay')}>
+            <RangeBtn ref={payRef} type="button" aria-haspopup="dialog" aria-expanded={open === 'pay'} onClick={() => setOpen(open === 'pay' ? null : 'pay')}>
               <span>
                 <Icon name="calendar_month" size={20} />
               </span>

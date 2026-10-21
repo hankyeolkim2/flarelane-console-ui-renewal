@@ -125,7 +125,7 @@ function BoardRow({ board, onOpen, onDelete }: { board: Board; onOpen: () => voi
       </Plain>
       <div onClick={(e) => e.stopPropagation()}>
         <Anchor ref={menuRef}>
-          <IconButton icon="more_horiz" size="sm" label="더보기" onClick={() => setMenu((v) => !v)} />
+          <IconButton icon="more_horiz" size="sm" label="더보기" aria-haspopup="menu" aria-expanded={menu} onClick={() => setMenu((v) => !v)} />
           <Menu open={menu} onClose={() => setMenu(false)} anchorRef={menuRef} width={160} align="end">
             <MenuItem label="이름 수정" onClick={() => { setMenu(false); setTimeout(() => nameRef.current?.startEdit()); }} />
             <MenuItem label="삭제" destructive onClick={() => { setMenu(false); onDelete(); }} />

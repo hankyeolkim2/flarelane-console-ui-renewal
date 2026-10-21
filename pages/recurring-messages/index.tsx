@@ -113,7 +113,7 @@ export default function RecurringMessages() {
         <h1>반복 발송 메시지</h1>
         <i />
         <div ref={newRef}>
-          <Button hierarchy="primary" size="md" iconTrailing={menuOpen ? 'keyboard_arrow_up' : 'keyboard_arrow_down'} onClick={() => setMenuOpen((v) => !v)}>
+          <Button hierarchy="primary" size="md" iconTrailing={menuOpen ? 'keyboard_arrow_up' : 'keyboard_arrow_down'} aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((v) => !v)}>
             새 반복 발송 메시지
           </Button>
         </div>

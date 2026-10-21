@@ -240,7 +240,7 @@ export default function JourneyList() {
           를 통해 구매 등 유저의 최종 목표 달성을 이끌어낼 수 있도록 시나리오 기반의 메시지 발송 자동화가 가능합니다.
         </Help>
         <i />
-        <RangeBtn ref={rangeRef} type="button" aria-label="데이터 기간 필터" onClick={() => setRangeOpen((v) => !v)}>
+        <RangeBtn ref={rangeRef} type="button" aria-label="데이터 기간 필터" aria-haspopup="dialog" aria-expanded={rangeOpen} onClick={() => setRangeOpen((v) => !v)}>
           <span>
             <Icon name="calendar_month" size={20} />
           </span>

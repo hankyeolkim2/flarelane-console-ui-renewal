@@ -169,6 +169,7 @@ export function SentRow({ source, content, cols, href, copyHref, lead, topBadge,
         ref={ref}
         type="button"
         aria-label="더 보기"
+        aria-haspopup="menu"
         aria-expanded={open}
         onClick={(e) => {
           e.stopPropagation();

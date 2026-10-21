@@ -97,7 +97,7 @@ function RowMenu({ d, mode, onAlias, onRemove }: { d: Device; mode: Mode; onAlia
   const [open, setOpen] = useState(false);
   return (
     <>
-      <More ref={ref} type="button" aria-label="더 보기" onClick={() => setOpen((v) => !v)}>
+      <More ref={ref} type="button" aria-label="더 보기" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
         <Icon name="more_horiz" size={20} />
       </More>
       <Floating anchorRef={ref} open={open} onClose={() => setOpen(false)} width={160} offset={4}>

@@ -241,7 +241,7 @@ export default function JourneyDetail() {
             {j.active ? '일시중지' : '활성화'}
           </Button>
           <span ref={moreRef}>
-            <Button hierarchy="primary" icon="keyboard_arrow_down" aria-label="더 보기" onClick={() => setMore((v) => !v)} />
+            <Button hierarchy="primary" icon="keyboard_arrow_down" aria-label="더 보기" aria-haspopup="menu" aria-expanded={more} onClick={() => setMore((v) => !v)} />
           </span>
         </Split>
         <Floating anchorRef={moreRef} open={more} onClose={() => setMore(false)} width={140} offset={4}>
@@ -255,7 +255,7 @@ export default function JourneyDetail() {
           title="여정 분석"
           actions={
             <>
-              <RangeBtn ref={rangeRef} type="button" onClick={() => setRangeOpen((v) => !v)}>
+              <RangeBtn ref={rangeRef} type="button" aria-haspopup="dialog" aria-expanded={rangeOpen} onClick={() => setRangeOpen((v) => !v)}>
                 <span>
                   <Icon name="calendar_month" size={20} />
                 </span>

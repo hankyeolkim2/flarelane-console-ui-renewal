@@ -154,7 +154,7 @@ export default function PushSentHistory() {
             <FRow>
               <b>기간</b>
               <div>
-                <RangeBtn ref={rangeRef} type="button" onClick={() => setRangeOpen((v) => !v)}>
+                <RangeBtn ref={rangeRef} type="button" aria-haspopup="dialog" aria-expanded={rangeOpen} onClick={() => setRangeOpen((v) => !v)}>
                   <span>
                     <Icon name="calendar_month" size={20} />
                   </span>

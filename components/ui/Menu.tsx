@@ -1,6 +1,8 @@
 import { useEffect, useRef, type ReactNode, type RefObject } from 'react';
+import { createPortal } from 'react-dom';
 import styled from '@emotion/styled';
 import Icon from '@/components/Icon';
+import { placementStyle, POPOVER_Z, usePlacement } from './Floating';
 import { color, radius, shadow } from '@/styles/tokens';
 import { text } from '@/styles/typography';
 
@@ -33,17 +35,12 @@ export const Anchor = styled.div`
   display: inline-flex;
 `;
 
-// stretch(셀렉트 목록) = 붙은 칸(셀렉트 박스) · width 보다 좁아지지 않고, 글자가 더 길면 줄바꿈 없이 그만큼 넓게
-export const MenuPanel = styled.div<{ width?: number; align?: 'start' | 'end' | 'center'; offset?: number; stretch?: boolean }>`
-  position: absolute;
-  top: calc(100% + ${(p) => p.offset ?? 4}px);
-  ${(p) => (p.align === 'start' ? 'left: 0;' : p.align === 'center' ? 'left: 50%; transform: translateX(-50%);' : 'right: 0;')}
-  z-index: 30;
-  ${(p) =>
-    p.stretch
-      ? `width: max-content; min-width: ${p.width ? `max(100%, ${p.width}px)` : '100%'}; max-width: calc(100vw - 32px);`
-      : `width: ${p.width ? `${p.width}px` : 'auto'};`}
+// 목록 상자 — body 에 fixed 로 띄움(Floating 과 같은 자리 잡기): 모달 본문 · 표 · 카드 스크롤 영역에 잘리지 않고, 아래가 모자라면 위로 열림(10-21 전수 수정)
+export const MenuPanel = styled.div`
+  position: fixed;
+  z-index: ${POPOVER_Z};
   padding: 4px 0;
+  overflow-y: auto;
   background: ${color('bg-primary')};
   border: 1px solid ${color('border-secondary_alt')};
   border-radius: ${radius.md}px;
@@ -111,12 +108,17 @@ export const MenuDivider = styled.div`
   &::after { content: ''; display: block; height: 1px; background: ${color('border-secondary')}; }
 `;
 
-export function Menu({ open, onClose, children, width, align, offset, stretch, anchorRef }: { open: boolean; onClose: () => void; children: ReactNode; width?: number; align?: 'start' | 'end' | 'center'; offset?: number; stretch?: boolean; anchorRef: RefObject<HTMLElement | null> }) {
+// stretch(셀렉트 목록) = 붙은 칸(셀렉트 박스) · width 보다 좁아지지 않고, 글자가 더 길면 줄바꿈 없이 그만큼 넓게
+export function Menu({ open, onClose, children, width, align = 'end', offset = 4, stretch, anchorRef }: { open: boolean; onClose: () => void; children: ReactNode; width?: number; align?: 'start' | 'end' | 'center'; offset?: number; stretch?: boolean; anchorRef: RefObject<HTMLElement | null> }) {
+  const panel = useRef<HTMLDivElement>(null);
   useDismiss(anchorRef, open, onClose);
-  if (!open) return null;
-  return (
-    <MenuPanel role="menu" width={width} align={align} offset={offset} stretch={stretch} onClick={(e) => e.stopPropagation()}>
+  const pos = usePlacement(open, anchorRef, panel, align, offset);
+  if (!open || typeof document === 'undefined') return null;
+  const size = stretch ? { width: 'max-content', minWidth: Math.max(anchorRef.current?.offsetWidth ?? 0, width ?? 0), maxWidth: 'calc(100vw - 32px)' } : { width: width ?? 'auto' };
+  return createPortal(
+    <MenuPanel ref={panel} role="menu" data-floating style={{ ...size, ...placementStyle(pos) }} onClick={(e) => e.stopPropagation()}>
       {children}
-    </MenuPanel>
+    </MenuPanel>,
+    document.body,
   );
 }

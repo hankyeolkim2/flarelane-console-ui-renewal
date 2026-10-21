@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/router';
 import styled from '@emotion/styled';
 import Icon from '@/components/Icon';
+import { placementStyle, POPOVER_Z, usePlacement } from '@/components/ui/Floating';
 import { useDismiss } from '@/components/ui/Menu';
 import { useStore } from '@/lib/store';
 import { boardName, formatEdited, LIMITS, reportName } from '@/lib/analytics';
@@ -38,13 +40,12 @@ const Field = styled.label<{ active: boolean }>`
   > input::placeholder { color: ${color('text-placeholder')}; }
 `;
 
+// 결과 상자 = body 에 fixed(검색 칸 폭 · 아래 4) — 스크롤 영역에 잘리지 않게(10-21)
 const Panel = styled.div`
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  right: 0;
-  z-index: 30;
+  position: fixed;
+  z-index: ${POPOVER_Z};
   padding: 4px 0;
+  overflow-y: auto;
   background: ${color('bg-primary')};
   border: 1px solid ${color('border-secondary_alt')};
   border-radius: ${radius.md}px;
@@ -124,7 +125,10 @@ export default function AnalyticsSearch() {
   const [open, setOpen] = useState(false);
   const [focused, setFocused] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
   useDismiss(ref, open, () => setOpen(false));
+  const shown = open && !!query;
+  const pos = usePlacement(shown, ref, panel, 'start', 4);
 
   useEffect(() => {
     const k = keyword.trim();
@@ -173,8 +177,8 @@ export default function AnalyticsSearch() {
           onBlur={() => setFocused(false)}
         />
       </Field>
-      {open && !!query && (
-        <Panel>
+      {shown && typeof document !== 'undefined' && createPortal(
+        <Panel ref={panel} data-floating style={{ width: ref.current?.offsetWidth, ...placementStyle(pos) }}>
           {results.length === 0 ? (
             <Empty>검색 결과가 없습니다</Empty>
           ) : (
@@ -195,7 +199,8 @@ export default function AnalyticsSearch() {
               ))}
             </List>
           )}
-        </Panel>
+        </Panel>,
+        document.body,
       )}
     </Wrap>
   );

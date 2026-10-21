@@ -132,7 +132,7 @@ function ItemMenu({ it, purchase, onHide, onEdit, onDelete }: { it: Item; purcha
   if (it.readOnly) return null;
   return (
     <span onClick={(e) => e.stopPropagation()}>
-      <button ref={ref} type="button" aria-label="더 보기" onClick={() => setOpen((v) => !v)} style={{ display: 'inline-flex', width: 32, height: 32, alignItems: 'center', justifyContent: 'center', border: 0, borderRadius: 8, background: 'transparent', color: 'var(--fg-quaternary)', cursor: 'pointer' }}>
+      <button ref={ref} type="button" aria-label="더 보기" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((v) => !v)} style={{ display: 'inline-flex', width: 32, height: 32, alignItems: 'center', justifyContent: 'center', border: 0, borderRadius: 8, background: 'transparent', color: 'var(--fg-quaternary)', cursor: 'pointer' }}>
         <Icon name="more_horiz" size={20} />
       </button>
       <Floating anchorRef={ref} open={open} onClose={() => setOpen(false)} width={160} offset={4}>
@@ -369,7 +369,7 @@ export default function DataManagement() {
             <div style={{ width: 200 }}>
               <TextField placeholder="Event Type" value={type} onChange={(e) => setType(e.target.value)} />
             </div>
-            <RangeBtn ref={rangeRef} type="button" onClick={() => setRangeOpen((v) => !v)}>
+            <RangeBtn ref={rangeRef} type="button" aria-haspopup="dialog" aria-expanded={rangeOpen} onClick={() => setRangeOpen((v) => !v)}>
               <span>
                 <Icon name="calendar_month" size={20} />
               </span>

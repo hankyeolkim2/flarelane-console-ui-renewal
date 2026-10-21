@@ -107,7 +107,7 @@ function TemplateCard({ t, onDelete }: { t: EmailTemplate; onDelete: () => void 
         </div>
       </dl>
       <nav ref={ref} onClick={(e) => e.stopPropagation()}>
-        <IconButton icon="more_horiz" hierarchy="secondary" label="더 보기" onClick={() => setOpen((x) => !x)} />
+        <IconButton icon="more_horiz" hierarchy="secondary" label="더 보기" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((x) => !x)} />
         <Floating anchorRef={ref} open={open} onClose={() => setOpen(false)} width={160} offset={4}>
           <div style={{ padding: '4px 0' }}>
             <MenuItem icon="content_copy" label="복제" onClick={() => router.push(`/email/templates/new?copyMessageId=${t.id}`)} />
@@ -145,7 +145,7 @@ export function EmailTemplateList() {
         <h1>템플릿</h1>
         <i />
         <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-secondary)' }}>데이터 기간 필터</span>
-        <RangeBtn ref={rref} type="button" onClick={() => setRo((x) => !x)}>
+        <RangeBtn ref={rref} type="button" aria-haspopup="dialog" aria-expanded={ro} onClick={() => setRo((x) => !x)}>
           <span>
             <Icon name="calendar_month" size={20} />
           </span>

@@ -16,7 +16,7 @@ export default function CreateMenu() {
   };
   return (
     <Anchor ref={ref}>
-      <Button hierarchy="primary" size="md" iconLeading="add" iconTrailing={open ? 'keyboard_arrow_up' : 'keyboard_arrow_down'} aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+      <Button hierarchy="primary" size="md" iconLeading="add" iconTrailing={open ? 'keyboard_arrow_up' : 'keyboard_arrow_down'} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
         생성
       </Button>
       <Menu open={open} onClose={() => setOpen(false)} anchorRef={ref} width={280} align="end">

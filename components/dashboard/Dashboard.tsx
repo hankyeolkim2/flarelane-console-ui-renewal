@@ -221,7 +221,7 @@ export function DashboardHeader({ range, onRange }: { range: { from: string; to:
     <PageTitle>
       <h1>기기 및 발송 현황</h1>
       <i />
-      <RangeBtn ref={ref} type="button" onClick={() => setOpen((v) => !v)}>
+      <RangeBtn ref={ref} type="button" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
         <span>
           <Icon name="calendar_month" size={20} />
         </span>

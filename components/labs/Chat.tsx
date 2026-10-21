@@ -577,7 +577,7 @@ export default function ChatRoot() {
               </>
             ) : (
               <>
-                <TitleBtn ref={titleRef} type="button" onClick={() => setMenu(menu === 'title' ? null : 'title')}>
+                <TitleBtn ref={titleRef} type="button" aria-haspopup="menu" aria-expanded={menu === 'title'} onClick={() => setMenu(menu === 'title' ? null : 'title')}>
                   <span>{s?.title ?? '새 대화'}</span>
                   <Icon name="keyboard_arrow_down" size={18} />
                 </TitleBtn>

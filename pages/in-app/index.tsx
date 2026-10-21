@@ -152,7 +152,7 @@ function CardMenu({ m, onCopy }: { m: InApp; onCopy: () => void }) {
   };
   return (
     <span onClick={(e) => e.stopPropagation()}>
-      <button ref={ref} type="button" aria-label="더 보기" onClick={() => setOpen((v) => !v)} style={{ display: 'inline-flex', width: 32, height: 32, alignItems: 'center', justifyContent: 'center', border: 0, borderRadius: 8, background: 'transparent', color: 'var(--fg-quaternary)', cursor: 'pointer' }}>
+      <button ref={ref} type="button" aria-label="더 보기" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((v) => !v)} style={{ display: 'inline-flex', width: 32, height: 32, alignItems: 'center', justifyContent: 'center', border: 0, borderRadius: 8, background: 'transparent', color: 'var(--fg-quaternary)', cursor: 'pointer' }}>
         <Icon name="more_horiz" size={20} />
       </button>
       <Floating anchorRef={ref} open={open} onClose={() => setOpen(false)} width={160} offset={4}>
@@ -254,7 +254,7 @@ export default function InAppList() {
         {warn && <span style={{ color: 'var(--text-error-primary)', fontWeight: 400 }}>상태 태그는 최소 1개 이상 선택해주세요</span>}
         <i />
         노출 기간
-        <RangeBtn ref={rangeRef} type="button" onClick={() => setRangeOpen((v) => !v)}>
+        <RangeBtn ref={rangeRef} type="button" aria-haspopup="dialog" aria-expanded={rangeOpen} onClick={() => setRangeOpen((v) => !v)}>
           <span>
             <Icon name="calendar_month" size={20} />
           </span>

@@ -112,7 +112,7 @@ function RowMenu({ s, base, onDelete }: { s: Segment; base: string; onDelete: ()
   const detail = `${base}/${s.id}/${s.targetType === 'User' ? 'users' : 'devices'}`;
   return (
     <span onClick={(e) => e.stopPropagation()}>
-      <button ref={ref} type="button" aria-label="더 보기" onClick={() => setOpen((v) => !v)} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, border: 0, borderRadius: 8, background: 'transparent', color: 'var(--fg-quaternary)', cursor: 'pointer' }}>
+      <button ref={ref} type="button" aria-label="더 보기" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((v) => !v)} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, border: 0, borderRadius: 8, background: 'transparent', color: 'var(--fg-quaternary)', cursor: 'pointer' }}>
         <Icon name="more_horiz" size={20} />
       </button>
       <Floating anchorRef={ref} open={open} onClose={() => setOpen(false)} width={160} offset={4}>

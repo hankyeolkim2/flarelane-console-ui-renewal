@@ -70,7 +70,7 @@ function RowMenu({ items }: { items: { label: string; destructive?: boolean; onC
   const [open, setOpen] = useState(false);
   return (
     <Anchor ref={ref}>
-      <IconButton icon="more_horiz" size="sm" label="더보기" onClick={() => setOpen((v) => !v)} />
+      <IconButton icon="more_horiz" size="sm" label="더보기" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((v) => !v)} />
       <Menu open={open} onClose={() => setOpen(false)} anchorRef={ref} width={160} align="end">
         {items.map((it) => (
           <MenuItem key={it.label} label={it.label} destructive={it.destructive} onClick={() => { setOpen(false); it.onClick(); }} />

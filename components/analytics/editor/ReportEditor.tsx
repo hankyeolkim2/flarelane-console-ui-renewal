@@ -268,7 +268,7 @@ export default function ReportEditor({ mode, boardId, report, initialType }: Pro
             <Breadcrumbs items={crumbs} />
           )}
           <Anchor ref={menuRef}>
-            <IconButton icon="more_horiz" size="sm" label="더보기" onClick={() => setMenu((v) => !v)} />
+            <IconButton icon="more_horiz" size="sm" label="더보기" aria-haspopup="menu" aria-expanded={menu} onClick={() => setMenu((v) => !v)} />
             <Menu open={menu} onClose={() => setMenu(false)} anchorRef={menuRef} width={160} align="start">
               <MenuItem
                 label="이름 수정"

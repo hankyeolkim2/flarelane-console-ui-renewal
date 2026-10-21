@@ -291,7 +291,7 @@ export default function InAppEditor({ mode, initial }: { mode: Mode; initial: In
         <h1>{mode === 'new' ? '새 인앱 메시지' : '인앱 메시지'}</h1>
         {mode !== 'new' && (
           <>
-            <RangeBtn ref={rangeRef} type="button" onClick={() => setRangeOpen((v) => !v)}>
+            <RangeBtn ref={rangeRef} type="button" aria-haspopup="dialog" aria-expanded={rangeOpen} onClick={() => setRangeOpen((v) => !v)}>
               <span>
                 <Icon name="calendar_month" size={20} />
               </span>

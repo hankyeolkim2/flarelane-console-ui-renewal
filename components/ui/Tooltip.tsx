@@ -9,7 +9,7 @@ import { text } from '@/styles/typography';
 
 export const TipBox = styled.div<{ maxWidth?: number }>`
   position: fixed;
-  z-index: 70;
+  z-index: 90; /* 팝오버(80) 위 */
   max-width: ${(p) => (p.maxWidth ? `${p.maxWidth}px` : 'none')};
   padding: 8px 12px;
   border-radius: ${radius.md}px;

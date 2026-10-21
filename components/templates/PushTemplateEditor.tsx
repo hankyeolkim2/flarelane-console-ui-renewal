@@ -85,7 +85,7 @@ function CategorySelect({ value, onChange, toast }: { value: TemplateCategory | 
   const [, force] = useState(0);
   return (
     <>
-      <button ref={ref} type="button" onClick={() => setOpen((v) => !v)} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', height: 36, padding: '0 12px', border: '1px solid var(--border-primary)', borderRadius: 8, background: 'var(--bg-primary)', cursor: 'pointer', fontSize: 14, color: value ? 'var(--text-primary)' : 'var(--text-placeholder)' }}>
+      <button ref={ref} type="button" aria-haspopup="listbox" aria-expanded={open} onClick={() => setOpen((v) => !v)} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', height: 36, padding: '0 12px', border: '1px solid var(--border-primary)', borderRadius: 8, background: 'var(--bg-primary)', cursor: 'pointer', fontSize: 14, color: value ? 'var(--text-primary)' : 'var(--text-placeholder)' }}>
         <span style={{ flex: 1, textAlign: 'left' }}>{value ? <Badge color={value.color as BadgeColor}>{value.name}</Badge> : '카테고리 선택'}</span>
         <Icon name="keyboard_arrow_down" size={20} />
       </button>

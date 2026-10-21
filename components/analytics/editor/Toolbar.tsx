@@ -302,7 +302,7 @@ export default function Toolbar({ state, onRange, onGranularity }: { state: Edit
         ))}
       </Group>
       <RangeButton ref={ref}>
-        <Button iconLeading="calendar_today" onClick={() => setOpen((v) => !v)}>
+        <Button iconLeading="calendar_today" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
           {rangeLabel(state.range)}
         </Button>
       </RangeButton>

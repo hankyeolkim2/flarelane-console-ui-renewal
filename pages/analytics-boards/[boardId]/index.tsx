@@ -116,7 +116,7 @@ function ReportCard({ report, onDelete }: { report: Report; onDelete: () => void
         </CardText>
         <em>{report.createdBy}</em>
         <Anchor ref={menuRef} onClick={(e) => e.stopPropagation()}>
-          <Button hierarchy="tertiary" icon="more_horiz" aria-label="더보기" onClick={() => setMenu((v) => !v)} />
+          <Button hierarchy="tertiary" icon="more_horiz" aria-label="더보기" aria-haspopup="menu" aria-expanded={menu} onClick={() => setMenu((v) => !v)} />
           <Menu open={menu} onClose={() => setMenu(false)} anchorRef={menuRef} width={160} align="end">
             <MenuItem label="이름 수정" onClick={() => { setMenu(false); setTimeout(() => nameRef.current?.startEdit()); }} />
             <MenuItem label="삭제" destructive onClick={() => { setMenu(false); onDelete(); }} />
@@ -144,7 +144,7 @@ function AddReport({ boardId, count, tall }: { boardId: string; count: number; t
   return (
     <AddCard tall={tall}>
       <Anchor ref={ref}>
-        <Button iconLeading="add" onClick={() => (count >= LIMITS.reportsPerBoard ? setLimit(true) : setOpen((v) => !v))}>
+        <Button iconLeading="add" aria-haspopup="menu" aria-expanded={open} onClick={() => (count >= LIMITS.reportsPerBoard ? setLimit(true) : setOpen((v) => !v))}>
           통계 추가
         </Button>
         <Menu open={open} onClose={() => setOpen(false)} anchorRef={ref} width={280} align="center">
@@ -191,7 +191,7 @@ export default function BoardPage() {
           <InlineName ref={nameRef} name={board.name} fallback="제목 없음" onSave={(n) => renameBoard(board.id, n)} />
         </h1>
         <Anchor ref={menuRef}>
-          <Button hierarchy="tertiary" icon="more_horiz" aria-label="더보기" onClick={() => setMenu((v) => !v)} />
+          <Button hierarchy="tertiary" icon="more_horiz" aria-label="더보기" aria-haspopup="menu" aria-expanded={menu} onClick={() => setMenu((v) => !v)} />
           <Menu open={menu} onClose={() => setMenu(false)} anchorRef={menuRef} width={160} align="start">
             <MenuItem label="이름 수정" onClick={() => { setMenu(false); setTimeout(() => nameRef.current?.startEdit()); }} />
             <MenuItem label="보드 삭제" destructive onClick={() => { setMenu(false); setAskBoard(true); }} />
