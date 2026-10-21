@@ -12,6 +12,7 @@ export type Report = {
   updatedAt: string; // ISO
   events: string[];
   funnel?: { counts: number[] };
+  splits?: import('./editor').SplitBlock[]; // 데이터 그룹 (없으면 SPLIT_SEED)
   config?: import('./editor').EditorState; // 저장된 편집 설정 (없으면 events 로 기본 설정을 만듦)
 };
 
@@ -51,7 +52,13 @@ export const initialReports: Report[] = [
     name: '새 인사이트새 인사이트새 인사이트새 인사이트새 인사이트새 인사이트새 인사이트',
     createdBy: 'hk.kim',
     updatedAt: '2026-08-31T02:00:00Z',
-    events: ['banner_impression-v1'],
+    // 블록 순서 변경 확인용 — 분석 지표 · 데이터 그룹 3개씩 (10-21 사용자 요청)
+    events: ['banner_impression-v1', 'add_to_cart', 'app_opened'],
+    splits: [
+      { id: 'sp1', kind: '세그먼트', label: 'VIP 고객' },
+      { id: 'sp2', kind: '기기', label: '플랫폼' },
+      { id: 'sp3', kind: '유저', label: '국가 코드' },
+    ],
   },
   {
     id: '08dbc36b',

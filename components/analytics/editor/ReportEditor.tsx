@@ -10,7 +10,7 @@ import { ConfirmModal } from '@/components/ui/Modal';
 import { CsvButton, dayLabel, FunnelResult, FunnelTable, InsightChart, InsightTable } from '@/components/analytics/ReportResult';
 import { boardName, ME, type Board, type Report, type ReportType } from '@/lib/analytics';
 import { funnelCounts, insightValues } from '@/lib/catalog';
-import { addDays, defaultState, NAME_MAX, parseYmd, queryKey, serialize, uid, withRange, type EditorState } from '@/lib/editor';
+import { addDays, defaultState, NAME_MAX, parseYmd, queryKey, serialize, SPLIT_SEED, uid, withRange, type EditorState } from '@/lib/editor';
 import { useStore } from '@/lib/store';
 import BoardSelectModal from './BoardSelectModal';
 import QueryPanel from './QueryPanel';
@@ -99,12 +99,13 @@ const isCrm = (e: string) => e.includes('.'); // channel.action 형식 = CRM 이
 
 // 저장된 통계 → 편집 설정
 export function stateFromReport(r: Report): EditorState {
-  if (r.config) return r.config;
+  if (r.config) return { ...r.config, splits: r.config.splits ?? r.splits ?? SPLIT_SEED };
   const s = defaultState(r.type);
   return {
     ...s,
     measurement: r.type === 'FUNNEL' ? 'TOTAL_COUNT' : 'UNIQUE_USER', // 스테이징 「새 퍼널」 저장값
     metrics: r.events.map((e) => ({ id: uid('m'), event: e, filters: [] })),
+    splits: r.splits ?? SPLIT_SEED,
   };
 }
 
@@ -211,6 +212,7 @@ export default function ReportEditor({ mode, boardId, report, initialType }: Pro
       updatedAt: new Date().toISOString(),
       events: state.metrics.map((m) => m.event),
       funnel: state.type === 'FUNNEL' ? { counts: funnelCounts(state.metrics.map((m) => m.event)) } : undefined,
+      splits: state.splits,
       config: state,
     };
     setSaving(true);

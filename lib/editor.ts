@@ -22,7 +22,15 @@ export type EditorState = {
   conversionWindow: { value: number; unit: 'DAY' | 'HOUR' };
   metrics: Metric[];
   targets: TargetGroup[];
+  splits: SplitBlock[]; // 데이터 그룹(세분화) — 스테이징은 준비중, 순서 변경 시안 확인용
 };
+
+export type SplitBlock = { id: string; kind: '세그먼트' | '유저' | '기기'; label: string };
+// 저장된 데이터 그룹이 없는 통계에 보여 줄 기본 블록(순서 변경 시안 확인용)
+export const SPLIT_SEED: SplitBlock[] = [
+  { id: 'sp1', kind: '세그먼트', label: 'VIP 고객' },
+  { id: 'sp2', kind: '기기', label: '플랫폼' },
+];
 
 export const MAX_METRICS = 10;
 export const MAX_TARGET_GROUPS = 10;
@@ -80,6 +88,7 @@ export function defaultState(type: ReportType): EditorState {
     conversionWindow: { value: 7, unit: 'DAY' },
     metrics: [],
     targets: [],
+    splits: [],
   };
 }
 
@@ -94,6 +103,7 @@ export function serialize(s: EditorState) {
     c: s.conversionWindow,
     e: s.metrics.map((m) => ({ e: m.event, f: m.filters.map(strip) })),
     tg: s.targets.map((g) => g.blocks.map((b) => (b.kind === 'EVENT' ? { k: b.kind, e: b.event, f: b.filters.map(strip) } : b.kind === 'SEGMENT' ? { k: b.kind, s: b.segmentId } : { k: b.kind, p: b.property, o: b.operator, v: b.value }))),
+    sp: (s.splits ?? []).map((b) => [b.kind, b.label]),
   });
 }
 

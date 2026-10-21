@@ -8,7 +8,7 @@ import IconButton from '@/components/ui/IconButton';
 import Select from '@/components/ui/Select';
 import { MinimalTabs } from '@/components/ui/Tabs';
 import { segments } from '@/lib/catalog';
-import { joinValues, MAX_METRICS, MAX_TARGET_GROUPS, OPERATORS, uid, type EditorState, type Filter, type Metric, type Operator, type TargetBlock } from '@/lib/editor';
+import { joinValues, MAX_METRICS, MAX_TARGET_GROUPS, OPERATORS, uid, type EditorState, type Filter, type Metric, type Operator, type SplitBlock, type TargetBlock } from '@/lib/editor';
 import type { ReportType } from '@/lib/analytics';
 import { EventSelector, PropertySelector, TargetSelector, ValueSelector, type TargetPick } from './Selectors';
 import { color, radius, shadow } from '@/styles/tokens';
@@ -515,12 +515,6 @@ function Metrics({ metrics, onChange }: { metrics: Metric[]; onChange: (m: Metri
 }
 
 // ── 데이터 그룹 (스테이징은 「준비중」 — 순서 변경 시안 확인용으로 블록을 미리 둠) ──
-type SplitBlock = { id: string; kind: '세그먼트' | '유저' | '기기'; label: string };
-const SPLIT_SEED: SplitBlock[] = [
-  { id: 'sp1', kind: '세그먼트', label: 'VIP 고객' },
-  { id: 'sp2', kind: '기기', label: '플랫폼' },
-];
-
 function SplitRow({ block, sort, onRemove }: { block: SplitBlock; sort: SortProps; onRemove: () => void }) {
   return (
     <SortItem picked={sort.picked}>
@@ -540,8 +534,7 @@ function SplitRow({ block, sort, onRemove }: { block: SplitBlock; sort: SortProp
   );
 }
 
-function DataGroups() {
-  const [blocks, setBlocks] = useState<SplitBlock[]>(SPLIT_SEED);
+function DataGroups({ blocks, setBlocks }: { blocks: SplitBlock[]; setBlocks: (b: SplitBlock[]) => void }) {
   const [adding, setAdding] = useState(false);
   const addRef = useRef<HTMLDivElement>(null);
   const sortable = useSortable(blocks, setBlocks);
@@ -806,7 +799,7 @@ export default function QueryPanel({ state, onChange }: { state: EditorState; on
             <h3>데이터 그룹</h3>
             <Help>지표를 특정 속성 기준으로 그룹화해 시각화합니다.</Help>
           </Head>
-          <DataGroups />
+          <DataGroups blocks={state.splits ?? []} setBlocks={(b) => set({ splits: b })} />
         </Sec>
       </Sections>
     </Panel>
