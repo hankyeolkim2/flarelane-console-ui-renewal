@@ -63,6 +63,9 @@ const Days = styled.div`
   grid-template-columns: repeat(7, 40px);
   row-gap: 4px;
   > em { display: flex; align-items: center; justify-content: center; height: 40px; font-style: normal; ${text('text-sm', 'medium')}; color: ${color('text-secondary')}; }
+  /* 요일 머리 「일」 빨강 · 「토」 파랑 — 현 콘솔 색(#DC2626 · #47659F) 그대로, 날짜 숫자는 그대로(10-21 사용자) */
+  > em:first-of-type { color: ${color('utility-red-600')}; }
+  > em:nth-of-type(7) { color: ${color('utility-brand-400')}; }
 `;
 
 export type MonthGridProps = {
