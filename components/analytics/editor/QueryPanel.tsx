@@ -69,7 +69,9 @@ const Card = styled.div<{ lifted?: boolean }>`
   border-radius: ${radius.md}px;
   background: ${color('bg-primary')};
   ${(p) => (p.lifted ? `box-shadow: ${shadow.lg}; position: relative; z-index: 2; cursor: grabbing;` : '')}
-  &:hover [data-drag-handle] { width: 16px; margin-right: 0; }
+  /* 호버하면 손잡이가 나타나되 자리는 원래 비어 있던 곳 — 내용은 움직이지 않음 */
+  &:hover [data-drag-handle] { opacity: 1; }
+  &:hover [data-swap] > [data-no] { opacity: 0; }
 `;
 
 // 블록 목록 — 끄는 동안엔 지나가는 블록이 호버로 반응하지 않음(스테이징과 같음)
@@ -80,13 +82,13 @@ const SortList = styled.div<{ sorting: boolean }>`
   ${(p) => (p.sorting ? '> * { pointer-events: none; }' : '')}
 `;
 
-// 끄는 동안 블록이 놓일 자리
+// 끄는 동안 블록이 놓일 자리 — 집은 블록보다 눈에 덜 띄게 회색 · 연한 점선
 const Slot = styled.div`
   position: absolute;
   inset: 0;
-  border: 1px dashed ${color('utility-brand-200')};
+  border: 1px dashed ${color('border-secondary')};
   border-radius: ${radius.md}px;
-  background: ${color('bg-brand-primary')};
+  background: ${color('bg-secondary')};
   pointer-events: none;
 `;
 
@@ -102,23 +104,32 @@ const Block = styled.div<{ clickable: boolean }>`
   > b[data-placeholder] { ${text('text-sm', 'regular')}; color: ${color('text-placeholder')}; }
 `;
 
-// 손잡이 — 평소엔 자리를 차지하지 않아 번호 · 유형 칩이 맨 왼쪽(다른 영역과 세로축 맞춤).
-// 블록 호버(Card :hover)하면 폭 16이 열리며 뒤 내용이 오른쪽으로 밀림(PO 요청). 손잡이 위 · 끄는 중엔 칩 배경.
-const Handle = styled.span<{ picked?: boolean }>`
+// 손잡이 — 블록 호버 때만 보임. 자리를 새로 만들지 않아 내용이 움직이지 않음.
+// 분석 지표 = 번호 칸(20×20) 위에 겹쳐 번호와 바뀜, 데이터 그룹 = 삭제 버튼 앞 빈자리.
+// 손잡이 위 · 끄는 중엔 칩 배경.
+const Handle = styled.span<{ show?: boolean }>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: ${(p) => (p.picked ? 16 : 0)}px;
+  width: 20px;
   height: 20px;
-  margin-right: ${(p) => (p.picked ? 0 : -8)}px;
-  overflow: hidden;
   border-radius: ${radius.xs}px;
-  background: ${(p) => (p.picked ? color('bg-secondary_hover') : 'transparent')};
+  background: ${(p) => (p.show ? color('bg-secondary_hover') : 'transparent')};
   color: ${color('fg-quaternary')};
-  cursor: ${(p) => (p.picked ? 'grabbing' : 'grab')};
-  transition: width 0.12s ease-out, margin-right 0.12s ease-out;
+  opacity: ${(p) => (p.show ? 1 : 0)};
+  cursor: ${(p) => (p.show ? 'grabbing' : 'grab')};
+  transition: opacity 0.1s linear;
   &:hover { background: ${color('bg-secondary_hover')}; }
+`;
+
+// 번호 칸 — 번호와 손잡이가 같은 자리에서 바뀜
+const Swap = styled.span`
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  > [data-drag-handle] { position: absolute; inset: 0; }
+  > [data-no] { transition: opacity 0.1s linear; }
 `;
 
 const No = styled.span<{ picked?: boolean }>`
@@ -420,12 +431,14 @@ function MetricBlock({ metric, index, sort, onChangeEvent, onFilters, onRemove }
     <SortItem picked={sort.picked}>
       <Card lifted={sort.picked} style={sort.style}>
         <Block ref={ref} clickable onClick={() => setOpen(true)} onMouseDown={sort.onDragStart}>
-          {sort.canDrag && (
-            <Handle data-drag-handle picked={sort.picked} onClick={(e) => e.stopPropagation()}>
-              <Icon name="drag_indicator" size={16} />
-            </Handle>
-          )}
-          <No picked={sort.picked}>{index + 1}</No>
+          <Swap data-swap>
+            <No data-no picked={sort.picked}>{index + 1}</No>
+            {sort.canDrag && !sort.picked && (
+              <Handle data-drag-handle onClick={(e) => e.stopPropagation()}>
+                <Icon name="drag_indicator" size={16} />
+              </Handle>
+            )}
+          </Swap>
           <b>{metric.event}</b>
           <span data-own-click style={{ display: 'flex', gap: 0 }} onClick={(e) => e.stopPropagation()}>
             <IconButton
@@ -513,13 +526,13 @@ function SplitRow({ block, sort, onRemove }: { block: SplitBlock; sort: SortProp
     <SortItem picked={sort.picked}>
       <Card lifted={sort.picked} style={sort.style}>
         <Block clickable={false} onMouseDown={sort.onDragStart} style={sort.canDrag ? { cursor: sort.picked ? 'grabbing' : 'grab' } : undefined}>
+          <Kind>{block.kind}</Kind>
+          <b>{block.label}</b>
           {sort.canDrag && (
-            <Handle data-drag-handle picked={sort.picked}>
+            <Handle data-drag-handle show={sort.picked}>
               <Icon name="drag_indicator" size={16} />
             </Handle>
           )}
-          <Kind>{block.kind}</Kind>
-          <b>{block.label}</b>
           <IconButton icon="close" size="xs" label="삭제" onClick={onRemove} />
         </Block>
       </Card>
