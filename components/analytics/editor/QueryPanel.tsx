@@ -104,8 +104,7 @@ const Block = styled.div<{ clickable: boolean }>`
   > b[data-placeholder] { ${text('text-sm', 'regular')}; color: ${color('text-placeholder')}; }
 `;
 
-// 손잡이 — 블록 호버 때만 보임. 자리를 새로 만들지 않아 내용이 움직이지 않음.
-// 분석 지표 = 번호 칸(20×20) 위에 겹쳐 번호와 바뀜, 데이터 그룹 = 삭제 버튼 앞 빈자리.
+// 손잡이 — 블록 호버 때만 보임. 번호 칸(20×20) 위에 겹쳐 번호와 바뀌어 내용이 움직이지 않음(분석 지표 · 데이터 그룹 같음).
 // 손잡이 위 · 끄는 중엔 칩 배경.
 const Handle = styled.span<{ show?: boolean }>`
   display: inline-flex;
@@ -515,18 +514,21 @@ function Metrics({ metrics, onChange }: { metrics: Metric[]; onChange: (m: Metri
 }
 
 // ── 데이터 그룹 (스테이징은 「준비중」 — 순서 변경 시안 확인용으로 블록을 미리 둠) ──
-function SplitRow({ block, sort, onRemove }: { block: SplitBlock; sort: SortProps; onRemove: () => void }) {
+function SplitRow({ block, index, sort, onRemove }: { block: SplitBlock; index: number; sort: SortProps; onRemove: () => void }) {
   return (
     <SortItem picked={sort.picked}>
       <Card lifted={sort.picked} style={sort.style}>
         <Block clickable={false} onMouseDown={sort.onDragStart} style={sort.canDrag ? { cursor: sort.picked ? 'grabbing' : 'grab' } : undefined}>
+          <Swap data-swap>
+            <No data-no picked={sort.picked}>{index + 1}</No>
+            {sort.canDrag && !sort.picked && (
+              <Handle data-drag-handle>
+                <Icon name="drag_indicator" size={16} />
+              </Handle>
+            )}
+          </Swap>
           <Kind>{block.kind}</Kind>
           <b>{block.label}</b>
-          {sort.canDrag && (
-            <Handle data-drag-handle show={sort.picked}>
-              <Icon name="drag_indicator" size={16} />
-            </Handle>
-          )}
           <IconButton icon="close" size="xs" label="삭제" onClick={onRemove} />
         </Block>
       </Card>
@@ -542,8 +544,8 @@ function DataGroups({ blocks, setBlocks }: { blocks: SplitBlock[]; setBlocks: (b
     <>
       {blocks.length > 0 && (
         <SortList ref={sortable.listRef} sorting={sortable.sorting}>
-          {blocks.map((b) => (
-            <SplitRow key={b.id} block={b} sort={{ canDrag: sortable.canDrag, sorting: sortable.sorting, ...sortable.item(b.id) }} onRemove={() => setBlocks(blocks.filter((x) => x.id !== b.id))} />
+          {blocks.map((b, i) => (
+            <SplitRow key={b.id} block={b} index={i} sort={{ canDrag: sortable.canDrag, sorting: sortable.sorting, ...sortable.item(b.id) }} onRemove={() => setBlocks(blocks.filter((x) => x.id !== b.id))} />
           ))}
         </SortList>
       )}
