@@ -1,49 +1,99 @@
 // 이벤트 · 속성 · 세그먼트 카탈로그 — Figma 시안(스테이징 값)에서 옮김.
-// [확인됨] 이벤트 이름 목록 앞부분 · soob 속성(w6, w7) · banner_impression-v1 속성 없음 · 퍼널 수(20/6/2)
+// [확인됨] 이벤트 이름 목록 앞부분 · soob 속성(w6, w7) · 퍼널 수(20/6/2) (banner_impression-v1 은 스테이징에선 속성 없음)
 // [임시] 속성값 · 세그먼트 · 유저/기기 속성 목록 — 스테이징 카탈로그 API(로그인 필요)에서 아직 못 읽음
 
 export const RECENT_DAYS = 30;
 
 export type EventItem = { name: string; recent: number; properties: string[] };
 
-// 속성: soob · banner_impression-v1(없음)만 스테이징 값, 나머지는 [임시] 더미(10-21 사용자 「프로토타입은 더미 데이터 있어도 되니 적당히 채워줘」)
+// 속성: soob(w6, w7)만 스테이징 값, 나머지는 [임시] 더미(10-21 「적당히 채워줘」, 10-22 「속성 · 값 전부 채워줘」).
+// banner_impression-v1 은 스테이징에선 속성 없음 — 프로토타입은 필터 확인용으로 더미를 넣음.
 export const events: EventItem[] = [
-  { name: '1', recent: 0, properties: ['label', 'value'] },
-  { name: '12345', recent: 0, properties: ['order_id', 'amount', 'currency'] },
-  { name: 'add_to_cart', recent: 0, properties: ['product_id', 'product_name', 'category', 'price', 'quantity'] },
-  { name: 'app_opened', recent: 0, properties: ['app_version', 'os', 'launch_source'] },
-  { name: 'banner_impression-v1', recent: 0, properties: [] },
-  { name: 'begin_checkout', recent: 0, properties: ['cart_id', 'item_count', 'total_price', 'coupon_code'] },
-  { name: 'blacklist', recent: 0, properties: ['reason', 'channel'] },
-  { name: 'brown', recent: 0, properties: ['color', 'size'] },
-  { name: 'cat', recent: 0, properties: ['breed', 'age'] },
-  { name: 'claude_track_test', recent: 0, properties: ['test_id', 'variant'] },
-  { name: 'deferred', recent: 6, properties: ['link_id', 'campaign', 'source'] },
-  { name: 'email.delivered', recent: 2, properties: ['campaign_id', 'template_id', 'email_domain'] },
+  { name: '1', recent: 0, properties: ['label', 'value', 'page', 'platform'] },
+  { name: '12345', recent: 0, properties: ['order_id', 'amount', 'currency', 'payment_method', 'platform'] },
+  { name: 'add_to_cart', recent: 0, properties: ['product_id', 'product_name', 'category', 'price', 'quantity', 'platform'] },
+  { name: 'app_opened', recent: 0, properties: ['app_version', 'os', 'os_version', 'launch_source', 'is_first_open'] },
+  { name: 'banner_impression-v1', recent: 0, properties: ['banner_id', 'banner_name', 'placement', 'position', 'campaign'] },
+  { name: 'begin_checkout', recent: 0, properties: ['cart_id', 'item_count', 'total_price', 'coupon_code', 'payment_method'] },
+  { name: 'blacklist', recent: 0, properties: ['reason', 'channel', 'source'] },
+  { name: 'brown', recent: 0, properties: ['color', 'size', 'category', 'price'] },
+  { name: 'cat', recent: 0, properties: ['breed', 'age', 'gender', 'color'] },
+  { name: 'claude_track_test', recent: 0, properties: ['test_id', 'variant', 'step', 'platform'] },
+  { name: 'deferred', recent: 6, properties: ['link_id', 'campaign', 'source', 'medium'] },
+  { name: 'email.delivered', recent: 2, properties: ['campaign_id', 'template_id', 'email_domain', 'message_type'] },
   { name: 'soob', recent: 20, properties: ['w6', 'w7'] },
 ];
 
-// [임시] 속성값 — w6 · w7 외에는 더미
+// [임시] 속성값 — w6 · w7 외에는 더미. 이벤트 속성 + 유저 · 기기 속성(타겟 · 새 메시지 필터) 전부.
 export const propertyValues: Record<string, string[]> = {
   w6: ['x', 'y', 'z'],
   w7: ['k'],
-  label: ['banner', 'popup'],
+  // 공통
+  platform: ['iOS', 'Android', 'Web'],
+  page: ['home', 'product_detail', 'cart', 'checkout', 'mypage'],
+  label: ['banner', 'popup', 'button', 'card'],
+  value: ['0', '1', '10', '100'],
+  // 주문 · 결제
+  order_id: ['ORD-240901-0001', 'ORD-240915-0128', 'ORD-241002-0542', 'ORD-241008-0913'],
+  amount: ['9900', '29000', '59000', '129000'],
   currency: ['KRW', 'USD', 'JPY'],
-  product_name: ['가을 스니커즈', '울 니트', '데님 재킷'],
+  payment_method: ['card', 'kakaopay', 'naverpay', 'bank_transfer'],
+  cart_id: ['CART-1001', 'CART-1002', 'CART-1003'],
+  item_count: ['1', '2', '3', '5'],
+  total_price: ['15000', '42000', '89000', '210000'],
+  coupon_code: ['FALL15', 'WELCOME10', 'VIP20'],
+  // 상품
+  product_id: ['P-1001', 'P-1002', 'P-2001', 'P-3005'],
+  product_name: ['가을 스니커즈', '울 니트', '데님 재킷', '레더 백'],
   category: ['신발', '상의', '아우터', '가방'],
+  price: ['19900', '39000', '79000', '159000'],
   quantity: ['1', '2', '3'],
+  // 앱
+  app_version: ['3.2.0', '3.3.1', '3.4.0'],
   os: ['Android', 'iOS'],
+  os_version: ['iOS 17.6', 'iOS 18.0', 'Android 13', 'Android 14'],
   launch_source: ['push', 'direct', 'deeplink'],
-  coupon_code: ['FALL15', 'WELCOME10'],
-  reason: ['spam', 'unsubscribed'],
-  channel: ['push', 'sms', 'email'],
-  color: ['brown', 'black', 'beige'],
-  size: ['S', 'M', 'L'],
-  breed: ['korean_short', 'persian'],
-  variant: ['A', 'B'],
-  campaign: ['autumn_sale', 'welcome'],
-  source: ['instagram', 'kakao', 'naver'],
-  email_domain: ['gmail.com', 'naver.com', 'example.com'],
+  is_first_open: ['true', 'false'],
+  // 배너
+  banner_id: ['BN-001', 'BN-002', 'BN-003'],
+  banner_name: ['가을 세일', '신규 가입 혜택', 'VIP 전용'],
+  placement: ['home_top', 'home_middle', 'category', 'cart'],
+  position: ['1', '2', '3'],
+  // 차단 · 채널
+  reason: ['spam', 'unsubscribed', 'bounced'],
+  channel: ['push', 'sms', 'email', 'kakao'],
+  // 기타 테스트 이벤트
+  color: ['brown', 'black', 'beige', 'white'],
+  size: ['S', 'M', 'L', 'XL'],
+  breed: ['korean_short', 'persian', 'siamese'],
+  age: ['1', '3', '5', '8'],
+  gender: ['male', 'female'],
+  test_id: ['T-01', 'T-02', 'T-03'],
+  variant: ['A', 'B', 'C'],
+  step: ['1', '2', '3'],
+  // 유입
+  link_id: ['LNK-a1b2', 'LNK-c3d4', 'LNK-e5f6'],
+  campaign: ['autumn_sale', 'welcome', 'vip_event'],
+  source: ['instagram', 'kakao', 'naver', 'google'],
+  medium: ['cpc', 'social', 'email', 'push'],
+  // 이메일
+  campaign_id: ['CMP-0901', 'CMP-0915', 'CMP-1002'],
+  template_id: ['TPL-welcome', 'TPL-cart-remind', 'TPL-receipt'],
+  email_domain: ['gmail.com', 'naver.com', 'daum.net', 'example.com'],
+  message_type: ['marketing', 'transactional'],
+  // 유저 속성
+  '국가 코드': ['KR', 'US', 'JP', 'CN'],
+  '언어 코드': ['ko', 'en', 'ja', 'zh'],
+  생일: ['1990-01-15', '1995-06-30', '2000-12-24'],
+  '문자 수신 거부': ['true', 'false'],
+  grade: ['VIP', 'Gold', 'Silver', 'Bronze'],
+  name: ['김플레', '이레인', '박콘솔'],
+  // 기기 속성
+  플랫폼: ['App(iOS)', 'App(Android)', 'Web(Windows)', 'Web(Mac)'],
+  '웹 브라우저': ['Chrome', 'Safari', 'Edge', 'Firefox'],
+  '테스트 기기': ['true', 'false'],
+  '구독 여부': ['true', 'false'],
+  '@device_model': ['iPhone 15', 'iPhone 13', 'Galaxy S24', 'Galaxy A54'],
 };
 
 // [임시] 세그먼트

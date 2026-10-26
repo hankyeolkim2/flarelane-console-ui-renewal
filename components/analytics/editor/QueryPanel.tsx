@@ -245,7 +245,8 @@ function FilterRow({ event, filter, autoOpen, onChange, onRemove, onAbandon }: {
         <b data-ph="속성 선택">{filter.property ?? ''}</b>
         <span><Icon name="keyboard_arrow_down" size={16} /></span>
       </ValueTrigger>
-      <Floating anchorRef={propRef} open={open === 'property'} width={360} placement="bottom-start" onClose={() => { setOpen(null); if (!filter.property) onAbandon(); }}>
+      {/* 현 콘솔: 속성 · 값 팝오버(360)는 각 칸 오른쪽 끝에 맞춰 아래로 열림 */}
+      <Floating anchorRef={propRef} open={open === 'property'} width={360} placement="bottom-end" onClose={() => { setOpen(null); if (!filter.property) onAbandon(); }}>
         <PropertySelector
           event={event}
           current={filter.property}
@@ -256,7 +257,8 @@ function FilterRow({ event, filter, autoOpen, onChange, onRemove, onAbandon }: {
           }}
         />
       </Floating>
-      <Select<Operator> width={90} menuWidth={160} value={filter.operator} options={OPERATORS} onChange={(o) => onChange({ ...filter, operator: o })} />
+      {/* 현 콘솔: 연산자 칸은 글자에 맞춘 폭(속성 106 고정 · 값은 남은 폭), 목록은 연산자 7개 한 줄씩 */}
+      <Select<Operator> width="auto" menuWidth={112} value={filter.operator} options={OPERATORS} onChange={(o) => onChange({ ...filter, operator: o })} />
       <ValueTrigger ref={valRef} type="button" placeholder="값 선택" title={label || undefined} aria-haspopup="listbox" aria-expanded={open === 'value'} onClick={() => setOpen(filter.property ? 'value' : 'property')}>
         <b data-ph="값 선택">{label}</b>
         <span><Icon name="keyboard_arrow_down" size={16} /></span>

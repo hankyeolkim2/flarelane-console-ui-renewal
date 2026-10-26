@@ -55,7 +55,7 @@ export const initialReports: Report[] = [
     // 블록 순서 변경 확인용 — 분석 지표 · 데이터 그룹 3개씩 (10-21 사용자 요청)
     events: ['banner_impression-v1', 'add_to_cart', 'app_opened'],
     splits: [
-      { id: 'sp1', kind: '세그먼트', label: 'VIP 고객' },
+      { id: 'sp1', kind: '세그먼트', label: '30일 내 2회 이상 구매한 VIP 고객' }, // 긴 이름 = 표 말줄임 · 툴팁 확인용(Figma 예시와 같음)
       { id: 'sp2', kind: '기기', label: '플랫폼' },
       { id: 'sp3', kind: '유저', label: '국가 코드' },
     ],

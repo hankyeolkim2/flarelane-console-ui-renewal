@@ -4,7 +4,8 @@ import { useStore } from '@/lib/store';
 import { color, radius, shadow } from '@/styles/tokens';
 import { text } from '@/styles/typography';
 
-// 성공 알림 — 화면 오른쪽 위에 붙음(시안 규칙: 토스트는 위 · 오른쪽 여백 없이).
+// 알림 — 화면 오른쪽 위에 붙음(시안 규칙: 토스트는 위 · 오른쪽 여백 없이).
+// 성공 = 체크(fg-success-primary), 안내 · 제한(「최대 n개까지…」) = 느낌표 원(error, fg-warning-primary).
 const Stack = styled.div`
   position: fixed;
   top: 0;
@@ -17,7 +18,7 @@ const Stack = styled.div`
   pointer-events: none;
 `;
 
-const Item = styled.div`
+const Item = styled.div<{ $kind: 'success' | 'warning' }>`
   display: flex;
   align-items: center;
   gap: 12px;
@@ -31,7 +32,7 @@ const Item = styled.div`
   pointer-events: auto;
   ${text('text-sm', 'semibold')};
   color: ${color('text-primary')};
-  > span:first-of-type { display: inline-flex; color: ${color('fg-success-primary')}; }
+  > span:first-of-type { display: inline-flex; color: ${(p) => (p.$kind === 'warning' ? color('fg-warning-primary') : color('fg-success-primary'))}; }
   > p { flex: 1; margin: 0; }
   > button { display: inline-flex; padding: 0; border: 0; background: none; color: ${color('fg-quaternary')}; cursor: pointer; }
 `;
@@ -41,9 +42,9 @@ export default function Toasts() {
   return (
     <Stack aria-live="polite">
       {toasts.map((t) => (
-        <Item key={t.id} role="status">
+        <Item key={t.id} role="status" $kind={t.kind}>
           <span>
-            <Icon name="check" size={20} />
+            <Icon name={t.kind === 'warning' ? 'error' : 'check'} size={20} />
           </span>
           <p>{t.text}</p>
           <button type="button" aria-label="닫기" onClick={() => dismissToast(t.id)}>

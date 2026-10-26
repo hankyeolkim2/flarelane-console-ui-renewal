@@ -7,7 +7,8 @@ import Button from '@/components/ui/Button';
 import IconButton from '@/components/ui/IconButton';
 import { Anchor, Menu, MenuItem } from '@/components/ui/Menu';
 import { ConfirmModal } from '@/components/ui/Modal';
-import { CsvButton, dayLabel, FunnelResult, FunnelTable, InsightChart, InsightTable } from '@/components/analytics/ReportResult';
+import { CsvButton, dayLabel, FunnelBars, FunnelBreakdownTable, FunnelResult, FunnelTable, InsightBreakdownTable, InsightChart, InsightTable, type BreakdownRow, type FunnelGroup } from '@/components/analytics/ReportResult';
+import { BREAKDOWN_COLORS, combos, jitter, splitHeader } from '@/lib/breakdown';
 import { boardName, ME, type Board, type Report, type ReportType } from '@/lib/analytics';
 import { funnelCounts, insightValues } from '@/lib/catalog';
 import { addDays, defaultState, NAME_MAX, parseYmd, queryKey, serialize, SPLIT_SEED, uid, withRange, type EditorState } from '@/lib/editor';
@@ -131,6 +132,7 @@ export default function ReportEditor({ mode, boardId, report, initialType }: Pro
 
   const initial = useMemo(() => (report ? stateFromReport(report) : defaultState(initialType)), [report, initialType]);
   const [state, setState] = useState<EditorState>(initial);
+  const [picked, setPicked] = useState<{ q: string; list: { key: string; color: string }[] } | null>(null); // 세분화 표에서 그래프에 그릴 계열
   const [baseline, setBaseline] = useState(() => serialize(initial));
   const [name, setName] = useState<string | null>(report?.name ?? null);
   const [renamedInCreate, setRenamedInCreate] = useState(false);
@@ -241,6 +243,43 @@ export default function ReportEditor({ mode, boardId, report, initialType }: Pro
   const unit = state.measurement === 'UNIQUE_USER' ? '명' : '회';
   const series = state.metrics.map((m) => ({ name: m.event, values: insightValues(m.event, dates, state.granularity, state.measurement) }));
   const counts = funnelCounts(state.metrics.map((m) => m.event));
+  // 데이터 그룹(세분화) — 블록 순서대로 값 조합을 만듦. 표는 조합 전부, 그래프는 표에서 체크한 계열만(최대 MAX_SERIES).
+  // 처음(또는 조회 조건이 바뀌면) 인사이트 = 평균 큰 순 상위 MAX_SERIES, 퍼널 = 앞에서부터 MAX_SERIES 를 체크해 둠.
+  const splits = state.splits ?? [];
+  const splitHeaders = splits.map(splitHeader);
+  const combo = splits.length ? combos(splits) : [];
+  const MAX_SERIES = BREAKDOWN_COLORS.length; // 색이 겹치지 않는 만큼(10)
+  const avg = (v: number[]) => v.reduce((a, b) => a + b, 0) / Math.max(v.length, 1);
+  const rowKey = (r: { index?: number; labels: string[] }) => `${r.index ?? ''}|${r.labels.join('|')}`;
+  const breakdownRows: BreakdownRow[] = state.type === 'INSIGHT' && combo.length
+    ? series.flatMap((s, i) => combo.map((c) => ({ index: i, event: s.name, labels: c.labels, color: '', values: s.values.map((v) => Math.round(v * c.share * jitter(s.name + c.key))) })))
+    : [];
+  const funnelGroups: FunnelGroup[] = state.type === 'FUNNEL' && combo.length
+    ? combo.map((c) => {
+        const out: number[] = [];
+        counts.forEach((v, i) => {
+          const raw = Math.round(v * c.share * jitter(c.key + i));
+          out.push(i === 0 ? raw : Math.min(raw, out[i - 1]));
+        });
+        return { labels: c.labels, color: '', counts: out };
+      })
+    : [];
+  const defaultKeys = state.type === 'INSIGHT'
+    ? [...breakdownRows].sort((a, b) => avg(b.values) - avg(a.values)).slice(0, MAX_SERIES).sort((a, b) => breakdownRows.indexOf(a) - breakdownRows.indexOf(b)).map(rowKey)
+    : funnelGroups.slice(0, MAX_SERIES).map(rowKey);
+  const pickQ = `${state.type}|${queryKey(state)}`;
+  const picks: { key: string; color: string }[] = picked?.q === pickQ ? picked.list : defaultKeys.map((key, k) => ({ key, color: BREAKDOWN_COLORS[k] }));
+  const colorOf = (key: string) => picks.find((p) => p.key === key)?.color ?? '';
+  const togglePick = (key: string) => {
+    if (picks.some((p) => p.key === key)) return setPicked({ q: pickQ, list: picks.filter((p) => p.key !== key) });
+    if (picks.length >= MAX_SERIES) return toast(`최대 ${MAX_SERIES}개까지 선택할 수 있습니다.`, 'warning');
+    const free = BREAKDOWN_COLORS.find((c) => !picks.some((p) => p.color === c)) ?? BREAKDOWN_COLORS[0];
+    setPicked({ q: pickQ, list: [...picks, { key, color: free }] });
+  };
+  breakdownRows.forEach((r) => (r.color = colorOf(rowKey(r))));
+  funnelGroups.forEach((g) => (g.color = colorOf(rowKey(g))));
+  const breakdownSeries = breakdownRows.filter((r) => r.color).map((r) => ({ name: r.event, values: r.values, label: `${r.index + 1}. ${r.event}/${r.labels.join('/')}`, color: r.color }));
+  const funnelBarGroups = funnelGroups.filter((g) => g.color);
   const crm = state.type === 'INSIGHT' && !crmClosed && state.range.from < CRM_START && state.metrics.some((m) => isCrm(m.event));
   const crumbs = boardId
     ? [
@@ -335,16 +374,28 @@ export default function ReportEditor({ mode, boardId, report, initialType }: Pro
           )}
           {status === 'SUCCEEDED' && state.type === 'INSIGHT' && (
             <>
-              <InsightChart series={series} dates={dates} unit={unit} granularity={state.granularity} />
+              <InsightChart series={combo.length ? breakdownSeries : series} dates={dates} unit={unit} granularity={state.granularity} />
               <CsvButton onClick={() => toast(`${shownName}_${dayLabel(dates[0])}-${dayLabel(dates[dates.length - 1])}.csv`)} />
-              <InsightTable series={series} dates={dates} granularity={state.granularity} />
+              {combo.length ? (
+                <InsightBreakdownTable rows={breakdownRows} headers={splitHeaders} dates={dates} granularity={state.granularity} onToggle={(r) => togglePick(rowKey(r))} />
+              ) : (
+                <InsightTable series={series} dates={dates} granularity={state.granularity} />
+              )}
             </>
           )}
           {status === 'SUCCEEDED' && state.type === 'FUNNEL' && (
             <>
-              <FunnelResult steps={state.metrics.map((m) => m.event)} counts={counts} />
+              {combo.length ? (
+                <FunnelBars steps={state.metrics.map((m) => m.event)} groups={funnelBarGroups} />
+              ) : (
+                <FunnelResult steps={state.metrics.map((m) => m.event)} counts={counts} />
+              )}
               <CsvButton onClick={() => toast(`${shownName} CSV 추출`)} />
-              <FunnelTable steps={state.metrics.map((m) => m.event)} counts={counts} />
+              {combo.length ? (
+                <FunnelBreakdownTable steps={state.metrics.map((m) => m.event)} headers={splitHeaders} groups={funnelGroups} onToggle={(g) => togglePick(rowKey(g))} />
+              ) : (
+                <FunnelTable steps={state.metrics.map((m) => m.event)} counts={counts} />
+              )}
             </>
           )}
         </Result>

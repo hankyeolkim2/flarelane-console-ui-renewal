@@ -118,6 +118,7 @@ export function queryKey(s: EditorState) {
     c: s.type === 'FUNNEL' && s.measurement === 'TOTAL_COUNT' ? s.conversionWindow : null,
     e: s.metrics.map((m) => ({ e: m.event, f: m.filters.filter(ok).map((f) => [f.property, f.operator, f.values]) })),
     tg: s.targets.map((g) => g.blocks.filter((b) => b.kind !== 'USER' && b.kind !== 'DEVICE' ? true : !!b.value).map((b) => b.id)),
+    sp: (s.splits ?? []).map((b) => [b.kind, b.label]), // 데이터 그룹을 바꾸면 다시 조회
   });
 }
 

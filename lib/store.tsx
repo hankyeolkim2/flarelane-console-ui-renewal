@@ -3,7 +3,9 @@ import { initialBoards, initialReports, ME, type Board, type Report } from './an
 import { initialWebhooks, type Webhook } from './webhooks';
 
 // 화면 사이에 공유하는 프로토타입 상태 (새로고침하면 처음 값으로 돌아감).
-type Toast = { id: number; text: string };
+// kind: 성공(체크) · 안내(제한 · 주의, 느낌표) — 기본 성공
+export type ToastKind = 'success' | 'warning';
+type Toast = { id: number; text: string; kind: ToastKind };
 
 type Store = {
   boards: Board[];
@@ -19,7 +21,7 @@ type Store = {
   deleteWebhook: (id: string) => void;
   createBoardNamed: (name: string) => Board;
   toasts: Toast[];
-  toast: (text: string) => void;
+  toast: (text: string, kind?: ToastKind) => void;
   dismissToast: (id: number) => void;
 };
 
@@ -34,9 +36,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const deleteWebhook = useCallback((id: string) => setWebhooks((l) => l.filter((x) => x.id !== id)), []);
   const seq = useRef(0);
 
-  const toast = useCallback((text: string) => {
+  const toast = useCallback((text: string, kind: ToastKind = 'success') => {
     const id = ++seq.current;
-    setToasts((t) => [...t, { id, text }]);
+    setToasts((t) => [...t, { id, text, kind }]);
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3000);
   }, []);
   const dismissToast = useCallback((id: number) => setToasts((t) => t.filter((x) => x.id !== id)), []);
